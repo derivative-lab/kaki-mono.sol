@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.12;
+pragma solidity ^0.8;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -18,7 +18,7 @@ contract MockChainLink is Ownable {
         if (_lastAnswer == 0) {
             return _lastAnswer;
         } else {
-            uint256 randomNumber = uint256(keccak256(abi.encodePacked(block.timestamp, now))) % 100;
+            uint256 randomNumber = uint256(keccak256(abi.encodePacked(block.timestamp, block.timestamp))) % 100;
             return randomNumber;
         }
     }
