@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-
 import "../interfaces/IkakiTicket.sol";
 import "../base/BaseERC721.sol";
-
-
-contract KakiCaptain is  IkakiTicket ,BaseERC721{
-
+contract KakiTicket is  IkakiTicket ,BaseERC721{
     address buyTicketAdd;
 
     modifier onlyClaimAdd() {
@@ -16,7 +12,7 @@ contract KakiCaptain is  IkakiTicket ,BaseERC721{
     }
 
     function initialize() public initializer{
-        __BaseERC721_init("Kaki ticket", "KTIC");
+        __BaseERC721_init("", "");
     }
 
     function mint(
