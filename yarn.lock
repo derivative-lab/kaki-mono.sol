@@ -30,13 +30,10 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@chainlink/contracts@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.npmjs.org/@chainlink/contracts/-/contracts-0.1.7.tgz"
-  integrity sha512-txVkGrwFYnyLUC/I5hTe7yZK7fjmB6YFULfBHqryRuREUmGd4bdpXfrcUUsZycmWibanp69QVyQBpsDrPhWsjw==
-  optionalDependencies:
-    "@truffle/contract" "^4.3.8"
-    ethers "^4.0.45"
+"@chainlink/contracts@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@chainlink/contracts/-/contracts-0.2.2.tgz#8ea2079d8b22d25807fc63b98ccd3dc0bc2a33fe"
+  integrity sha512-wxXPbt7O3aZaUSG34ufFASC5amRSL6eeYCqsa+2gpqbB8Hk7B7FydEDCI5dqvAC444TlFskPHcVbizCZkRHPpw==
 
 "@cspotcode/source-map-consumer@0.8.0":
   version "0.8.0"
@@ -681,15 +678,15 @@
     find-up "^4.1.0"
     fs-extra "^8.1.0"
 
-"@openzeppelin/contracts-upgradeable@^3.4.1":
-  version "3.4.2"
-  resolved "https://registry.npmjs.org/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-3.4.2.tgz"
-  integrity sha512-mDlBS17ymb2wpaLcrqRYdnBAmP1EwqhOXMvqWk2c5Q1N1pm5TkiCtXM9Xzznh4bYsQBq0aIWEkFFE2+iLSN1Tw==
+"@openzeppelin/contracts-upgradeable@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.4.0.tgz#85161d87c840c5bce2b6ed0c727b407e774852ae"
+  integrity sha512-hIEyWJHu7bDTv6ckxOaV+K3+7mVzhjtyvp3QSaz56Rk5PscXtPAbkiNTb3yz6UJCWHPWpxVyULVgZ6RubuFEZg==
 
-"@openzeppelin/contracts@^3.4.1":
-  version "3.4.2"
-  resolved "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-3.4.2.tgz"
-  integrity sha512-z0zMCjyhhp4y7XKAcDAi3Vgms4T2PstwBdahiO0+9NaGICQKjynK3wduSRplTgk4LXmoO1yfDGO5RbjKYxtuxA==
+"@openzeppelin/contracts@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.4.0.tgz#4a1df71f736c31230bbbd634dfb006a756b51e6b"
+  integrity sha512-dlKiZmDvJnGRLHojrDoFZJmsQVeltVeoiRN7RK+cf2FmkhASDEblE0RiaYdxPNsUZa6mRG8393b9bfyp+V5IAw==
 
 "@openzeppelin/hardhat-upgrades@^1.12.0":
   version "1.12.0"
@@ -927,7 +924,7 @@
     ajv "^6.10.0"
     debug "^4.3.1"
 
-"@truffle/contract@^4.0.35", "@truffle/contract@^4.3.8":
+"@truffle/contract@^4.0.35":
   version "4.3.40"
   resolved "https://registry.npmjs.org/@truffle/contract/-/contract-4.3.40.tgz"
   integrity sha512-VRO1CrNT+pdsjWBu/F8dZw3pAdJrpSx9hogBkiJOvikrz3ZEQOYA9cAMC4Pl+677Q5Qd+4DSxEtB1ufjpSThIg==
@@ -1307,6 +1304,11 @@ abbrev@1, abbrev@1.0.x:
   version "1.0.9"
   resolved "https://registry.npmjs.org/abbrev/-/abbrev-1.0.9.tgz"
   integrity sha1-kbR5JYinc4wl813W9jdSovh3YTU=
+
+abdk-libraries-solidity@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/abdk-libraries-solidity/-/abdk-libraries-solidity-3.0.0.tgz#9085437262110f3f81abc067b3d24a6727cf7984"
+  integrity sha512-oKBj/1wK6hIXxYjX7b2vCzJPHs9GDu49EBpNfUOw2FpA/nu1oV7V598MgAbB1+R1u7vuUhL6DYqolV+GMWaLvA==
 
 abort-controller@^3.0.0:
   version "3.0.0"
@@ -4665,7 +4667,7 @@ ethereumjs-wallet@0.6.5:
     utf8 "^3.0.0"
     uuid "^3.3.2"
 
-ethers@^4.0.32, ethers@^4.0.40, ethers@^4.0.45:
+ethers@^4.0.32, ethers@^4.0.40:
   version "4.0.49"
   resolved "https://registry.npmjs.org/ethers/-/ethers-4.0.49.tgz"
   integrity sha512-kPltTvWiyu+OktYy1IStSO16i2e7cS9D9OxZ81q2UUaiNPVrm/RTcbxamCXF9VUSKzJIdJV68EAIhTEVBalRWg==
