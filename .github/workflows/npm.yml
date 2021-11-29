@@ -1,0 +1,239 @@
+name: auto release
+
+on:
+  push:
+    paths:
+      - .github/workflows/npm.yml
+      - contracts/*
+      - contracts/interfaces/*
+      - utils/contract.ts
+      - .github/npm_trigger
+
+    branches:
+      - 'with-sdk'
+      - main
+      - 'releases/**'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: "0.1"
+    steps:
+      - name: check release
+        if: |
+          contains(github.event.head_commit.message,':npm')
+        run: |
+          echo "RELEASE_TYPE=release" >> $GITHUB_ENV
+          echo "PRERELEASE=false" >> $GITHUB_ENV
+          echo "NEED_RELEASE=yes" >> $GITHUB_ENV
+          echo "GIT_SHA=${{ github.sha }}" >> $GITHUB_ENV
+          echo "GIT_REF=${{ github.ref }}" >> $GITHUB_ENV
+          echo "GIT_COMMIT=${{ github.event.head_commit.message }}" >> $GITHUB_ENV
+
+      - name: check testnet env
+        if: endsWith(github.event.head_commit.message,':bsctest')
+        run: echo "NPM_TAG=bsctest" >> $GITHUB_ENV
+      - name: check bsc env
+        if: endsWith(github.event.head_commit.message,':bsc')
+        run: echo "NPM_TAG=bsc" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v2
+        if: env.NEED_RELEASE == 'yes'
+      - name: generate ssh key
+        run: |
+          mkdir -p /home/runner/.ssh/
+          chmod 700 /home/runner/.ssh
+          echo <<EOF> /home/runner/.ssh/id_rsa
+          ${{ secrets.SSH_ID_RSA }}
+          EOF
+          chmod 400 /home/runner/.ssh/id_rsa
+          echo <<EOF>/home/runner/.ssh/id_rsa.pub
+          ${{ secrets.SSH_ID_RSA_PUB }}
+          EOF
+          chmod 400 /home/runner/.ssh/id_rsa.pub
+        if: env.NEED_RELEASE == 'yes'
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        if: env.NEED_RELEASE == 'yes'
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v2
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        if: env.NEED_RELEASE == 'yes'
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      # -----------------  build number ----------------------------------------
+      - name: Generate build number
+        if: env.NEED_RELEASE == 'yes'
+        id: buildnumber
+        uses: einaregilsson/build-number@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: export FULL_VERSION
+        if: env.NEED_RELEASE == 'yes'
+        run: |
+          echo FULL_VERSION=${{ env.VERSION }}.${{ steps.buildnumber.outputs.build_number }} >> $GITHUB_ENV
+
+      - run: sudo timedatectl set-timezone Asia/Shanghai
+        if: env.NEED_RELEASE == 'yes'
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        if: env.NEED_RELEASE == 'yes'
+        with:
+          node-version: "16"
+          registry-url: "https://npm.pkg.github.com"
+          # Defaults to the user or organization that owns the workflow file
+          scope: "@derivative-lab"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          cat <<EOF >config.json
+          ${{ secrets.CONFIG_JSON }}
+          EOF
+        if: env.NEED_RELEASE == 'yes'
+      - run: yarn install
+        if: env.NEED_RELEASE == 'yes'
+      - run: yarn hardhat --network ${{ env.NPM_TAG }} typechain
+        if: env.NEED_RELEASE == 'yes'
+      # ------------------------- release  ------------------------------
+      - name: geneare typechain package.json & tsconfig.json
+        run: |
+          cat << EOF>./typechain/package.json
+          {
+            "name": "@derivative-lab/kaki-squid",
+            "version": "${{ env.FULL_VERSION }}",
+            "description": "kaki-Squid",
+            "main": "./lib/index.js",
+            "module": "./lib.esm/index.js",
+            "types": "./lib.esm/index.d.ts",
+            "scripts": {
+              "test": "hello"
+            },
+            "publishConfig": {
+              "registry": "https://npm.pkg.github.com"
+            },
+            "author": "kaki",
+            "license": "ISC",
+            "dependencies": {
+              "ethers": "^5.5.1"
+            },
+            "devDependencies": {
+              "typescript": "^4.4.4"
+            }
+          }
+          EOF
+          cat <<EOF>./typechain/tsconfig.json
+          {
+            "compilerOptions": {
+              "target": "es5",
+              "module": "commonjs",
+              "declaration": true,
+              "esModuleInterop": true,
+              "forceConsistentCasingInFileNames": true,
+              "strict": true,
+              "skipLibCheck": true
+            }
+          }
+          EOF
+        if: env.NEED_RELEASE == 'yes'
+      - name: generate contractAddress by env
+        if: env.NEED_RELEASE == 'yes'
+        run: yarn hardhat run --network ${{ env.NPM_TAG }} --no-compile scripts/devops/generateAddressConfig.ts
+      - name: install typechain dependencies
+        if: env.NEED_RELEASE == 'yes'
+        run: |
+          yarn install
+        working-directory: ./typechain-tiny
+      - name: build typechain
+        if: env.NEED_RELEASE == 'yes'
+        run: |
+          yarn tsc --outDir ./lib
+          yarn tsc --outDir ./lib.esm --module esnext --moduleResolution node
+        working-directory: ./typechain-tiny
+      - name: copy types
+        if: env.NEED_RELEASE == 'yes'
+        run: |
+          cp *.d.ts ./lib
+          cp *.d.ts ./lib.esm
+        working-directory: ./typechain-tiny
+      # - name: npm latest tag release
+      #   if: env.NEED_RELEASE == 'yes' && env.RELEASE_TYPE == 'release'
+      #   run: |
+      #     yarn && npm publish
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # working-directory: ./typechain
+      - name: npm tag publish
+        if: env.NEED_RELEASE == 'yes'
+        run: |
+          yarn && npm publish --tag ${{ env.NPM_TAG }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: ./typechain-tiny
+      - name: Create Release
+        if: env.NEED_RELEASE == 'yes'
+        id: create_release
+        uses: actions/create-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ env.FULL_VERSION }}
+          release_name: Release ${{ env.FULL_VERSION }}
+          body: |
+            # ${{ env.NPM_TAG }}
+            - auto release
+          draft: false
+          prerelease: ${{ env.PRERELEASE }}
+      - name: gen file name
+        if: env.NEED_RELEASE == 'yes'
+        run: |
+          name=blade-nft
+          fileName=${name}-${{ env.FULL_VERSION }}.tar.gz
+          tar  -cf "./${fileName}"  --exclude={"./artifacts","./cache",".git","node_modules",".github","truffle-config.js","./typechain/node_modules"}  ./
+          echo "FILE_NAME=${fileName}" >> $GITHUB_ENV
+      - name: Upload Release Asset
+        if: env.NEED_RELEASE == 'yes'
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./${{ env.FILE_NAME }}
+          asset_name: ${{ env.FILE_NAME }}
+          asset_content_type: application/gzip
+      # - name: deploy website success
+      #   uses: appleboy/telegram-action@master
+      #   if: env.NEED_RELEASE == 'yes'
+      #   with:
+      #     to: ${{ secrets.TB_TO }}
+      #     token: ${{ secrets.TB_TOKEN }}
+      #     message: |
+      #       # npm pacakge publish success.
+      #       - version: ${{ env.FULL_VERSION }}
+      #       - view:   ${{ steps.deploy.outputs.preview-url }}
+      #       - release: ${{ github.event.repository.html_url }}/releases/tag/${{ env.VERSION }}.${{ steps.buildnumber.outputs.build_number }}
+      #       - action detail: ${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}
+      #       - committer: ${{ github.actor }}
+      #       - repo: ${{ github.event.repository.html_url }}
+      #       - compare: ${{ github.event.compare }}
+      #       - headCommit: ${{ github.event.head_commit.url }}
+      # - name: release action failed notice
+      #   uses: appleboy/telegram-action@master
+      #   if: env.NEED_RELEASE == 'yes' && failure()
+      #   with:
+      #     to: ${{ secrets.TB_TO }}
+      #     token: ${{ secrets.TB_TOKEN }}
+      #     message: |
+      #       # npm package publish failed
+      #       version: ${{ env.FULL_VERSION }}
+      #       action detail: ${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}
+      #       repo: ${{ github.event.repository.html_url }}
+      #       headCommit: ${{ github.event.head_commit.url }}
+      #       committer: ${{ github.actor }}
+      #       compare: ${{ github.event.compare }}

@@ -1,0 +1,10 @@
+.history
+abi
+cache
+artifacts
+.openzeppelin
+node_modules
+config.json
+typechain/
+.env
+typechain-tiny/
