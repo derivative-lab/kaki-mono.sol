@@ -14,7 +14,7 @@ import {HardhatUserConfig} from 'hardhat/types';
 import {accounts, node_url} from './utils/network';
 
 // import "./config.json";
-import config from './config.json';
+// import config from './config.json';
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -57,24 +57,24 @@ const cfg: HardhatUserConfig = {
     testnet: {
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       chainId: 97,
-      accounts: [config.address.privateKey1],
+      accounts: {...accounts(), initialIndex: 0, count: 10},
     },
     testweb: {
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       chainId: 97,
-      accounts: [config.address.privateKey1],
+      accounts: {...accounts(), initialIndex: 0, count: 10},
     },
     mainnet: {
       url: 'https://bsc-dataseed.binance.org/',
       chainId: 56,
       gasPrice: 20000000000,
-      accounts: [config.address.privateKey2],
+      accounts: {...accounts(), initialIndex: 0, count: 10},
     },
     bsc: {
       url: 'https://bsc-dataseed.binance.org/',
       chainId: 56,
       gasPrice: 20000000000,
-      accounts: [config.address.privateKey2],
+      accounts: {...accounts(), initialIndex: 0, count: 10},
     },
     bsctest: {
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
@@ -83,7 +83,7 @@ const cfg: HardhatUserConfig = {
     },
   },
   solidity: {
-    version: '0.6.12',
+    version: '0.8.9',
     settings: {
       optimizer: {
         enabled: true,
