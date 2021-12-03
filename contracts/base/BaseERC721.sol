@@ -17,6 +17,10 @@ abstract contract BaseERC721 is WithAdminRole, IBaseERC721, ERC721EnumerableUpgr
         __ERC721_init(name, symbol_);
     }
 
+    function increaceTokenId() public {
+        _tokenIdTracker.increment();
+    }
+
     function setBaseTokenURI(string memory baseURI_) public restricted {
         _baseTokenURI = baseURI_;
     }
