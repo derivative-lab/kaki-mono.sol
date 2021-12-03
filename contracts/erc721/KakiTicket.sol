@@ -2,8 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../interfaces/IkakiTicket.sol";
-import "../base/BaseERC721.sol";
-contract KakiTicket is  IkakiTicket ,BaseERC721{
+contract KakiTicket is IkakiTicket{
     address buyTicketAdd;
 
     modifier onlyClaimAdd() {
@@ -17,8 +16,7 @@ contract KakiTicket is  IkakiTicket ,BaseERC721{
 
     function mint(
         address _to,
-        uint256 _tokenId,
-        string calldata _uri
+        uint256 _tokenId
     ) external onlyClaimAdd {
         _mint(_to, _tokenId);
         // super._setTokenURI(_tokenId, _uri);
