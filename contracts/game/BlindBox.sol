@@ -54,7 +54,7 @@ contract KakiBlindBox is WithAdminRole, IBlindBox {
         require(_kaki.balanceOf(msg.sender) >= _aPrice * BASE, "Do not have enough kaki token.");
         _kaki.transfer(address(this), _aPrice * BASE);
         uint256 rand = getRandom(0, 10);
-        _kakiTicket.mint(msg.sender, _count, _uri[rand]);
+        //_kakiTicket.mint(msg.sender, _count, _uri[rand]);
         _prob[_count]._probability = rand + 5;
         _prob[_count]._chip = 16;
         _count++;
@@ -68,23 +68,23 @@ contract KakiBlindBox is WithAdminRole, IBlindBox {
         uint256 rand = getRandom(0, 10);
 
         if (randTicket <= 80) {
-            _kakiTicket.mint(msg.sender, _count, _uri[randTicket]);
+            //_kakiTicket.mint(msg.sender, _count, _uri[randTicket]);
             _prob[_count]._probability = rand + 5;
             _prob[_count]._chip = 16;
-            _kakiTicket.mint(msg.sender, _count, _uri[rand]);
+            //_kakiTicket.mint(msg.sender, _count, _uri[rand]);
             _count++;
         } else if (randTicket >95 && _sTicketCount < 6) {
             _prob[_count]._type = 2;
             _prob[_count]._probability = 49;
             _prob[_count]._chip = 32;
-            _kakiTicket.mint(msg.sender, _count, _uri[rand]);
+            //_kakiTicket.mint(msg.sender, _count, _uri[rand]);
             _count++;
             _sTicketCount++;
         } else {
             _prob[_count]._type = 1;
             _prob[_count]._probability = rand + 10;
             _prob[_count]._chip = 32;
-            _kakiTicket.mint(msg.sender, _count, _uri[rand]);
+            //_kakiTicket.mint(msg.sender, _count, _uri[rand]);
             _count++;
         }
     }
@@ -104,13 +104,13 @@ contract KakiBlindBox is WithAdminRole, IBlindBox {
 
         totalProb = totalProb + extraCap;
         if (rand <= totalProb) {
-            _kakiTicket.mint(msg.sender, _count, _uri[22]);
+            //_kakiTicket.mint(msg.sender, _count, _uri[22]);
             _prob[_count]._type = 3;
             _prob[_count]._chip = 16;
             _count++;
         }
         for (uint256 i; i < 3; i++){
-            _kakiTicket.transferFrom(msg.sender, blackHole, ticket[i]);
+            //_kakiTicket.transferFrom(msg.sender, blackHole, ticket[i]);
         }
     }
     
