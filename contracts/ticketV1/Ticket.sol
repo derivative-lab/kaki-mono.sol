@@ -4,26 +4,35 @@ import "../base/BaseERC721.sol";
 import "./interface/ITicket.sol";
 
 contract Ticket is BaseERC721, ITicket {
-    mapping(uint256 => TicketPara) _ticketIsDrop;
+    mapping(uint256 => TicketPara) _ticketInfo;
 
     function initialize() public initializer {
-        __BaseERC721_init("", "");
+        __BaseERC721_init("Kaki Squid Ticket", "KST");
     }
 
     function mint(
         address _to,
         bool _isDrop,
-        uint256 _invalidTime
+        uint256 _invalidTime,
+        uint256 value,
+        uint256 price
     ) external override restricted returns (uint256 tokenId) {
         tokenId = totalMinted();
         _mint(_to, tokenId);
-        _ticketIsDrop[tokenId].isDrop = _isDrop;
-        _ticketIsDrop[tokenId].invalidTime = _invalidTime;
+        _ticketInfo[tokenId] = TicketPara({
+            invalidTime: _invalidTime,
+            birthday: block.timestamp,
+            birthBlock: block.number,
+            value: value,
+            price: price,
+            tokenId: tokenId,
+            isDrop: _isDrop
+        });
         increaceTokenId();
     }
 
-    function getTicketMessage(uint256 tokenId) public view override returns (TicketPara memory) {
-        return (_ticketIsDrop[tokenId]);
+    function getTicketInfo(uint256 tokenId) public view override returns (TicketPara memory) {
+        return (_ticketInfo[tokenId]);
     }
 
     function version() public pure returns (uint256) {
