@@ -7,7 +7,7 @@ contract BlindBoxDrop is BaseERC721, ITicket{
 
     mapping(uint256 => TicketPara) _ticketIsDrop;
 
-    function initialize(address ercAdd, address busdAdd) public initializer {
+    function initialize() public initializer {
         __BaseERC721_init("", "");
     }
 
