@@ -56,12 +56,12 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _;
     }
 
-    function claim() public override isClaimOver {
-        require(_addressList.isInAddressList(msg.sender), "Not allow.");
-        require(_claimTimeLimit[msg.sender] != _claimLimit, "Claim too much.");
-        _ticket.mint(msg.sender, false, _invalidTime);
-        _claimTimeLimit[msg.sender]++;
-    }
+    // function claim() public override isClaimOver {
+    //     require(_addressList.isInAddressList(msg.sender), "Not allow.");
+    //     require(_claimTimeLimit[msg.sender] != _claimLimit, "Claim too much.");
+    //     _ticket.mint(msg.sender, true, _invalidTime);
+    //     _claimTimeLimit[msg.sender]++;
+    // }
 
     function buyTicket() public override isAble {
         require(_busd.balanceOf(msg.sender) >= _ticketPrice * BASE, "Do not have enough BUSD.");
@@ -69,12 +69,14 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _ticket.mint(msg.sender, false, 0);
     }
 
-    function sendToPool() public override isSquidAdd {
-        _busd.transfer(msg.sender, _ticketPrice);
+    function buyTicketMul(uint256 num) public override isAble {
+        require(num > 0, "Invalid num.");
+        for(uint256 i; i < num; i++) {
+            require(_busd.balanceOf(msg.sender) >= _ticketPrice * BASE, "Do not have enough BUSD.");
+            _busd.transfer(address(this), _ticketPrice * BASE);
+            _ticket.mint(msg.sender, false, 0);
+        }
     }
-
-    //*********************************** read ********************************************** */
-    
 
     //****************************** admin function ***************************************** */
     function setTicketPrice(uint256 ticketPrice) public onlyOwner {
