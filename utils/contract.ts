@@ -1,5 +1,5 @@
 import { deployments, ethers, network } from 'hardhat';
-import { MockChainLink__factory, MockToken__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -20,15 +20,18 @@ export const mutiContractAddrs = {
     squidGame: '0xC76255D7E26A3d634Bd2CD4Ac84374e36C9798a5',
   },
   bsctest: {
-    squidGame: '0xabff29148B4B185f3Bd1692A938e6530E9Bde9Fa',
-    busd: '0x0266693f9df932ad7da8a9b44c2129ce8a87e81f',
+    squidGame: '0x573efF8F0467187c178721813d880a145A6f5A52',
+    busd: '0xE70b02A5Ae129F66687256b7a5e81cC871e347D7',
     oracle: '0x048Cc75FF36d67aFCd25160AB5aa8Bde1FDa3F19',
-    blindBoxDrop: '0x26dEa25C01f43B2cf8Da3aCe68F0DD830a4399e5'
+    blindBoxDrop: '0x26dEa25C01f43B2cf8Da3aCe68F0DD830a4399e5',
+    squidAllowList: '0x405497ceb2E20C9E8ec5875d669ad6381BBEE79E',
+    squidTicket: '0x7dc99344aA0053BC2DC16aE111e83C1315409a07',
+    squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
   },
   bsc: {
     squidGame: '',
     busd: '',
-    oracle: '',
+    oracle: '0x8f55C31C0951C04d471744Eeef6a0d5903588EFe',
   }
 };
 
@@ -41,7 +44,18 @@ export const contractAddress = {
   },
   get oracle() {
     return getItem('oracle');
+  },
+  get squidAllowList() {
+    return getItem('squidAllowList');
+  },
+  get squidTicket() {
+    return getItem('squidTicket');
+  },
+  get squidOpenBox() {
+    return getItem('squidOpenBox');
   }
+
+
 
 };
 
@@ -69,4 +83,11 @@ export async function busdContract() {
 
 export async function oracleContract() {
   return MockChainLink__factory.connect(contractAddress.oracle, await getSigner(0));
+}
+export async function squidAllowListContract(signerIndex = 0) {
+  return AddressList__factory.connect(contractAddress.squidAllowList, await getSigner(signerIndex));
+}
+
+export async function squidTicketContract(signerIndex = 0) {
+  return Ticket__factory.connect(contractAddress.squidTicket, await getSigner(signerIndex));
 }
