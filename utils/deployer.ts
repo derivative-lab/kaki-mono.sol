@@ -27,8 +27,8 @@ export async function deployMockChainLink() {
   return instance as MockChainLink;
 }
 
-export async function deployMockUsdt() {
-  const signer0 = await getSigner(0);
+export async function deployMockUsdt(signerIndex=0) {
+  const signer0 = await getSigner(signerIndex);
   const factory = new MockToken__factory(signer0);
   const instance = await deployments.deploy('MockToken', {
     from: signer0.address,
