@@ -1,11 +1,11 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./IBaseERC721.sol";
-interface IkakiTicket is IBaseERC721{
+
+interface ITicket {
 
     struct TicketPara {
-        bool _type;
-        uint256 _chip;
-        uint256 _prob;
+        bool isDrop;
+        uint256 invalidTime;
     }
 
     function mint(
@@ -15,6 +15,6 @@ interface IkakiTicket is IBaseERC721{
         ) 
         external 
         returns (uint256 tokenId);
-
+    
     function getTicketMessage(uint256 tokenId) external view returns (TicketPara memory);
 }
