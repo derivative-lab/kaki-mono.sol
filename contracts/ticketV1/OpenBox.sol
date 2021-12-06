@@ -27,6 +27,8 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
     uint256 public _foundationRate;
     address public _squidGameAdd;
     address public _kakiFoundation;
+    address public _squidCoinBase;
+    address public _squidGameFound;
     address constant BlackHole = 0x0000000000000000000000000000000000000000;
 
     function initialize(ITicket ercAdd, IERC20 busdAdd, IAddressList allowList) public initializer {
@@ -39,6 +41,8 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _foundationRate = 0;                                         
         _squidGameAdd = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;   // squid game contract address
         _kakiFoundation = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d; // kaki foundation address
+        _squidGameFound = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;//
+        _squidCoinBase = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;
     }
 
     modifier isAble() {
@@ -56,12 +60,13 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _;
     }
 
-    // function claim() public override isClaimOver {
-    //     require(_addressList.isInAddressList(msg.sender), "Not allow.");
-    //     require(_claimTimeLimit[msg.sender] != _claimLimit, "Claim too much.");
-    //     _ticket.mint(msg.sender, true, _invalidTime);
-    //     _claimTimeLimit[msg.sender]++;
-    // }
+    function claim() public override isClaimOver {
+        require(_addressList.isInAddressList(msg.sender), "Not allow.");
+        require(_claimTimeLimit[msg.sender] <= _claimLimit, "Claim too much.");
+        _ticket.mint(msg.sender, true, _invalidTime);
+        _busd.transferFrom(_squidCoinBase, _squidGameFound, _ticketPrice * BASE);
+        _claimTimeLimit[msg.sender]++;
+    }
 
     function buyTicket() public override isAble {
         require(_busd.balanceOf(msg.sender) >= _ticketPrice * BASE, "Do not have enough BUSD.");
