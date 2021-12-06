@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 import "../base/BaseERC721.sol";
 import "./interface/ITicket.sol";
 
-contract BlindBoxDrop is BaseERC721, ITicket {
+contract Ticket is BaseERC721, ITicket {
     mapping(uint256 => TicketPara) _ticketIsDrop;
 
     function initialize() public initializer {
