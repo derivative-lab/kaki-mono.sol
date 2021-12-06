@@ -8,16 +8,17 @@ import "hardhat/console.sol";
 import "./IKakiSquidGame.sol";
 import "./IAggregatorInterface.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {ITicket} from "../ticketV1/interface/ITicket.sol";
+
 
 contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeMath for uint256;
 
     IERC20 internal _token;
-    IERC721 internal _ticketNFT;
+    ITicket internal _ticketNFT;
     IAggregatorInterface _aggregator;
     uint256 _roundTime;
     uint256 _roundSum;
@@ -65,20 +66,19 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     /*
      * Contract constructor
      */
-    function initialize(address nftToken_, address aggregator_) public initializer {
+    function initialize(ITicket nftToken_, IAggregatorInterface aggregator_) public initializer {
         __Ownable_init();
         __ReentrancyGuard_init();
-        _aggregator = IAggregatorInterface(aggregator_);
+        _aggregator = aggregator_;
         //_token = IERC20(token_);
-        _ticketNFT=IERC721(nftToken_);
+        _ticketNFT=nftToken_;
 
         _nextGameTime = 1638442800; //2021-12-2 16:00:00
 
         _roundSum = 5;//5; //5round
         _gameInterval = 3600; //8hour = 28800 35min =2100  13min=780 60分钟3600
-        _roundTime = 300; //  5min = 300
-        _tradingTime = 180; //  3min = 180
-        //_ticketPrice = 10 * BASE;
+        _roundTime = 5* 60; //  5min = 300
+        _tradingTime = 3* 60; //  3min = 180
         _initChipNum = 16;
 
         kakiFoundationRate = 50; // 5%
@@ -104,7 +104,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
         emit BuyTicket(msg.sender, _ticketPrice);
     }*/
 
-    function startGame(uint256 nftId)  public  onlyNoneContract {
+    function startGame(uint256 nftId)  public override  onlyNoneContract {
         uint256 b=getUserBonus();
         if(b>0){
             _token.transfer(msg.sender, b);
