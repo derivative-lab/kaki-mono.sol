@@ -65,7 +65,7 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
 
     function buyTicket() public override isAble {
         require(_busd.balanceOf(msg.sender) >= _ticketPrice * BASE, "Do not have enough BUSD.");
-        _busd.transfer(address(this), _ticketPrice * BASE);
+        _busd.transfer(_squidGameAdd, _ticketPrice * BASE);
         _ticket.mint(msg.sender, false, 0);
     }
 
@@ -73,7 +73,7 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         require(num > 0, "Invalid num.");
         for(uint256 i; i < num; i++) {
             require(_busd.balanceOf(msg.sender) >= _ticketPrice * BASE, "Do not have enough BUSD.");
-            _busd.transfer(address(this), _ticketPrice * BASE);
+            _busd.transfer(_squidGameAdd, _ticketPrice * BASE);
             _ticket.mint(msg.sender, false, 0);
         }
     }
