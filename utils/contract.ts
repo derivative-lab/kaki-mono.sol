@@ -1,5 +1,5 @@
 import { deployments, ethers, network } from 'hardhat';
-import { KakiSquidGame, KakiSquidGame__factory, MockChainLink__factory, MockToken__factory } from '~/typechain';
+import { MockChainLink__factory, MockToken__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -23,8 +23,9 @@ export const mutiContractAddrs = {
     squidGame: '0xabff29148B4B185f3Bd1692A938e6530E9Bde9Fa',
     busd: '0x0266693f9df932ad7da8a9b44c2129ce8a87e81f',
     oracle: '0x048Cc75FF36d67aFCd25160AB5aa8Bde1FDa3F19',
+    blindBoxDrop: '0x26dEa25C01f43B2cf8Da3aCe68F0DD830a4399e5'
   },
-  bsc:{
+  bsc: {
     squidGame: '',
     busd: '',
     oracle: '',
@@ -60,9 +61,7 @@ export async function getSigner(index = 0) {
   return (await ethers.getSigners())[index];
 }
 
-export async function squidGameContract() {
-  return KakiSquidGame__factory.connect(contractAddress.squidGame, await getSigner(0));
-}
+
 
 export async function busdContract() {
   return MockToken__factory.connect(contractAddress.busd, await getSigner(0));
