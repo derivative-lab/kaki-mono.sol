@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../base/WithRandom.sol";
 import "../base/WithAdminRole.sol";
 import "../interfaces/IkakiTicket.sol";
 import "../interfaces/IBlindBox.sol";
 
-contract KakiBlindBox is WithAdminRole, IBlindBox {
+contract KakiBlindBox is WithAdminRole, IBlindBox, WithRandom {
 
     mapping(uint256 => Prob) _prob;
 
