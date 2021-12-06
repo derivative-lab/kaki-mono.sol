@@ -1,13 +1,13 @@
-import {ethers, upgrades, deployments} from 'hardhat';
+import { ethers, upgrades, deployments } from 'hardhat';
 import {
   MockChainLink,
   MockChainLink__factory,
   MockToken__factory,
   MockToken,
-  KakiSquidGame__factory,
-  KakiSquidGame,
+  BlindBoxDrop__factory,
+  BlindBoxDrop,
 } from '~/typechain';
-import {getSigner} from '~/utils/contract';
+import { getSigner } from '~/utils/contract';
 
 export async function deployMockChainLink() {
   const signer0 = await getSigner(0);
@@ -32,19 +32,27 @@ export async function deployMockUsdt() {
   return factory.attach(instance.address);
 }
 
-export async function deploySquidGame(usdt: MockToken, chainlink: MockChainLink) {
+export async function deployBlindBoxDrop() {
   const signer0 = await getSigner(0);
-  const factory = new KakiSquidGame__factory(signer0);
-  const instance = await upgrades.deployProxy(factory, [usdt.address, chainlink.address]);
-  console.log(`deploy squid game to: ${instance.address}`);
-  await instance.deployed();
-  return instance as KakiSquidGame;
+  const factory = new BlindBoxDrop__factory(signer0);
+  const instance = await upgrades.deployProxy(factory);
+  console.log(`BlindBoxDrop deployed to : ${instance.address}`)
+  return instance as BlindBoxDrop;
 }
+
+// export async function deploySquidGame(usdt: MockToken, chainlink: MockChainLink) {
+//   const signer0 = await getSigner(0);
+//   const factory = new KakiSquidGame__factory(signer0);
+//   const instance = await upgrades.deployProxy(factory, [usdt.address, chainlink.address]);
+//   console.log(`deploy squid game to: ${instance.address}`);
+//   await instance.deployed();
+//   return instance as KakiSquidGame;
+// }
 
 export async function deployAll() {
   const usdt = await deployMockUsdt();
   const chainlink = await deployMockChainLink();
-  const game = await deploySquidGame(usdt, chainlink);
+  // const game = await deploySquidGame(usdt, chainlink);
 
-  return {usdt, chainlink, game};
+  return { usdt, chainlink };
 }
