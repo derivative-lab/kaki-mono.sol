@@ -96,9 +96,9 @@ contract KakiBlindBox is WithAdminRole, IBlindBox, WithRandom {
         uint256 totalType = _prob[ticket[0]]._type + _prob[ticket[1]]._type + _prob[ticket[2]]._type;
 
         require(totalType == 3 && totalChip == 80, "Invalid NFT.");
-        require(_kakiTicket.ownerOf(ticket[0]) == msg.sender && 
-                _kakiTicket.ownerOf(ticket[1]) == msg.sender && 
-                _kakiTicket.ownerOf(ticket[2]) == msg.sender, 
+        require(_kakiTicket.ownerOf(ticket[0]) == msg.sender &&
+                _kakiTicket.ownerOf(ticket[1]) == msg.sender &&
+                _kakiTicket.ownerOf(ticket[2]) == msg.sender,
                 "Not NFT owner.");
         uint256 totalProb = _prob[ticket[0]]._probability + _prob[ticket[1]]._probability + _prob[ticket[2]]._probability;
         uint256 rand = getRandom(1, 100);
@@ -114,7 +114,7 @@ contract KakiBlindBox is WithAdminRole, IBlindBox, WithRandom {
             //_kakiTicket.transferFrom(msg.sender, blackHole, ticket[i]);
         }
     }
-    
+
     function getRandom(uint256, uint256) internal returns(uint256 rand) {
 
     }
@@ -128,7 +128,7 @@ contract KakiBlindBox is WithAdminRole, IBlindBox, WithRandom {
 
     //*********************************** read ********************************************** */
     function getTicketMessage(uint256 tokenId) public view override returns(Prob memory prob) {
-        return (_prob[tokenId]);
+        prob=_prob[tokenId];
     }
 
     //****************************** admin function ***************************************** */
