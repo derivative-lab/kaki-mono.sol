@@ -47,6 +47,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public _placeCallStatus;
     mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public _placePutStatus;
     mapping(uint256 => mapping(uint256 => uint256)) public _price;
+    mapping(uint256 => uint256) public _totalChips;
 
     struct User {
         mapping(uint256 => uint256) _initChip;
@@ -121,6 +122,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
 
         _users[msg.sender]._initChip[_chapter] = _initChipNum;
         _joinNum[_chapter]++;
+        _totalChips[_chapter]+=_initChipNum;
         _totalBonus[_chapter] = _totalBonus[_chapter] + price;
         emit BuyTicket(msg.sender, price);
     }
@@ -356,5 +358,9 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
         _chapter++;
         _nextGameTime = nextTime;
         //delete _lastRoundUsers;
+    }
+
+    function version() public pure returns (uint256) {
+        return 2;
     }
 }
