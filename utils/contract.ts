@@ -17,6 +17,7 @@ export const frontendUsedContracts = [
   "IERC20",
   "IBlindBox",
   "IBaseERC721",
+  "AddressList",
 ];
 
 export const mutiContractAddrs = {
