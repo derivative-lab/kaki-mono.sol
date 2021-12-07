@@ -10,7 +10,10 @@ export const frontendUsedContracts = [
   'package',
   //-------  Solidity files -----
 
-  "IKakiSquidGame"
+  "IKakiSquidGame",
+  "KakiSquidGame",
+  "IOpenBox",
+  "ITicket",
 ];
 
 export const mutiContractAddrs = {
