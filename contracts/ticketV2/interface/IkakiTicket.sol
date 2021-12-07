@@ -14,7 +14,7 @@ interface IkakiTicket is IBaseERC721 {
         uint256 _chip,
         uint256 _prob,
         uint256 _price,
-        uint256 _type
+        uint256 _ticketType
     ) external returns (uint256 tokenId) ;
 
     function getTicketMessage(uint256 tokenId) external view returns (TicketPara memory);
