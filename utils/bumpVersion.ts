@@ -2,7 +2,7 @@ import * as fs from 'fs/promises';
 
 export async function bumpVersion(fname: string) {
   let nextV = 0;
-  const fpath = `src/${fname}`;
+  const fpath = `contracts/${fname}`;
   const src = await fs.readFile(fpath, {encoding: 'utf8'});
 
   // https://regex101.com/r/veWlAS/1        /return\s+(\d+);/
