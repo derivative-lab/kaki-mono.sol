@@ -1,10 +1,10 @@
-import {getSigner} from '~/utils/contract';
+import { getSigner } from '~/utils/contract';
 import chalk from 'chalk';
-import {BaseContract, BigNumber, CallOverrides, ContractFactory, Overrides, Signer} from 'ethers';
-import {ethers, network, upgrades} from 'hardhat';
-import {bumpVersion} from './bumpVersion';
-import gitP, {SimpleGit} from 'simple-git/promise';
-import {TransactionRequest} from '@ethersproject/providers';
+import { BaseContract, BigNumber, CallOverrides, ContractFactory, Overrides, Signer } from 'ethers';
+import { ethers, network, upgrades } from 'hardhat';
+import { bumpVersion } from './bumpVersion';
+import gitP, { SimpleGit } from 'simple-git/promise';
+import { TransactionRequest } from '@ethersproject/providers';
 
 declare class MyContract extends BaseContract {
   version(overrides?: CallOverrides): Promise<BigNumber>;
@@ -12,13 +12,13 @@ declare class MyContract extends BaseContract {
 
 declare class MyContractFactory extends ContractFactory {
   constructor(signer?: Signer);
-  deploy(overrides?: Overrides & {from?: string | Promise<string>}): Promise<MyContract>;
-  getDeployTransaction(overrides?: Overrides & {from?: string | Promise<string>}): TransactionRequest;
+  deploy(overrides?: Overrides & { from?: string | Promise<string> }): Promise<MyContract>;
+  getDeployTransaction(overrides?: Overrides & { from?: string | Promise<string> }): TransactionRequest;
   attach(address: string): MyContract;
   connect(signer: Signer): MyContractFactory;
 }
 
-const manifestRepo = 'git@github.com:derivative-lab/kaki-Squid.openzeppelin.git';
+const manifestRepo = 'git@github.com:derivative-lab/kaki-mono.sol.openzeppelin.git';
 
 const origin = 'origin';
 export async function upgrade(fileName: string, address: string, factory: MyContractFactory | any, check = true) {
@@ -55,10 +55,16 @@ export async function upgrade(fileName: string, address: string, factory: MyCont
   }
   const signer0 = (await ethers.getSigners())[0];
   const contract = await ethers.getContractAt(fname, address);
-  const vb = (await contract.version()).toString();
+  let vb;
+  try {
+
+    vb = (await contract.version()).toString();
+  } catch (e) {
+    vb = ''
+  }
   console.log(`will upgrade ${chalk.green(branchName)}, current version: ${chalk.cyan(vb)} address: ${address}`);
   const instance = await upgrades.upgradeProxy(address, new factory(signer0));
-
+  console.log(`upgraded`)
   const version = await instance.version();
   const v = version.toString();
   console.log(`${chalk.green(fileName)} upgrade to ${chalk.green(v)} ${chalk.cyan(address)}`);
