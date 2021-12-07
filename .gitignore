@@ -9,3 +9,4 @@ typechain/
 .env
 typechain-tiny/
 .vscode
+deployments/
