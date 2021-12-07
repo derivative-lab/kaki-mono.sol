@@ -112,4 +112,8 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         require(newClaimLimit > 0, "Invalid limit number");
         _claimLimit = newClaimLimit;
     }
+
+    function version() public pure returns (uint256) {
+        return 2;
+    }
 }
