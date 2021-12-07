@@ -1,5 +1,5 @@
 import { deployments, ethers, network } from 'hardhat';
-import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -97,4 +97,8 @@ export async function squidAllowListContract(signerIndex = 0) {
 
 export async function squidTicketContract(signerIndex = 0) {
   return Ticket__factory.connect(contractAddress.squidTicket, await getSigner(signerIndex));
+}
+
+export async function squidOpenBoxContract(signerIndex = 0) {
+  return OpenBox__factory.connect(contractAddress.squidOpenBox, await getSigner(signerIndex));
 }
