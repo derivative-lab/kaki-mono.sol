@@ -122,8 +122,8 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         require(newSquidCoinBaseAdd != BlackHole, "Invalid  address");
         _squidCoinBase = newSquidCoinBaseAdd;
     }
-}
+
     function version() public pure returns (uint256) {
-        return 2;
+        return 3;
     }
 }
