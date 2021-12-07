@@ -105,9 +105,9 @@ jobs:
         run: |
           cat << EOF>./typechain/package.json
           {
-            "name": "@derivative-lab/kaki-squid",
+            "name": "@derivative-lab/kaki-mono.sol",
             "version": "${{ env.FULL_VERSION }}",
-            "description": "kaki-Squid",
+            "description": "kaki-mono",
             "main": "./lib/index.js",
             "module": "./lib.esm/index.js",
             "types": "./lib.esm/index.d.ts",
