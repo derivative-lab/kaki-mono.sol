@@ -92,7 +92,7 @@ export async function deployOpenBox(ticket: Ticket, busd: IERC20, allowList: Add
 export async function deployAddrssList() {
   const signer0 = await getSigner(0);
   const factory = new AddressList__factory(signer0);
-  const instance = await factory.deploy();
+  const instance = await upgrades.deployProxy(factory);
   console.log(`AddressList deployed to : ${instance.address}`);
   return instance as AddressList;
 }
