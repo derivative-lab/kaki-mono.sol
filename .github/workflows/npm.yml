@@ -105,7 +105,7 @@ jobs:
         run: |
           cat << EOF>./typechain/package.json
           {
-            "name": "@derivative-lab/kaki-mono",
+            "name": "@derivative-lab/kaki-mono.sol",
             "version": "${{ env.FULL_VERSION }}",
             "description": "kaki-mono",
             "main": "./lib/index.js",
