@@ -14,6 +14,9 @@ export const frontendUsedContracts = [
   "KakiSquidGame",
   "IOpenBox",
   "ITicket",
+  "IERC20",
+  "IBlindBox",
+  "IBaseERC721",
 ];
 
 export const mutiContractAddrs = {
