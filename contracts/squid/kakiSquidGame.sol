@@ -48,6 +48,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     mapping(uint256 => mapping(uint256 => mapping(address => uint256))) public _placePutStatus;
     mapping(uint256 => mapping(uint256 => uint256)) public _price;
     mapping(uint256 => uint256) public _totalChips;
+    address public _kakiPayWalletAddress;
 
     struct User {
         mapping(uint256 => uint256) _initChip;
@@ -64,7 +65,8 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     function initialize(
         ITicket nftToken_,
         IERC20 busdToken,
-        IAggregatorInterface aggregator_
+        IAggregatorInterface aggregator_,
+        address payWallet
     ) public initializer {
         __Ownable_init();
         __ReentrancyGuard_init();
@@ -82,6 +84,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
 
         kakiFoundationRate = 50; // 5%
         kakiFoundationAddress = 0x8F1EAa1F61bc1997B345665537DcdcE00867a4B2;
+        _kakiPayWalletAddress = payWallet;
     }
 
     /*
@@ -106,7 +109,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     function startGame(uint256 nftId) public override onlyNoneContract {
         uint256 b = updateLastCheckChapterAndGetUserBonus();
         if (b > 0) {
-            _token.transfer(msg.sender, b);
+            _token.transferFrom(_kakiPayWalletAddress, msg.sender, b);
             emit Claim(msg.sender, b);
         }
         require(_ticketNFT.ownerOf(nftId) == msg.sender, "not owner");
@@ -116,13 +119,13 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
         require(invalidTime == 0 || block.timestamp <= invalidTime, "expired");
         _ticketNFT.transferFrom(msg.sender, address(0xdead), nftId);
 
-        require(_users[msg.sender]._initChip[_chapter] > 0, "Had bought ticket.");
+        require(_users[msg.sender]._initChip[_chapter] == 0, "Had bought ticket.");
         uint256 time = getTimestamp();
         require(time < _nextGameTime, "The game is in the play status.");
 
         _users[msg.sender]._initChip[_chapter] = _initChipNum;
         _joinNum[_chapter]++;
-        _totalChips[_chapter]+=_initChipNum;
+        _totalChips[_chapter] += _initChipNum;
         _totalBonus[_chapter] = _totalBonus[_chapter] + price;
         emit BuyTicket(msg.sender, price);
     }
@@ -136,7 +139,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
         require(extraAmount > 0, "Invalid amount.");
         require(time < _nextGameTime, "The game is in the play status.");
         _totalBonus[_chapter] = _totalBonus[_chapter].add(extraAmount);
-        _token.transferFrom(msg.sender, address(this), extraAmount);
+        _token.transferFrom(msg.sender, _kakiPayWalletAddress, extraAmount);
     }
 
     /*
@@ -170,7 +173,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     function claim() public override onlyNoneContract {
         uint256 b = updateLastCheckChapterAndGetUserBonus();
         require(b > 0, "bonus must > 0.");
-        _token.transfer(msg.sender, b);
+        _token.transferFrom(_kakiPayWalletAddress, msg.sender, b);
         emit Claim(msg.sender, b);
     }
 
@@ -193,11 +196,11 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
             }
 
             if (_totalWinnerChip[_chapter] == 0) {
-                _token.transfer(kakiFoundationAddress, bonus);
+                _token.transferFrom(_kakiPayWalletAddress, kakiFoundationAddress, bonus);
             } else {
                 uint256 foundationBonus = bonus.mul(kakiFoundationRate).div(THOUSAND);
                 if (foundationBonus != 0) {
-                    _token.transfer(kakiFoundationAddress, foundationBonus);
+                    _token.transferFrom(_kakiPayWalletAddress, kakiFoundationAddress, foundationBonus);
                 }
             }
 
@@ -353,14 +356,22 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     function chapterInvalid(uint256 nextTime) public onlyOwner {
         uint256 bonus = _totalBonus[_chapter];
         if (bonus != 0) {
-            _token.transfer(kakiFoundationAddress, bonus);
+            _token.transferFrom(_kakiPayWalletAddress, kakiFoundationAddress, bonus);
         }
         _chapter++;
         _nextGameTime = nextTime;
         //delete _lastRoundUsers;
     }
 
+    function setAggregateContract(IAggregatorInterface aggregator) public onlyOwner {
+        _aggregator = aggregator;
+    }
+
+    function setKakiPayWallet(address wallet) public onlyOwner {
+        _kakiPayWalletAddress = wallet;
+    }
+
     function version() public pure returns (uint256) {
-        return 2;
+        return 3;
     }
 }
