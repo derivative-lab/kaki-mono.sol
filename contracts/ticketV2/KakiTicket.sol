@@ -15,13 +15,14 @@ contract KakiTicket is IkakiTicket, BaseERC721 {
         uint256 _chip,
         uint256 _prob,
         uint256 _price,
-        uint256 _type
+        uint256 _ticketType
     ) external override restricted returns (uint256 tokenId) {
         tokenId = totalMinted();
         _mint(_to, tokenId);
-        _ticketPara[tokenId]._type = _type;
-        _ticketPara[tokenId]._chip = _chip;
-        _ticketPara[tokenId]._prob = _prob;
+        _ticketPara[tokenId].ticketType = _ticketType;
+        _ticketPara[tokenId].chip = _chip;
+        _ticketPara[tokenId].price = _price;
+        _ticketPara[tokenId].prob = _prob;
         increaceTokenId();
     }
 
