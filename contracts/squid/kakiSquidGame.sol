@@ -114,6 +114,17 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
         return _users[owner]._initChip[chapterId];
     }
 
+    function getMyWinChip(uint256 chapter) public view returns (uint256) {
+        return getWinChipOfOwner(msg.sender, chapter);
+    }
+
+    function getWinChipOfOwner(address owner, uint256 chapter) public view returns (uint256) {
+        if (chapter >= _chapter) return 0;
+        if (_price[chapter][_roundSum - 1] < _price[chapter][_roundSum])
+            return _placeCallStatus[chapter][_roundSum - 1][owner];
+        else return _placePutStatus[chapter][_roundSum - 1][owner];
+    }
+
     function startGame(uint256 nftId) public override onlyNoneContract {
         uint256 b = updateLastCheckChapterAndGetUserBonus();
         if (b > 0) {
@@ -380,6 +391,6 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     }
 
     function version() public pure returns (uint256) {
-        return 4;
+        return 5;
     }
 }
