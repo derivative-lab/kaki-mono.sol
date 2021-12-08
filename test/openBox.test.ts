@@ -58,6 +58,16 @@ describe('open Box', async () => {
         expect(balanceOfUser).to.equal(1);
       }
     });
+
+    it('buyTicket11', async () => {
+      const { users, openBox, usdt, ticket, allowClaimTicket } = await setup();
+      await ticket.setupAdmin(openBox.address);
+      await usdt.transfer(users[0].address, parseEther('10000'));
+      await users[0].usdt.approve(openBox.address, parseEther(`1${'0'.repeat(20)}`));
+      await users[0].openBox.buyTicket(5);
+      let balanceOfUser = (await ticket.getUserTokenInfo(users[0].address));
+      console.log(balanceOfUser);
+    });
   })
   
   context("should failed", async() => {
