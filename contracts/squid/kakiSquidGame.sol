@@ -257,7 +257,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
         uint256 winChip;
         uint256 bonus;
         uint256 lastCheckChapter = _users[msg.sender]._lastCheckChapter;
-        if (lastCheckChapter != 0 && _totalWinnerChip[lastCheckChapter] > 0 && lastCheckChapter != _chapter) {
+        if ( _totalWinnerChip[lastCheckChapter] > 0 && lastCheckChapter != _chapter) {
             if (_price[lastCheckChapter][_lastRound - 1] < _price[lastCheckChapter][_lastRound])
                 winChip = _placeCallStatus[lastCheckChapter][_lastRound - 1][msg.sender];
             else winChip = _placePutStatus[lastCheckChapter][_lastRound - 1][msg.sender];
