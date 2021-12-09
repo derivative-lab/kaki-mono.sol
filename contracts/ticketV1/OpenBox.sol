@@ -60,6 +60,7 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _ticket.mint(msg.sender, true, _invalidTime, _ticketPrice, _ticketPrice);
         _busd.transferFrom(_squidCoinBase, _squidGameFound, _ticketPrice);
         _claimTimeLimit[msg.sender]++;
+        emit Claim(msg.sender);
     }
 
     function buyTicket(uint256 num) public override isAble {
@@ -69,6 +70,7 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         for(uint256 i; i < num; i++) {
             _ticket.mint(msg.sender, false, 0, _ticketPrice, _ticketPrice);
         }
+        emit BuyTicket(msg.sender, num);
     }
 
     //****************************** admin function ***************************************** */
