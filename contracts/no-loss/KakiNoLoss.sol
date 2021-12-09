@@ -103,7 +103,7 @@ contract KakiNoLoss  is OwnableUpgradeable,IKakiNoLoss{
         _kakiBNBToken=kakiBNBToken_;
         _kakiBUSDToken=kakiBUSDToken_;
         _tokenAssemble=[_bnbToken,_busdToken,_kakiBNBToken,_kakiBUSDToken];
-        _tokenFactor=[1,1,1,1];
+        _tokenFactor=[1,2,3,4];
    
         _nextFactionId=1;
         _chapterStartTime[0]=getTimestamp(); 
@@ -115,7 +115,7 @@ contract KakiNoLoss  is OwnableUpgradeable,IKakiNoLoss{
 
     function createFaction(uint256 nftId) public  {
         uint256 time = getTimestamp();
-        require(_chapterStartTime[_chapter]>time,"please wait new _chapter!");
+        require(_chapterStartTime[_chapter]<=time,"please wait new _chapter!");
 
         _kakiToken.transferFrom(msg.sender, address(this), _captionKAKI);
 
@@ -254,7 +254,7 @@ contract KakiNoLoss  is OwnableUpgradeable,IKakiNoLoss{
             initFactionChapterKC(factionId);
         else
             updateFactionWinnerAmount(factionId,_chapter);    
-        require(fa._chapterKC[_chapter] >= amount, "The number of KC used cannot be greater than the number of remaining KC.");
+        require(fa._chapterKC[_chapter-1] >= amount, "The number of KC used cannot be greater than the number of remaining KC.");
 
         if(_factionStatus[factionId]._fire[_chapter][_lastRound]._call==0 && _factionStatus[factionId]._fire[_chapter][_lastRound]._put==0)
             _factionStatus[factionId]._totalChapterKC[_chapter]=fa._chapterKC[_chapter];
@@ -267,7 +267,7 @@ contract KakiNoLoss  is OwnableUpgradeable,IKakiNoLoss{
             _poolState[_chapter][_lastRound]._put=_poolState[_chapter][_lastRound]._put+amount;
         }
         
-        _factionStatus[factionId]._chapterKC[_chapter] = fa._chapterKC[_chapter]-amount;
+        _factionStatus[factionId]._chapterKC[_chapter-1] = fa._chapterKC[_chapter-1]-amount;
 
         _factionStatus[factionId]._lastFireRound[_chapter]=_lastRound;
         emit Fire(msg.sender,_chapter, _lastRound, factionId, amount,  binary, _time);
@@ -383,7 +383,7 @@ contract KakiNoLoss  is OwnableUpgradeable,IKakiNoLoss{
 
     function calKc(uint256 v) internal returns(uint256){
         uint256 time = getTimestamp();
-        uint256 deltaTime=_chapterStartTime[_chapter]-time; 
+        uint256 deltaTime=_weekTime-(time-_chapterStartTime[_chapter]); 
         uint256 kc=v*deltaTime/_weekTime;        
         return kc;
     }
