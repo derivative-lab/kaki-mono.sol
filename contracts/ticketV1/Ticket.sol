@@ -35,7 +35,15 @@ contract Ticket is BaseERC721, ITicket {
         return (_ticketInfo[tokenId]);
     }
 
+    function getUserTokenInfo(address user) public view override returns (TicketPara[] memory ticketList) {
+        uint256[] memory tokenList  = tokensOfOwner(user);
+        ticketList = new TicketPara[](tokenList.length);
+        for(uint256 i; i < tokenList.length; i++) {
+            ticketList[i] = getTicketInfo(tokenList[i]);
+        }
+    }
+
     function version() public pure returns (uint256) {
-        return 1;
+        return 2;
     }
 }

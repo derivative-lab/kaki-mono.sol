@@ -1,5 +1,5 @@
 import { deployments, ethers, network } from 'hardhat';
-import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -29,9 +29,9 @@ export const mutiContractAddrs = {
   bsctest: {
     squidGame: '0x573efF8F0467187c178721813d880a145A6f5A52',
     busd: '0xE70b02A5Ae129F66687256b7a5e81cC871e347D7',
-    oracle: '0x048Cc75FF36d67aFCd25160AB5aa8Bde1FDa3F19',
+    oracle: '0x8137934cF53e9ca1B4e75919dacc0364693fa69A',
     blindBoxDrop: '0x26dEa25C01f43B2cf8Da3aCe68F0DD830a4399e5',
-    squidAllowList: '0x405497ceb2E20C9E8ec5875d669ad6381BBEE79E',
+    squidAllowList: '0xad6d691fdd595D747F30f5b0C4f05d7d1E59B9F6',
     squidTicket: '0x7dc99344aA0053BC2DC16aE111e83C1315409a07',
     squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
   },
@@ -101,4 +101,9 @@ export async function squidTicketContract(signerIndex = 0) {
 
 export async function squidOpenBoxContract(signerIndex = 0) {
   return OpenBox__factory.connect(contractAddress.squidOpenBox, await getSigner(signerIndex));
+}
+
+
+export async function squidGameContract(signerIndex = 0) {
+  return KakiSquidGame__factory.connect(contractAddress.squidGame, await getSigner(signerIndex));
 }
