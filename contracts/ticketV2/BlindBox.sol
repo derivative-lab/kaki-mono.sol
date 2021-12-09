@@ -6,7 +6,7 @@ import "../base/WithAdminRole.sol";
 import "./interface/IkakiTicket.sol";
 import "./interface/IBlindBox.sol";
 
-contract KakiBlindBox is WithAdminRole, IBlindBox, WithRandom {
+contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
 
     IERC20 _kaki;
     IkakiTicket _kakiTicket;
