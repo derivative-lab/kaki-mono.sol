@@ -15,6 +15,10 @@ import {
   OpenBox,
   OpenBox__factory,
   IERC20,
+  BlindBox,
+  BlindBox__factory,
+  KakiTicket,
+  KakiTicket__factory
 } from '~/typechain';
 
 import { getSigner } from '~/utils/contract';
@@ -66,10 +70,8 @@ export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink
 }
 
 export async function deployTicket() {
-
   const signer0 = await getSigner(0);
   const factory = new Ticket__factory(signer0)
-
   const instance = await upgrades.deployProxy(factory);
   console.log(`Ticket deployed to : ${instance.address}`)
   return instance as Ticket;
@@ -97,6 +99,22 @@ export async function deployAddrssList() {
   return instance as AddressList;
 }
 
+export async function deployBlindBox() {
+  const signer0 = await getSigner(0);
+  const factory = new BlindBox__factory(signer0);
+  const instance = await upgrades.deployProxy(factory);
+  console.log(`blindBox deployed to : ${instance.address}`);
+  return instance as BlindBox;
+}
+
+export async function deployKakiTicket() {
+  const signer0 = await getSigner(0);
+  const factory = new KakiTicket__factory(signer0);
+  const instance = await upgrades.deployProxy(factory);
+  console.log(`kakiTicket deployed to : ${instance.address}`);
+  return instance as KakiTicket;
+}
+
 export async function deployAll() {
   const usdt = await deployMockUsdt();
   const chainlink = await deployMockChainLink();
@@ -106,6 +124,12 @@ export async function deployAll() {
   const allowList = await deployAddrssList();
   const openBox = await deployOpenBox(ticket, usdt, allowList);
   const game = await deploySquidGame(ticket, usdt, chainlink,signer0.address);
+  const kakiTicket = await deployKakiTicket
+  const blindBox = await deployBlindBox()
+
+
+
+
 
   return { usdt, chainlink, game, openBox, ticket, allowClaimTicket: allowList };
 }
