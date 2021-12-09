@@ -4,8 +4,6 @@ import {
   MockChainLink__factory,
   MockToken__factory,
   MockToken,
-  KakiBlindBox__factory,
-  KakiBlindBox,
   KakiSquidGame,
   KakiSquidGame__factory,
   Ticket,
@@ -46,13 +44,13 @@ export async function deployMockUsdt(signerIndex=0) {
   return factory.attach(instance.address);
 }
 
-export async function deployBlindBoxDrop() {
-  const signer0 = await getSigner(0);
-  const factory = new KakiBlindBox__factory(signer0);
-  const instance = await upgrades.deployProxy(factory);
-  console.log(`BlindBoxDrop deployed to : ${instance.address}`)
-  return instance as KakiBlindBox;
-}
+// export async function deployBlindBoxDrop() {
+//   const signer0 = await getSigner(0);
+//   const factory = new BlindBox__factory(signer0);
+//   const instance = await upgrades.deployProxy(factory);
+//   console.log(`BlindBoxDrop deployed to : ${instance.address}`)
+//   return instance as BlindBox;
+// }
 
 export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink: MockChainLink, payWallet:string) {
   const signer0 = await getSigner(0);
@@ -99,14 +97,6 @@ export async function deployAddrssList() {
   return instance as AddressList;
 }
 
-export async function deployBlindBox() {
-  const signer0 = await getSigner(0);
-  const factory = new BlindBox__factory(signer0);
-  const instance = await upgrades.deployProxy(factory);
-  console.log(`blindBox deployed to : ${instance.address}`);
-  return instance as BlindBox;
-}
-
 export async function deployKakiTicket() {
   const signer0 = await getSigner(0);
   const factory = new KakiTicket__factory(signer0);
@@ -115,21 +105,29 @@ export async function deployKakiTicket() {
   return instance as KakiTicket;
 }
 
+export async function deployBlindBox(kakiTicket: KakiTicket, busd:IERC20) {
+  const signer0 = await getSigner(0);
+  const args: Parameters<BlindBox['initialize']> = [
+    kakiTicket.address,
+    busd.address
+  ];
+  const factory = new BlindBox__factory(signer0);
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`blindBox deployed to : ${instance.address}`);
+  return instance as BlindBox;
+}
+
 export async function deployAll() {
   const usdt = await deployMockUsdt();
   const chainlink = await deployMockChainLink();
   const ticket = await deployTicket();
+  const kakiTicket = await deployKakiTicket();
 
   const signer0 =await getSigner(0);
   const allowList = await deployAddrssList();
   const openBox = await deployOpenBox(ticket, usdt, allowList);
   const game = await deploySquidGame(ticket, usdt, chainlink,signer0.address);
-  const kakiTicket = await deployKakiTicket
-  const blindBox = await deployBlindBox()
+  const blindBox = await deployBlindBox(kakiTicket, usdt);
 
-
-
-
-
-  return { usdt, chainlink, game, openBox, ticket, allowClaimTicket: allowList };
+  return { usdt, chainlink, game, openBox, ticket, allowClaimTicket: allowList, blindBox, kakiTicket };
 }
