@@ -50,13 +50,14 @@ export async function deployBlindBoxDrop() {
   return instance as KakiBlindBox;
 }
 
-export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink: MockChainLink) {
+export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink: MockChainLink, payWallet:string) {
   const signer0 = await getSigner(0);
   const factory = new KakiSquidGame__factory(signer0);
   const args: Parameters<KakiSquidGame['initialize']> = [
     ticket.address,
     usdt.address,
-    chainlink.address
+    chainlink.address,
+    payWallet
   ];
   const instance = await upgrades.deployProxy(factory, args);
   console.log(`deploy squid game to: ${instance.address}`);
@@ -91,7 +92,7 @@ export async function deployOpenBox(ticket: Ticket, busd: IERC20, allowList: Add
 export async function deployAddrssList() {
   const signer0 = await getSigner(0);
   const factory = new AddressList__factory(signer0);
-  const instance = await factory.deploy();
+  const instance = await upgrades.deployProxy(factory);
   console.log(`AddressList deployed to : ${instance.address}`);
   return instance as AddressList;
 }
@@ -101,9 +102,10 @@ export async function deployAll() {
   const chainlink = await deployMockChainLink();
   const ticket = await deployTicket();
 
+  const signer0 =await getSigner(0);
   const allowList = await deployAddrssList();
   const openBox = await deployOpenBox(ticket, usdt, allowList);
-  const game = await deploySquidGame(ticket, usdt, chainlink);
+  const game = await deploySquidGame(ticket, usdt, chainlink,signer0.address);
 
   return { usdt, chainlink, game, openBox, ticket, allowClaimTicket: allowList };
 }

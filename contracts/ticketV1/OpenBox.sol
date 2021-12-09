@@ -36,7 +36,7 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _ticket = ercAdd;
         _busd = busdAdd;
         _addressList = allowList;
-        _ticketPrice = 100;
+        _ticketPrice = 10;
         _claimLimit = 1;
         _foundationRate = 0;
         _squidGameAdd = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;   // squid game contract address
@@ -63,18 +63,12 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _claimTimeLimit[msg.sender]++;
     }
 
-    function buyTicket() public override isAble {
-        require(_busd.balanceOf(msg.sender) >= _ticketPrice, "Do not have enough BUSD.");
-        _busd.transferFrom(msg.sender, _squidGameFound, _ticketPrice);
-        _ticket.mint(msg.sender, false, 0, 0, 0);
-    }
-
-    function buyTicketMul(uint256 num) public override isAble {
+    function buyTicket(uint256 num) public override isAble {
         require(num > 0, "Invalid num.");
+        require(_busd.balanceOf(msg.sender) >= _ticketPrice * num, "Do not have enough BUSD.");
         for(uint256 i; i < num; i++) {
-            require(_busd.balanceOf(msg.sender) >= _ticketPrice, "Do not have enough BUSD.");
             _busd.transferFrom(msg.sender, _squidGameFound, _ticketPrice);
-            _ticket.mint(msg.sender, false, 0, 0, 0);
+            _ticket.mint(msg.sender, false, 0, _ticketPrice, _ticketPrice);
         }
     }
 
@@ -124,6 +118,6 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 3;
+        return 5;
     }
 }
