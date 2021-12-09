@@ -10,6 +10,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
 
     IERC20 _kaki;
     IkakiTicket _kakiTicket;
+    //IkakiCaptain _kakiCaptain;
 
     string[] _uri;
     bool _able;
@@ -29,6 +30,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
         __WithAdminRole_init();
         _kaki = kTokenAdd;
         _kakiTicket = ercAdd;
+        //_kakiCaptain = ;
         _aPrice = 100 ether;
         _bPrice = 150 ether;
         _commonChip = 16;
@@ -56,7 +58,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
 
     function aBoxOpen() public override isAble {
         require(_kaki.balanceOf(msg.sender) >= _aPrice, "Do not have enough kaki token.");
-        _kaki.transfer(_squidGameAdd, _aPrice);
+        _kaki.transferFrom(msg.sender, _squidGameAdd, _aPrice);
         uint256 rand = random(0, 10);
         _kakiTicket.mint(msg.sender, _commonChip, rand + 5, _aPrice, 0);
         emit BuyABox(msg.sender);
@@ -64,7 +66,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
 
     function bBoxOpen() public override isAble {
         require(_kaki.balanceOf(msg.sender) >= _bPrice, "Do not have enough kaki token.");
-        _kaki.transfer(_squidGameAdd, _bPrice);
+        _kaki.transferFrom(msg.sender, _squidGameAdd, _bPrice);
         uint256 randTicket = random(1, 100);
         uint256 rand = random(0, 10);
 
@@ -78,26 +80,30 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
         }
     }
 
-    function combine(uint256[3] memory ticket, uint256 extraCap) public override isAble onlyNoneContract {
-        require(extraCap <= 15, "Invalid extra captain.");
-        require(_kakiTicket.ownerOf(ticket[0]) == msg.sender && 
-                _kakiTicket.ownerOf(ticket[1]) == msg.sender && 
-                _kakiTicket.ownerOf(ticket[2]) == msg.sender, 
-                "Not NFT owner.");
+    function combine(uint256[3] memory ticket, uint256[] memory extraCap) public override isAble onlyNoneContract {
+        require(extraCap.length <= 3, "Invalid number of captain.");
 
         uint256 totalChip;
         uint256 totalType;
         uint256 totalProb;
 
         for(uint256 i; i < ticket.length; i ++) {
+            require(_kakiTicket.ownerOf(ticket[i]) == msg.sender, "Not NFT owner.");
             totalChip += _kakiTicket.getTicketMessage(ticket[i]).chip;
             totalType += _kakiTicket.getTicketMessage(ticket[i]).ticketType;
             totalProb += _kakiTicket.getTicketMessage(ticket[i]).prob;
         }
 
+        uint256 extraProb;
+
+        // for(uint256 i; i < extraCap.length; i ++) {
+        //     require(_kakiCaptain.ownerOf(extraCap[i]) == msg.sender, "Not NFT owner.");
+        //     extraProb += _kakiCaptain.getTicketMessage(extraCap[i]).prob;
+        // }
+
         require(totalType == 3 && totalChip == 80, "Invalid NFT.");
         uint256 rand = random(1, 100);
-        totalProb = totalProb + extraCap;
+        totalProb = totalProb + extraProb;
 
         if (rand <= totalProb) {
             _kakiTicket.mint(msg.sender, _commonChip, 0, 0, 3);
