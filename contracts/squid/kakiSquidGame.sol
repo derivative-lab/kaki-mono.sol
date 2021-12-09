@@ -271,8 +271,9 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     }
 
     function updateLastCheckChapterAndGetUserBonus() internal returns (uint256) {
+        uint256 bonus=getUserBonus();
         _users[msg.sender]._lastCheckChapter = _chapter;
-        return getUserBonus();
+        return bonus;
     }
 
     function roundStatus() public view override returns (bool) {
