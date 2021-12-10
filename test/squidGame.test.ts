@@ -45,7 +45,8 @@ describe('Squid game', async () => {
     await chainlink.setLatestAnswer(100).then((tx) => tx.wait());
     await usdt.approve(game.address, parseEther('1000000'));
     await game.updateNextGameTime((Date.now() / 1000 + 1 * 3600).toFixed(0)) // one hour later start game
-
+    let balanceOfUser = (await usdt.balanceOf(users[0].address));
+    console.log('*************************balanceOfUser',balanceOfUser.toString());
     const nextGameTime = await game._nextGameTime();
     const chainNow = await game.getTimestamp();
     printEtherResult({ nextGameTime, chainNow }, 'nextGameTime');
@@ -59,8 +60,8 @@ describe('Squid game', async () => {
     // users[1].game.startGame()
     // await expect(game.buyTicket(), 'ticket buyed already').reverted;
 
-    expect(await game.getRoundChip(), 'init round chip must eq 16').eq(16)
-
+    //expect(await game.getRoundChip(), 'init round chip must eq 16').eq(16)
+    
     await expect(game.addLoot(), 'The chapter is not start').revertedWith('The chapter is not start');
 
     // change chain time to nextGameTime
@@ -69,9 +70,14 @@ describe('Squid game', async () => {
     await expect(game.addLoot(), 'addLoot').emit(game, 'AddLoot');
     await expect(game.addLoot(), 'duplicated addLoot').reverted;
     await expect(game.startGame(secondTicket), 'must buy before addLoot').reverted;
+    
+    let totalBonus=await game.getTotalBonus(0);
+    
+    console.log('*************************',totalBonus.toString());
+    
 
     // round 1
-    await expect(game.placeBet(1), 'round 1 placeBet').emit(game, 'PlaceBet');
+    await expect(game.placeBet(16), 'round 1 placeBet').emit(game, 'PlaceBet');
     // await expect(game.placeBet(1),'can not dulicate placebet').reverted;
 
     await expect(game.settle(), 'round 1 settle should reverted').reverted;
@@ -80,24 +86,30 @@ describe('Squid game', async () => {
     await network.provider.send("evm_increaseTime", [2 * 60])
     await expect(game.settle(), 'round 1 settle').emit(game, 'Settle');
 
-    console.log(chalk.cyan('round 1 success'))
+    let chip=await game.getRoundChip();
+    console.log('chip 1 **************',chip.toString());
     // round 2
-    await expect(game.placeBet(16)).reverted;
-    await expect(game.placeBet(1), 'round 2 placeBet').emit(game, 'PlaceBet');
+    await expect(game.placeBet(32)).reverted;
+    await expect(game.placeBet(8), 'round 2 placeBet').emit(game, 'PlaceBet');
     await network.provider.send("evm_increaseTime", [5 * 60])
     await expect(game.settle(), 'round 2 settle').emit(game, 'Settle');
 
     console.log(chalk.cyan('round 2 success'))
     // round 3
-    await expect(game.placeBet(1), 'round 3 place bet').emit(game, 'PlaceBet');
+    await expect(game.placeBet(4), 'round 3 place bet').emit(game, 'PlaceBet');
     await network.provider.send("evm_increaseTime", [5 * 60])
-    await expect(game.settle(), 'round 3 settle').emit(game, 'Settle');
+    await expect(game.settle(), 'round 3 settle').emit(game, 'Settle'); 
 
     console.log(chalk.cyan('round 3 success'))
     // rount 4
-    await expect(game.placeBet(1), 'round 4 placeBet').emit(game, 'PlaceBet');
+    await expect(game.placeBet(2), 'round 4 placeBet').emit(game, 'PlaceBet');
     await network.provider.send("evm_increaseTime", [5 * 60])
     await expect(game.settle(), 'round 4 settle').emit(game, 'Settle');
+
+    chip=await game.getRoundChip();
+    console.log('chip 4 **************',chip.toString());
+
+    
 
     console.log(chalk.cyan('round 4 success'))
     // rount 5
@@ -105,7 +117,23 @@ describe('Squid game', async () => {
     await network.provider.send("evm_increaseTime", [5 * 60])
     await expect(game.settle(), 'round 5 settle').emit(game, 'Settle');
 
-    console.log(chalk.cyan('round 5 success'))
+    console.log(chalk.cyan('round 5 success'));
+    chip=await game.getMyWinChip(0);
+    console.log('winChip  **************',chip.toString());
+    let totalChip=await game._totalWinnerChip(0);
+    console.log('totalChip  **************',totalChip.toString());
+    let chapter=await game._chapter();
+    console.log('chapter**************',chapter.toString()); 
+    
+    let bonus=await game.getUserBonus();
+    console.log('bonus**************',bonus.toString()); 
+    await game.claim();
+    balanceOfUser = (await usdt.balanceOf(users[0].address));
+    console.log('*************************balanceOfUser2',balanceOfUser.toString());
+
+    bonus=await game.getUserBonus();
+    console.log('bonus2**************',bonus.toString()); 
+    console.log('end**************'); 
     // rount 6
     await expect(game.placeBet(1), 'non round 6').reverted;
     // await network.provider.send("evm_increaseTime", [5 * 60])
