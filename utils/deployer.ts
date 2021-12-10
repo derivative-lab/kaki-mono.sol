@@ -6,8 +6,10 @@ import {
   MockToken,
   KakiBlindBox__factory,
   KakiBlindBox,
-  KakiSquidGame,
+  KakiSquidGame,  
   KakiSquidGame__factory,
+  KakiNoLoss,
+  KakiNoLoss__factory,
   Ticket,
   Ticket__factory,
   AddressList,
@@ -28,6 +30,21 @@ export async function deployMockChainLink() {
 }
 
 export async function deployMockUsdt(signerIndex=0) {
+  const signer0 = await getSigner(signerIndex);
+  const factory = new MockToken__factory(signer0);
+  const instance = await deployments.deploy('MockToken', {
+    from: signer0.address,
+    log: true,
+    autoMine: true,
+    args: ['USDT', 'USDT', 18, ethers.utils.parseEther(`1${'0'.repeat(10)}`)],
+  });
+  // factory.deploy('USDT', "USDT", 18, ethers.utils.parseEther(`1${'0'.repeat(10)}`));
+  console.log(`deploy mock usdt to: ${instance.address}`);
+  // await instance.deployed();
+  return factory.attach(instance.address);
+}
+
+export async function deployMockUsdt2(signerIndex=0) {
   const signer0 = await getSigner(signerIndex);
   const factory = new MockToken__factory(signer0);
   const instance = await deployments.deploy('MockToken', {
@@ -64,6 +81,22 @@ export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink
   await instance.deployed();
   return instance as KakiSquidGame;
 }
+export async function deployNoLoss(kaki: MockToken, bnbToken: MockToken,busdToken: MockToken, kakiBNBToken: MockToken,kakiBUSDToken: MockToken, chainlink: MockChainLink) {
+  const signer0 = await getSigner(0);
+  const factory = new KakiNoLoss__factory(signer0);
+  const args: Parameters<KakiNoLoss['initialize']> = [
+    kaki.address,
+    bnbToken.address,
+    busdToken.address,
+    kakiBNBToken.address,
+    kakiBUSDToken.address,    
+    chainlink.address
+  ];
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`deploy noloss to: ${instance.address}`);
+  await instance.deployed();
+  return instance as KakiNoLoss;
+}
 
 export async function deployTicket() {
 
@@ -99,6 +132,7 @@ export async function deployAddrssList() {
 
 export async function deployAll() {
   const usdt = await deployMockUsdt();
+  const usdt2 = await deployMockUsdt2();
   const chainlink = await deployMockChainLink();
   const ticket = await deployTicket();
 
@@ -106,6 +140,7 @@ export async function deployAll() {
   const allowList = await deployAddrssList();
   const openBox = await deployOpenBox(ticket, usdt, allowList);
   const game = await deploySquidGame(ticket, usdt, chainlink,signer0.address);
+  const noLoss = await deployNoLoss(usdt, usdt, usdt,usdt,usdt2,chainlink);
 
-  return { usdt, chainlink, game, openBox, ticket, allowClaimTicket: allowList };
+  return { usdt, usdt2,chainlink, game, openBox, ticket,noLoss, allowClaimTicket: allowList };
 }
