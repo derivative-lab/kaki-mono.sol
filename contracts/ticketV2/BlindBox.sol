@@ -46,11 +46,6 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
         _;
     }
 
-    modifier isSquidAdd() {
-        require(msg.sender == _squidGameAdd, "Invalid address.");
-        _;
-    }
-
     modifier onlyNoneContract() {
         require(msg.sender == tx.origin, "only non contract call");
         _;
