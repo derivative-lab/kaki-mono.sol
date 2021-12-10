@@ -1,10 +1,18 @@
-import { busdContract, oracleContract, squidTicketContract } from '~/utils/contract';
+import { busdContract, contractAddress, oracleContract, squidTicketContract } from '~/utils/contract';
 import { deploySquidGame } from '../../utils/deployer';
+import { KakiSquidGame ,KakiSquidGame__factory } from '~/typechain';
+import { deploy } from '~/utils/upgrader';
 
 
 (async () => {
-  const ticket = await squidTicketContract();
-  const busd = await busdContract();
-  const oracle = await oracleContract();
-  await deploySquidGame(ticket, busd, oracle);
+
+  const args: Parameters<KakiSquidGame["initialize"]> = [
+    contractAddress.squidTicket,
+    contractAddress.busd,
+    contractAddress.oracle,
+    '0x580377aA000B374785122a8cbe6033120461552d'
+  ]
+  console.log({ args })
+  // await deploySquidGame(ticket, busd, oracle);
+  await deploy(`squid/kakiSquidGame.sol`, args,KakiSquidGame__factory)
 })();

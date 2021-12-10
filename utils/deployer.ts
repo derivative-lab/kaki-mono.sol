@@ -109,11 +109,12 @@ export async function deployTicket() {
 }
 
 
-export async function deployOpenBox(ticket: Ticket, busd: IERC20, allowList: AddressList) {
+export async function deployOpenBox(ticket: Ticket, busd: IERC20, invalidTime:number, allowList: AddressList) {
   const signer0 = await getSigner(0);
   const args: Parameters<OpenBox['initialize']> = [
     ticket.address,
     busd.address,
+    invalidTime,
     allowList.address
   ];
   const factory = new OpenBox__factory(signer0)
@@ -138,7 +139,7 @@ export async function deployAll() {
 
   const signer0 =await getSigner(0);
   const allowList = await deployAddrssList();
-  const openBox = await deployOpenBox(ticket, usdt, allowList);
+  const openBox = await deployOpenBox(ticket, usdt, Math.ceil( Date.now() /1000 +  24 * 3600 ), allowList);
   const game = await deploySquidGame(ticket, usdt, chainlink,signer0.address);
   const noLoss = await deployNoLoss(usdt, usdt, usdt,usdt,usdt2,chainlink);
 
