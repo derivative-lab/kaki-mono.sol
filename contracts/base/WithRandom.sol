@@ -20,4 +20,8 @@ contract WithRandom is Initializable {
         uint256 seed = _randoms.getRandomSeed(msg.sender);
         _randomNumber = RandomUtil.randomSeededMinMax(min, max, seed);
     }
+
+    function currentDayth() public view returns (uint256) {
+        return block.timestamp / (24 * 3600);
+    }
 }
