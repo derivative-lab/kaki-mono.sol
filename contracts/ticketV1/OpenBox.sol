@@ -25,13 +25,12 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
     uint256 public _claimLimit;
     uint256 public _invalidTime;
     uint256 public _foundationRate;
-    address public _squidGameAdd;    //discard
     address public _kakiFoundation;
     address public _squidCoinBase;
     address public _squidGameFound;
     address constant BlackHole = 0x0000000000000000000000000000000000000000;
 
-    function initialize(ITicket ercAdd, IERC20 busdAdd, IAddressList allowList) public initializer {
+    function initialize(ITicket ercAdd, IERC20 busdAdd,uint256 invalidTime, IAddressList allowList) public initializer {
         __WithAdminRole_init();
         _ticket = ercAdd;
         _busd = busdAdd;
@@ -39,10 +38,10 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _ticketPrice = 10;
         _claimLimit = 1;
         _foundationRate = 0;
-        _squidGameAdd = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;   // squid game contract address
+        _invalidTime=invalidTime;
         _kakiFoundation = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d; // kaki foundation address
-        _squidGameFound = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;//
-        _squidCoinBase = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;
+        _squidGameFound = 0xF6ee79720964bE662D6653fa60b7D356D8a61e59;//
+        _squidCoinBase = 0x580377aA000B374785122a8cbe6033120461552d;
     }
 
     modifier isAble() {
@@ -118,6 +117,6 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 5;
+        return 6;
     }
 }

@@ -31,7 +31,6 @@ export async function upgrade(fileName: string, address: string, factory: MyCont
     factory = (<any>typechain)[`${fname}__factory`];
   }
 
-
   const repo = gitP('./.openzeppelin');
 
   const branchName = `${name}-${network.name}`;
@@ -90,6 +89,7 @@ export async function deploy(
   fileName: string,
   // factory: MyContractFactory | any,
   args: any[] = [],
+  factory: any = null,
   check = true
 ) {
   if (!(await checkHasVersionFunction(fileName))) {
@@ -107,7 +107,9 @@ export async function deploy(
   const pn = name.split("/");
   const contractName = pn[pn.length - 1];
 
-  const factory = (<any>typechain)[`${contractName}__factory`];
+  if (!factory) {
+    factory = (<any>typechain)[`${contractName}__factory`];
+  }
 
   const repo = gitP("./.openzeppelin");
   const branchName = `${name}-${network.name}`;
@@ -143,7 +145,7 @@ export async function deploy(
     }
   }
   console.log(`will deploy ${chalk.green(branchName)}`);
-
+  console.log(factory)
   const instance = await upgrades.deployProxy(
     new factory(await getSigner(0)),
     args

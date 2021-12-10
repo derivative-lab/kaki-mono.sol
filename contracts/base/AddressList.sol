@@ -78,6 +78,6 @@ contract AddressList is Initializable, IAddressList, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 1;
+        return 2;
     }
 }
