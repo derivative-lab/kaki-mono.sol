@@ -24,7 +24,9 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
     uint256 public _foundationRate;
     address public _squidGameAdd;
     address public _kakiFoundation;
-    address constant blackHole = 0x0000000000000000000000000000000000000000;
+    address public _squidCoinBase;
+    address public _squidGameFound;
+    address constant BlackHole = 0x0000000000000000000000000000000000000000;
 
     function initialize(IkakiTicket ercAdd, IERC20 kTokenAdd) public initializer {
         __WithAdminRole_init();
@@ -37,8 +39,9 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
         _rareChip = 32;
         _sTicketProb = 49;
         _foundationRate = 30; //3%
-        _squidGameAdd = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d; // squid game contract address
         _kakiFoundation = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d; // kaki foundation address
+        _squidGameFound = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;//
+        _squidCoinBase = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;
     }
 
     modifier isAble() {
@@ -53,7 +56,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
 
     function aBoxOpen() public override isAble {
         require(_kaki.balanceOf(msg.sender) >= _aPrice, "Do not have enough kaki token.");
-        _kaki.transferFrom(msg.sender, _squidGameAdd, _aPrice);
+        _kaki.transferFrom(msg.sender, _squidCoinBase, _aPrice);
         uint256 rand = random(0, 10);
         _kakiTicket.mint(msg.sender, _commonChip, rand + 5, _aPrice, 0);
         emit BuyABox(msg.sender);
@@ -61,7 +64,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
 
     function bBoxOpen() public override isAble {
         require(_kaki.balanceOf(msg.sender) >= _bPrice, "Do not have enough kaki token.");
-        _kaki.transferFrom(msg.sender, _squidGameAdd, _bPrice);
+        _kaki.transferFrom(msg.sender, _squidCoinBase, _bPrice);
         uint256 randTicket = random(1, 100);
         uint256 rand = random(0, 10);
 
@@ -105,7 +108,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
         }
         
         for (uint256 i; i < 3; i++){
-            _kakiTicket.transferFrom(msg.sender, blackHole, ticket[i]);
+            _kakiTicket.transferFrom(msg.sender, BlackHole, ticket[i]);
         }
     }
 
@@ -123,6 +126,16 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
 
     function setERC721(address ercAdd) public onlyOwner {
         _kakiTicket = IkakiTicket(ercAdd);
+    }
+
+    function setSquidFoundAdd(address newSquidFoundAdd) public onlyOwner {
+        require(newSquidFoundAdd != BlackHole, "Invalid  address");
+        _squidGameFound = newSquidFoundAdd;
+    }
+
+    function setSquidCoinBaseAdd(address newSquidCoinBaseAdd) public onlyOwner {
+        require(newSquidCoinBaseAdd != BlackHole, "Invalid  address");
+        _squidCoinBase = newSquidCoinBaseAdd;
     }
 
     function setSuperTCount() public onlyOwner {
