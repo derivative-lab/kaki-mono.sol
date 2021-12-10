@@ -42,6 +42,7 @@ export const mutiContractAddrs = {
     oracle: '0x8f55C31C0951C04d471744Eeef6a0d5903588EFe',
     squidTicket: '0xeC386352ab845a30BDCdb358D743F66487C6dF3f',
     squidAllowList: '0x43bd49e5ad1173874ca5eb714858ec2af08d6e87',
+    squidOpenBox: '0x67bab7f7dcde65738ef3db51e4148df1e5108354',
   }
 };
 
