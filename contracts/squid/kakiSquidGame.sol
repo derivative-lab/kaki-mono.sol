@@ -7,11 +7,10 @@ import "./IKakiSquidGame.sol";
 import "./IAggregatorInterface.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {ITicket} from "../ticketV1/interface/ITicket.sol";
-
-contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+import "../base/WithAdminRole.sol";
+contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradeable {
     using SafeMath for uint256;
 
     IERC20 internal _token;
@@ -68,7 +67,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
         IAggregatorInterface aggregator_,
         address payWallet
     ) public initializer {
-        __Ownable_init();
+        __WithAdminRole_init();
         __ReentrancyGuard_init();
         _aggregator = aggregator_;
         _token = busdToken;
