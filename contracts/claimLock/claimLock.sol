@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 import "./interface/IClaimLock.sol";
-import "./interface/Ikaki.sol";
+import "./interface/IKaki.sol";
 import "../base/WithRandom.sol";
 import "../base/WithAdminRole.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -86,7 +86,6 @@ contract ClaimLock is IClaimLock, WithAdminRole {
             bonus = _userLockedTradeRewards[account]._locked 
                             * (currentTime - _userLockedTradeRewards[account]._lastClaimTime) 
                             / _tradingPeriod;
-            
         } else {
             bonus = _userLockedTradeRewards[account]._locked;
         }
@@ -98,17 +97,18 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     //********************************  view **********************************/
     function getClaimableFarmReward(address account) public override view returns (uint256) {
         uint256 currentTime = block.timestamp;
+        uint256 unlockedAmount = _userFarmUnlockedAmount[account];
         LockedFarmReward[] memory user = _userLockedFarmRewards[account];
         if(user.length != 0) {
             for(uint256 i; i < user.length; i++) {
                 if(currentTime - user[i]._timestamp < _farmPeriod){
                     if(user[i]._claim) {
-                        _userFarmUnlockedAmount[account] += user[i]._locked * (currentTime - user[i]._timestamp) / _farmPeriod;
+                        unlockedAmount += user[i]._locked * (currentTime - user[i]._timestamp) / _farmPeriod;
                     }
                 }
             }
         }
-        return _userFarmUnlockedAmount[account];
+        return unlockedAmount;
     }
 
     function getTradingUnlockReward(address account) public override view returns (uint256) {

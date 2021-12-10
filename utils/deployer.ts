@@ -1,3 +1,4 @@
+import { IKaki } from './../typechain/IKaki.d';
 import { ethers, upgrades, deployments } from 'hardhat';
 import {
   MockChainLink,
@@ -16,7 +17,9 @@ import {
   BlindBox,
   BlindBox__factory,
   KakiTicket,
-  KakiTicket__factory
+  KakiTicket__factory,
+  ClaimLock,
+  ClaimLock__factory
 } from '~/typechain';
 
 import { getSigner } from '~/utils/contract';
@@ -116,6 +119,17 @@ export async function deployBlindBox(kakiTicket: KakiTicket, busd:IERC20) {
   console.log(`blindBox deployed to : ${instance.address}`);
   return instance as BlindBox;
 }
+
+// export async function deployClaimLock(farm: , trading: , kaki: IKaki, pool) {
+//   const signer0 = await getSigner(0);
+//   const args: Parameters<ClaimLock['initialize']> = [
+
+//   ];
+//   const factory = new ClaimLock__factory(signer0);
+//   const instance = await upgrades.deployProxy(factory, args);
+//   console.log(`blindBox deployed to : ${instance.address}`);
+//   return instance as ClaimLock;
+// }
 
 export async function deployAll() {
   const usdt = await deployMockUsdt();

@@ -20,7 +20,7 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
     bool _able;
     bool _claimAble;
     uint256 _count;
-    uint256 constant BASE = 10**18;
+    //uint256 constant BASE = 10**18;
     uint256 public _ticketPrice;
     uint256 public _claimLimit;
     uint256 public _invalidTime;
