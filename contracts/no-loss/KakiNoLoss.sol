@@ -161,9 +161,10 @@ contract KakiNoLoss  is OwnableUpgradeable,IKakiNoLoss{
             _factionStatus[factionId]._chapterKC[_chapter]=calKc(_captionKC)+calFactionAllKc(_factionStatus[factionId]._stakeAmount);            
             
             _factionStatus[factionId]._lastCheckChapter=_chapter;
-        }
-        
+        }        
     }
+
+
     function initAccountChapterKC(uint256 factionId) internal{
         if(_accountFactionStatus[msg.sender][factionId]._lastCheckChapter!=_chapter){
             uint256[] memory stakeAmount=_accountFactionStatus[msg.sender][factionId]._stakeAmount;
@@ -239,8 +240,10 @@ contract KakiNoLoss  is OwnableUpgradeable,IKakiNoLoss{
         }
     }
 
-    function getChapterKC(uint256 factionId) public returns(uint256) {
-        initFactionChapterKC(factionId);
+    function getChapterKC(uint256 factionId) public view returns(uint256) {
+        if(_factionStatus[factionId]._lastCheckChapter!=_chapter){
+            return calKc(_captionKC)+calFactionAllKc(_factionStatus[factionId]._stakeAmount);                        
+        }     
         return _factionStatus[factionId]._chapterKC[_chapter];
     }
 
@@ -381,14 +384,14 @@ contract KakiNoLoss  is OwnableUpgradeable,IKakiNoLoss{
 
 
 
-    function calKc(uint256 v) internal returns(uint256){
+    function calKc(uint256 v) internal view returns(uint256){
         uint256 time = getTimestamp();
         uint256 deltaTime=_weekTime-(time-_chapterStartTime[_chapter]); 
         uint256 kc=v*deltaTime/_weekTime;        
         return kc;
     }
 
-    function calFactionAllKc(uint256[] memory stakeAmount) internal returns(uint256){
+    function calFactionAllKc(uint256[] memory stakeAmount) internal view returns(uint256){
         uint256 kc;
         for(uint256 i; i < stakeAmount.length; i ++){
             kc=kc+calKc(stakeAmount[i]*_tokenFactor[i]);
