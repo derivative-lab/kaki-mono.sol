@@ -5,7 +5,8 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    env:
+      PROD_PRIVATEKEY: ${{ secrets.PROD_PRIVATEKEY }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
