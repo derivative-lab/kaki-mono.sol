@@ -33,23 +33,31 @@ export const mutiContractAddrs = {
   },
   bsctest: {
     squidGame: '0x573efF8F0467187c178721813d880a145A6f5A52',
+    squidShortGame: '0x94c9f5732c77b77f53a7E25C37f53D8731f054b6',
     busd: '0xE70b02A5Ae129F66687256b7a5e81cC871e347D7',
     oracle: '0x8137934cF53e9ca1B4e75919dacc0364693fa69A',
     blindBoxDrop: '0x26dEa25C01f43B2cf8Da3aCe68F0DD830a4399e5',
     squidAllowList: '0xad6d691fdd595D747F30f5b0C4f05d7d1E59B9F6',
     squidTicket: '0x7dc99344aA0053BC2DC16aE111e83C1315409a07',
     squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
+    facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
   },
   bsc: {
-    squidGame: '',
-    busd: '',
+    squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
+    busd: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
     oracle: '0x8f55C31C0951C04d471744Eeef6a0d5903588EFe',
+    squidTicket: '0xeC386352ab845a30BDCdb358D743F66487C6dF3f',
+    squidAllowList: '0x43bd49e5ad1173874ca5eb714858ec2af08d6e87',
+    squidOpenBox: '0x67bab7f7dcde65738ef3db51e4148df1e5108354',
   }
 };
 
 export const contractAddress = {
   get squidGame() {
     return getItem('squidGame');
+  },
+  get squidShortGame() {
+    return getItem('squidShortGame');
   },
   get busd() {
     return getItem('busd');
@@ -71,7 +79,14 @@ export const contractAddress = {
   },
   get blindBox() {
     return getItem('blindBox');
-  }
+  },
+  get facet() {
+    return getItem('facet');
+  },
+
+
+
+
 };
 
 function getItem(key: string) {

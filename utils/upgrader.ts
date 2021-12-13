@@ -2,9 +2,10 @@ import { getSigner } from '~/utils/contract';
 import chalk from 'chalk';
 import { BaseContract, BigNumber, CallOverrides, ContractFactory, Overrides, Signer } from 'ethers';
 import { ethers, network, upgrades } from 'hardhat';
-import { bumpVersion } from './bumpVersion';
+import { bumpVersion, checkHasVersionFunction } from './bumpVersion';
 import gitP, { SimpleGit } from 'simple-git/promise';
 import { TransactionRequest } from '@ethersproject/providers';
+import * as typechain from "~/typechain";
 
 declare class MyContract extends BaseContract {
   version(overrides?: CallOverrides): Promise<BigNumber>;
@@ -21,11 +22,14 @@ declare class MyContractFactory extends ContractFactory {
 const manifestRepo = 'git@github.com:derivative-lab/kaki-mono.sol.openzeppelin.git';
 
 const origin = 'origin';
-export async function upgrade(fileName: string, address: string, factory: MyContractFactory | any, check = true) {
+export async function upgrade(fileName: string, address: string, factory: MyContractFactory | any = null, check = true) {
   const name = fileName.split('.')[0];
 
   const narr = name.split('/');
   const fname = narr[narr.length - 1];
+  if (!factory) {
+    factory = (<any>typechain)[`${fname}__factory`];
+  }
 
   const repo = gitP('./.openzeppelin');
 
@@ -79,39 +83,79 @@ export async function upgrade(fileName: string, address: string, factory: MyCont
   console.log(`bump  version to ${chalk.cyan(nextv.toString())}`);
 }
 
-export async function deploy(fileName: string, factory: MyContractFactory | any, args = [], check = true) {
-  const name = fileName.split('.')[0];
-  const repo = gitP('./.openzeppelin');
+
+
+export async function deploy(
+  fileName: string,
+  // factory: MyContractFactory | any,
+  args: any[] = [],
+  factory: any = null,
+  check = true
+) {
+  if (!(await checkHasVersionFunction(fileName))) {
+    console.log(
+      chalk.green(`
+    function version() public pure returns (uint256) {
+        return 0;
+    }
+		`)
+    );
+    throw new Error(`add version function for ${fileName}`);
+  }
+  const name = fileName.split(".")[0];
+
+  const pn = name.split("/");
+  const contractName = pn[pn.length - 1];
+
+  if (!factory) {
+    factory = (<any>typechain)[`${contractName}__factory`];
+  }
+
+  const repo = gitP("./.openzeppelin");
   const branchName = `${name}-${network.name}`;
   const rst = await repo.init();
   // }
-  const r = await repo.remote(['-v']);
+  const r = await repo.remote(["-v"]);
   if (!(r && r.includes(origin))) {
     await repo.addRemote(origin, manifestRepo);
   }
   if (check) {
     if (await (await repo.status()).isClean()) {
       try {
-        await repo.fetch(origin, branchName);
-        const ck = await repo.checkout(branchName);
+        // await repo.fetch(origin, branchName);
+        await repo.pull(origin, branchName);
+        // const ck = await repo.checkout(branchName);
       } catch (e) {
-        console.log(`please prepare branch: ${chalk.cyan(branchName)} for manifest at ${chalk.green('.openzeppelin')}`);
-        throw e;
+        console.log(
+          `branch: ${chalk.cyan(branchName)} not exists ${chalk.green(
+            ".openzeppelin"
+          )}`
+        );
+        const baseBranch = `${network.name}-base`;
+        try {
+          await repo.checkoutBranch(branchName, baseBranch);
+          console.log(`checkout new branch ${chalk.green(branchName)}`);
+        } catch (e) {
+          console.log(`please prepare ${chalk.cyan(baseBranch)} branch`);
+          throw e;
+        }
       }
-      await repo.pull(origin, branchName);
     } else {
       throw new Error(`mainifest repo not clean > .openzeppelin, please check`);
     }
   }
   console.log(`will deploy ${chalk.green(branchName)}`);
-
-  const instance = await upgrades.deployProxy(new factory(await getSigner(0)), args);
+  console.log(factory)
+  const instance = await upgrades.deployProxy(
+    new factory(await getSigner(0)),
+    args
+  );
   console.log(`${name} deploy to ${instance.address}`);
   const nextv = await bumpVersion(fileName);
   console.log(`bump  version to ${chalk.cyan(nextv.toString())}`);
   if (check) {
-    await repo.add('.');
-    await repo.commit(`${name} - v${nextv}`);
+    await repo.add(".");
+    await repo.commit(`${name} - v${nextv - 1} ${instance.address}`);
     await repo.push(origin, branchName);
   }
 }

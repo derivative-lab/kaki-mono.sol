@@ -7,11 +7,10 @@ import "./IKakiSquidGame.sol";
 import "./IAggregatorInterface.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {ITicket} from "../ticketV1/interface/ITicket.sol";
-
-contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+import "../base/WithAdminRole.sol";
+contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradeable {
     using SafeMath for uint256;
 
     IERC20 internal _token;
@@ -68,7 +67,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
         IAggregatorInterface aggregator_,
         address payWallet
     ) public initializer {
-        __Ownable_init();
+        __WithAdminRole_init();
         __ReentrancyGuard_init();
         _aggregator = aggregator_;
         _token = busdToken;
@@ -257,7 +256,7 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
         uint256 winChip;
         uint256 bonus;
         uint256 lastCheckChapter = _users[msg.sender]._lastCheckChapter;
-        if (lastCheckChapter != 0 && _totalWinnerChip[lastCheckChapter] > 0 && lastCheckChapter != _chapter) {
+        if ( _totalWinnerChip[lastCheckChapter] > 0 && lastCheckChapter != _chapter) {
             if (_price[lastCheckChapter][_lastRound - 1] < _price[lastCheckChapter][_lastRound])
                 winChip = _placeCallStatus[lastCheckChapter][_lastRound - 1][msg.sender];
             else winChip = _placePutStatus[lastCheckChapter][_lastRound - 1][msg.sender];
@@ -271,8 +270,9 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     }
 
     function updateLastCheckChapterAndGetUserBonus() internal returns (uint256) {
+        uint256 bonus=getUserBonus();
         _users[msg.sender]._lastCheckChapter = _chapter;
-        return getUserBonus();
+        return bonus;
     }
 
     function roundStatus() public view override returns (bool) {
@@ -391,6 +391,6 @@ contract KakiSquidGame is IKakiSquidGame, OwnableUpgradeable, ReentrancyGuardUpg
     }
 
     function version() public pure returns (uint256) {
-        return 5;
+        return 6;
     }
 }
