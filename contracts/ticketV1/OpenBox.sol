@@ -116,6 +116,12 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _squidCoinBase = newSquidCoinBaseAdd;
     }
 
+    //***************************************** read   ***************************************** */  
+
+    function getClaimLimit(address account) public view override returns(uint256 claimLimit) {
+        return _claimTimeLimit[msg.sender];
+    }
+
     function version() public pure returns (uint256) {
         return 6;
     }
