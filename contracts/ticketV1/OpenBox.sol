@@ -65,8 +65,8 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
     function buyTicket(uint256 num) public override isAble {
         require(num > 0, "Invalid num.");
         require(_busd.balanceOf(msg.sender) >= _ticketPrice * num, "Do not have enough BUSD.");
+        _busd.transferFrom(msg.sender, _squidGameFound, _ticketPrice * num);
         for(uint256 i; i < num; i++) {
-            _busd.transferFrom(msg.sender, _squidGameFound, _ticketPrice);
             _ticket.mint(msg.sender, false, 0, _ticketPrice, _ticketPrice);
         }
     }
