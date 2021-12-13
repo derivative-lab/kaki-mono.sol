@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION: "0.1"
+      PROD_PRIVATEKEY: ${{ secrets.PROD_PRIVATEKEY }}
     steps:
       - name: check release
         if: |
