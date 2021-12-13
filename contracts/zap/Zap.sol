@@ -29,7 +29,7 @@ contract KakiZap is IZap, WithAdminRole {
             IPancakePair pair = IPancakePair(_to);
             address token0 = pair.token0();
             address token1 = pair.token1();
-            // kaki-busd|| kaki-bnb lp
+            // kaki/busd  => kaki-busd       wbnb/kaki => kaki-bnb
             if (_from == token0 || _from == token1) {
                 address other = _from == token0 ? token1 : token0;
                 _approveTokenIfNeeded(other);
@@ -39,7 +39,8 @@ contract KakiZap is IZap, WithAdminRole {
                 ROUTER.addLiquidity(_from, other, amount - halfAmount, halfAmount, 0, 0, msg.sender, block.timestamp);
             } else {
                 //bnb
-                uint bnbAmount = _from ==WBNB ? _swapBNBForLP(amount) : _swapTokenForBNB(_from, amount, address(this));
+                uint bnbAmount = _from == WBNB ? _safeSwapToBNB(amount) : _swapTokenForBNB(_from, amount, address(this));
+                _swapBNBToLp(_to, bnbAmount, msg.sender);
             }
 
         } else {
