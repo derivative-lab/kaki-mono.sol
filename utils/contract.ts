@@ -27,8 +27,8 @@ export const mutiContractAddrs = {
     squidGame: '0xC76255D7E26A3d634Bd2CD4Ac84374e36C9798a5',
   },
   bsctest: {
-    squidGame: '0x573efF8F0467187c178721813d880a145A6f5A52',
-    squidShortGame: '0x94c9f5732c77b77f53a7E25C37f53D8731f054b6',
+    squidGame: '0x94c9f5732c77b77f53a7E25C37f53D8731f054b6',
+    squidShortGame: '0x8b256bbA54B3f630fb172C5A3e4400DcbDbB469F',
     busd: '0xE70b02A5Ae129F66687256b7a5e81cC871e347D7',
     oracle: '0x8137934cF53e9ca1B4e75919dacc0364693fa69A',
     blindBoxDrop: '0x26dEa25C01f43B2cf8Da3aCe68F0DD830a4399e5',
