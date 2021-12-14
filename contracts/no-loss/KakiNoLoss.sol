@@ -379,7 +379,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 len = _accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex.length;
         for (uint256 i = len - 1; i >= 0; i--) {
             uint256 c = _accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex[i];
-            if (c >= chapter) return _accountFactionStatus[msg.sender][_nextFactionId]._accountKC[c];
+            if (c <= chapter) return _accountFactionStatus[msg.sender][_nextFactionId]._accountKC[c];
         }
         return 0;
     }
