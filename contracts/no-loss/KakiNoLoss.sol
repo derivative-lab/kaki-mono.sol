@@ -51,7 +51,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 _createTime;
         uint256 _lastCheckChapter;
         uint256[] _stakeAmount;
-        mapping(uint256 => uint256) _lastFireRound;
+        mapping(uint256 => uint256[]) _lastFireRound;
         mapping(uint256 => uint256) _chapterKC;
         mapping(uint256 => uint256) _totalChapterKC;
         mapping(uint256 => uint256) _factionWinnerKC;
@@ -168,20 +168,20 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             updateFactionWinnerAmount(factionId, _factionStatus[factionId]._lastCheckChapter);
             _factionStatus[factionId]._chapterKC[_chapter] =
                 _captionKC +
-                calFactionAllKcInWholeCycle(_factionStatus[factionId]._stakeAmount);
+                calAllKcInWholeCycle(_factionStatus[factionId]._stakeAmount);
 
             _factionStatus[factionId]._lastCheckChapter = _chapter;
         }
     }
 
     function initAccountChapterKC(uint256 factionId) internal {
-        if (_accountFactionStatus[msg.sender][factionId]._lastCheckChapter != _chapter) {
+        uint256 lastCheckChpater=_accountFactionStatus[msg.sender][factionId]._lastCheckChapter;
+        if (lastCheckChpater != _chapter) {
             uint256[] memory stakeAmount = _accountFactionStatus[msg.sender][factionId]._stakeAmount;
-            uint256 accountKC = calFactionAllKcInWholeCycle(stakeAmount);
-            if (_factionStatus[factionId]._captain == msg.sender) {
-                accountKC = accountKC + _captionKC;
-            }
+            uint256 accountKC = calAccountKCInWholeCycle(factionId);
             _accountFactionStatus[msg.sender][factionId]._lastCheckKC = accountKC;
+            if(_chapter>lastCheckChpater+1)
+                _accountFactionStatus[msg.sender][factionId]._accountKC[lastCheckChpater+1] = accountKC;
             _accountFactionStatus[msg.sender][factionId]._accountKC[_chapter] = accountKC;
             _accountFactionStatus[msg.sender][factionId]._lastCheckChapter = _chapter;
         }
@@ -230,7 +230,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (_accountFactionStatus[msg.sender][factionId]._lastCheckChapter != _chapter) {
             _factionStatus[factionId]._chapterKC[_chapter] =
                 _captionKC +
-                calFactionAllKcInWholeCycle(_factionStatus[factionId]._stakeAmount);
+                calAllKcInWholeCycle(_factionStatus[factionId]._stakeAmount);
         } else {
             _factionStatus[factionId]._chapterKC[_chapter] -= _accountFactionStatus[msg.sender][factionId]._lastCheckKC;
         }
@@ -263,6 +263,10 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         return _factionStatus[factionId]._chapterKC[_chapter];
     }
 
+    function isRoundFire(uint256 factionId,uint256 chapter,uint256 round) public view returns (bool) {
+        return _factionStatus[factionId]._fire[chapter][round]._call == 0 &&
+            _factionStatus[factionId]._fire[chapter][round]._put == 0;
+    }
     function fire(
         uint256 factionId,
         uint256 amount,
@@ -270,8 +274,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     ) public {
         uint256 _time = getTimestamp();
         Faction storage fa = _factionStatus[factionId];
-        bool isRoundFirstFire = _factionStatus[factionId]._fire[_chapter][_lastRound]._call == 0 &&
-            _factionStatus[factionId]._fire[_chapter][_lastRound]._put == 0;
+        bool hasRoundFire = isRoundFire(factionId,_chapter,_lastRound);
 
         require(amount > 0, "The amount cannot be 0.");
         require(_chapterStartTime[_chapter] + _dayTime >= _time, "The trading day has ended.");
@@ -279,14 +282,14 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (fa._lastCheckChapter != _chapter) {
             initFactionChapterKC(factionId);
         } else {
-            if (isRoundFirstFire) updateFactionWinnerAmount(factionId, _chapter);
+            if (hasRoundFire) updateFactionWinnerAmount(factionId, _chapter);
         }
         require(
             fa._chapterKC[_chapter - 1] >= amount,
             "The number of KC used cannot be greater than the number of remaining KC."
         );
 
-        if (_factionStatus[factionId]._lastFireRound[_chapter] == 0)
+        if (_factionStatus[factionId]._lastFireRound[_chapter].length == 0)
             _factionStatus[factionId]._totalChapterKC[_chapter] = fa._chapterKC[_chapter];
 
         if (binary) {
@@ -299,7 +302,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         _factionStatus[factionId]._chapterKC[_chapter - 1] = fa._chapterKC[_chapter - 1] - amount;
 
-        _factionStatus[factionId]._lastFireRound[_chapter] = _lastRound;
+        uint256 fireLen=_factionStatus[factionId]._lastFireRound[_chapter].length;
+        if(_factionStatus[factionId]._lastFireRound[_chapter][fireLen-1]!=_lastRound)
+            _factionStatus[factionId]._lastFireRound[_chapter].push( _lastRound);
         emit Fire(msg.sender, _chapter, _lastRound, factionId, amount, binary, _time);
     }
 
@@ -346,37 +351,41 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _roundStartTime[_chapter][_lastRound] = time;
     }
 
-    function updateFactionWinnerAmount(uint256 factionId, uint256 factionChapter) internal {
-        uint256 winner;
+    function getRoundWinnerKc(uint256 factionId,uint256 chapter,uint256 round) internal returns (uint256) {
         if (
-            factionChapter != _chapter ||
-            (factionChapter == _chapter && _factionStatus[factionId]._lastFireRound[factionChapter] < _lastRound - 1)
-        ) {
-            uint256 lastFireRound = _factionStatus[factionId]._lastFireRound[factionChapter];
-            if (
-                _poolState[factionChapter][lastFireRound]._answer <
-                _poolState[factionChapter][lastFireRound + 1]._answer
-            ) winner = winner + _factionStatus[factionId]._fire[factionChapter][lastFireRound]._call;
-            if (
-                _poolState[factionChapter][lastFireRound]._answer >
-                _poolState[factionChapter][lastFireRound + 1]._answer
-            ) winner = winner + _factionStatus[factionId]._fire[factionChapter][lastFireRound]._put;
-            if (factionChapter != _chapter && lastFireRound > 0) {
-                if (
-                    _poolState[factionChapter][lastFireRound - 1]._answer <
-                    _poolState[factionChapter][lastFireRound]._answer
-                ) winner = winner + _factionStatus[factionId]._fire[factionChapter][lastFireRound - 1]._call;
-                if (
-                    _poolState[factionChapter][lastFireRound - 1]._answer >
-                    _poolState[factionChapter][lastFireRound]._answer
-                ) winner = winner + _factionStatus[factionId]._fire[factionChapter][lastFireRound - 1]._put;
+            _poolState[chapter][round]._answer <
+            _poolState[chapter][round + 1]._answer
+        ) return  _factionStatus[factionId]._fire[chapter][round]._call;
+        if (
+            _poolState[chapter][round]._answer >
+            _poolState[chapter][round + 1]._answer
+        ) return _factionStatus[factionId]._fire[chapter][round]._put;
+        return 0;
+    }
+
+    function updateFactionWinnerAmount(uint256 factionId, uint256 factionChapter) internal {
+        uint256 fireLen= _factionStatus[factionId]._lastFireRound[factionChapter].length; 
+        uint256 winner;
+        if(factionChapter == _chapter){
+            winner+=getRoundWinnerKc(factionId,factionChapter,_lastRound - 2);
+            if(_factionStatus[factionId]._lastFireRound[factionChapter][fireLen-1] < _lastRound - 1
+                && isRoundFire(factionId,factionChapter,_lastRound-3))
+            {
+                winner+=getRoundWinnerKc(factionId,factionChapter,_lastRound - 3);
             }
-            _factionStatus[factionId]._factionWinnerKC[factionChapter] += winner;
+        }else{
+            winner+=getRoundWinnerKc(factionId,factionChapter,_lastRound);
+            if(isRoundFire(factionId,factionChapter,_lastRound-1))
+                winner+=getRoundWinnerKc(factionId,factionChapter,_lastRound-1);
         }
+        _factionStatus[factionId]._factionWinnerKC[factionChapter] += winner;
     }
 
     function getAccountKC(uint256 factionId, uint256 chapter) internal returns (uint256) {
         uint256 len = _accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex.length;
+        if(chapter>_accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex[len-1]){
+            return calAccountKCInWholeCycle(factionId);
+        }
         for (uint256 i = len - 1; i >= 0; i--) {
             uint256 c = _accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex[i];
             if (c <= chapter) return _accountFactionStatus[msg.sender][_nextFactionId]._accountKC[c];
@@ -425,7 +434,15 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         return kc;
     }
 
-    function calFactionAllKcInWholeCycle(uint256[] memory stakeAmount) internal view returns (uint256) {
+    function calAccountKCInWholeCycle(uint256 factionId)internal view returns (uint256) {
+        uint256 accountKC = calAllKcInWholeCycle(_factionStatus[factionId]._stakeAmount);
+        if (_factionStatus[factionId]._captain == msg.sender) {
+            accountKC = accountKC + _captionKC;
+        }
+        return accountKC;
+    }
+
+    function calAllKcInWholeCycle(uint256[] memory stakeAmount) internal view returns (uint256) {
         uint256 kc;
         uint256 len = stakeAmount.length;
         for (uint256 i; i < len; i++) {
