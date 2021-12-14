@@ -92,11 +92,11 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     ) public initializer {
         __WithAdminRole_init();
 
-        _weekTime = 604800; // oneweek = 40320 15min = 60 1day1h = 6000 30min = 120 15s/block 1week = 604800 30min = 1800
-        _dayTime = 86400; // oneday = 5760 10min = 40 25min = 100 15s/block 1day = 86400 25min = 1500
-        _roundTime = 300; // 2min = 8 5min = 20 15s/Block 5min = 300
-        _tradingTime = 180; // 1.5min = 6 3min = 12 15s/Block 3min = 180
-        _captionKAKI = 2020 * _KTOKENDECIMALS;
+        _weekTime = 1 weeks; // oneweek = 40320 15min = 60 1day1h = 6000 30min = 120 15s/block 1week = 604800 30min = 1800
+        _dayTime = 1 days; // oneday = 5760 10min = 40 25min = 100 15s/block 1day = 86400 25min = 1500
+        _roundTime = 5 minutes; // 2min = 8 5min = 20 15s/Block 5min = 300
+        _tradingTime = 3 minutes; // 1.5min = 6 3min = 12 15s/Block 3min = 180
+        _captionKAKI = 2020 ether;
         _captionKC = 100;
 
         _aggregator = aggregator_;
