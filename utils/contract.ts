@@ -20,6 +20,13 @@ export const frontendUsedContracts = [
   "AddressList",
 ];
 
+export const webToolsContractNames = [
+  'KakiSquidGame',
+  'OpenBox',
+  'Ticket',
+  'AddressList',
+]
+
 export const mutiContractAddrs = {
   testnet: {
     busd: '0x0266693F9Df932aD7dA8a9b44C2129Ce8a87E81f',
