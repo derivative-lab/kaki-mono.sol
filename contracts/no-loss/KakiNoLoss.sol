@@ -427,16 +427,18 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function calFactionAllKcInWholeCycle(uint256[] memory stakeAmount) internal view returns (uint256) {
         uint256 kc;
-        for (uint256 i; i < stakeAmount.length; i++) {
-            kc = kc + stakeAmount[i] * _tokenFactor[i];
+        uint256 len = stakeAmount.length;
+        for (uint256 i; i < len; i++) {
+            kc += stakeAmount[i] * _tokenFactor[i];
         }
         return kc;
     }
 
     function calFactionAllKc(uint256[] memory stakeAmount) internal view returns (uint256) {
         uint256 kc;
-        for (uint256 i; i < stakeAmount.length; i++) {
-            kc = kc + calKc(stakeAmount[i] * _tokenFactor[i]);
+        uint256 len =  stakeAmount.length;
+        for (uint256 i; i <len; i++) {
+            kc += calKc(stakeAmount[i] * _tokenFactor[i]);
         }
         return kc;
     }
