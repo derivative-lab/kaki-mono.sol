@@ -361,7 +361,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 _poolState[factionChapter][lastFireRound]._answer >
                 _poolState[factionChapter][lastFireRound + 1]._answer
             ) winner = winner + _factionStatus[factionId]._fire[factionChapter][lastFireRound]._put;
-            if (lastFireRound > 0) {
+            if (factionChapter != _chapter && lastFireRound > 0) {
                 if (
                     _poolState[factionChapter][lastFireRound - 1]._answer <
                     _poolState[factionChapter][lastFireRound]._answer
