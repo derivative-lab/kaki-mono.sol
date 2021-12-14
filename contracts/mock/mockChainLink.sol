@@ -15,7 +15,7 @@ contract MockChainLink is Ownable {
     }
 
     function latestAnswer() public view returns (uint256) {
-        if (_lastAnswer == 0) {
+        if (_lastAnswer != 0) {
             return _lastAnswer;
         } else {
             uint256 randomNumber = uint256(keccak256(abi.encodePacked(block.timestamp, block.timestamp))) % 100;
