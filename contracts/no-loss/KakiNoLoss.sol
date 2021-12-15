@@ -381,7 +381,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _factionStatus[factionId]._factionWinnerKC[factionChapter] += winner;
     }
 
-    function getAccountKC(uint256 factionId, uint256 chapter) internal returns (uint256) {
+    function getAccountKC(uint256 factionId, uint256 chapter) view internal returns (uint256) {
         uint256 len = _accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex.length;
         if(chapter>_accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex[len-1]){
             return calAccountKCInWholeCycle(factionId);
