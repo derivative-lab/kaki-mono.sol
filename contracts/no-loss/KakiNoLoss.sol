@@ -382,7 +382,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _roundStartTime[_chapter][_lastRound] = time;
     }
 
-    function getRoundWinnerKc(uint256 factionId,uint256 chapter,uint256 round) internal returns (uint256) {
+    function getRoundWinnerKc(uint256 factionId,uint256 chapter,uint256 round) view internal returns (uint256) {
         if (
             _poolState[chapter][round]._answer <
             _poolState[chapter][round + 1]._answer
