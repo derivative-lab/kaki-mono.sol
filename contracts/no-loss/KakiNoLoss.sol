@@ -130,9 +130,10 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _factionStatus[_nextFactionId]._chapterKC[_chapter] = captionKc;
         _factionStatus[_nextFactionId]._createTime = time;
 
+        
+        initAccountChapterKcInner(_nextFactionId,_chapter,captionKc);
         _accountFactionStatus[msg.sender][_nextFactionId]._lastCheckChapter = _chapter;
-        _accountFactionStatus[msg.sender][_nextFactionId]._accountKC[_chapter] = captionKc;
-        _accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex.push(_chapter);
+
         if (_accountFactionInfo[msg.sender]._bonusChapter == 0)
             _accountFactionInfo[msg.sender]._bonusChapter = _chapter;
         _accountFactionInfo[msg.sender]._factionArr.push(_nextFactionId);
@@ -199,21 +200,27 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _factionStatus[factionId]._index[chapter] = _factionStatus[factionId]._totalIndex;
     }
 
+    /**
+        更新lastCheckChpater后面chapter的_accountKC ,通过index计算bonus时使用           
+    */
+    function initAccountChapterKcInner(uint256 factionId,uint256 chapter,uint256 kc)internal {
+        _accountFactionStatus[msg.sender][factionId]._accountKC[chapter] = kc;
+        _accountFactionStatus[msg.sender][factionId]._accountKCIndex.push(chapter);
+        
+    }
+
     function initAccountChapterKC(uint256 factionId) internal {
         uint256 lastCheckChpater=_accountFactionStatus[msg.sender][factionId]._lastCheckChapter;
-        if (lastCheckChpater != _chapter) {
+        if (lastCheckChpater!=0 && lastCheckChpater != _chapter) {
             uint256[] memory stakeAmount = _accountFactionStatus[msg.sender][factionId]._stakeAmount;
             uint256 accountKC = calAccountKCInWholeCycle(factionId);
-            _accountFactionStatus[msg.sender][factionId]._lastCheckKC = accountKC;
-            /**
-            更新lastCheckChpater后面chapter的_accountKC            
-             */
-            if(_chapter>lastCheckChpater+1){
-                _accountFactionStatus[msg.sender][factionId]._accountKC[lastCheckChpater+1] = accountKC;
-                _accountFactionStatus[msg.sender][factionId]._accountKCIndex.push(lastCheckChpater+1);
-            }
+            _accountFactionStatus[msg.sender][factionId]._lastCheckKC = accountKC;            
             _accountFactionStatus[msg.sender][factionId]._accountKC[_chapter] = accountKC;
             _accountFactionStatus[msg.sender][factionId]._lastCheckChapter = _chapter;
+            /** 计算lastCheckChpater 后面chapter的kc值 */
+            if(_chapter>lastCheckChpater+1){
+                initAccountChapterKcInner(factionId,lastCheckChpater+1,accountKC);
+            }
         }
     }
 
@@ -230,8 +237,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _factionStatus[factionId]._stakeAmount[id] += amount;
 
         _accountFactionStatus[msg.sender][factionId]._lastCheckKC += addKc;
-        _accountFactionStatus[msg.sender][factionId]._accountKC[_chapter] += addKc;
-        _accountFactionStatus[msg.sender][factionId]._accountKCIndex.push(_chapter);
+        initAccountChapterKcInner(factionId,_chapter,_accountFactionStatus[msg.sender][factionId]._accountKC[_chapter]+addKc);
+
         _accountFactionStatus[msg.sender][factionId]._stakeAmount[id] += amount;
     }
 
@@ -304,24 +311,24 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         bool binary
     ) public {
         uint256 _time = getTimestamp();
-        Faction storage fa = _factionStatus[factionId];
+        uint256 lastCheckChpater=_factionStatus[factionId]._lastCheckChapter;
         bool hasRoundFire = isRoundFire(factionId,_chapter,_lastRound);
 
         require(amount > 0, "The amount cannot be 0.");
         require(_chapterStartTime[_chapter] + _dayTime >= _time, "The trading day has ended.");
-        require(fa._captain == msg.sender, "The function caller must be the captain.");
-        if (fa._lastCheckChapter != _chapter) {
+        require(_factionStatus[factionId]._captain == msg.sender, "The function caller must be the captain.");
+        if (_factionStatus[factionId]._lastCheckChapter != _chapter) {
             initFactionChapterKC(factionId);
+            if(_chapter>lastCheckChpater+1)
+                _factionStatus[factionId]._chapterKC[_chapter-1] = _factionStatus[factionId]._chapterKC[_chapter];
+            _factionStatus[factionId]._totalChapterKC[_chapter-1] = _factionStatus[factionId]._chapterKC[_chapter-1];
         } else {
             if (!hasRoundFire) updateFactionWinnerAmount(factionId, _chapter);
         }
         require(
-            fa._chapterKC[_chapter - 1] >= amount,
+            _factionStatus[factionId]._chapterKC[_chapter-1] >= amount,
             "The number of KC used cannot be greater than the number of remaining KC."
         );
-
-        if (_factionStatus[factionId]._lastFireRound[_chapter].length == 0)
-            _factionStatus[factionId]._totalChapterKC[_chapter] = fa._chapterKC[_chapter];
 
         if (binary) {
             _factionStatus[factionId]._fire[_chapter][_lastRound]._call += amount;
@@ -331,10 +338,10 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             _poolState[_chapter][_lastRound]._put += amount;
         }
 
-        _factionStatus[factionId]._chapterKC[_chapter - 1] = fa._chapterKC[_chapter - 1] - amount;
+        _factionStatus[factionId]._chapterKC[_chapter - 1] = _factionStatus[factionId]._chapterKC[_chapter - 1] - amount;
 
-        uint256 fireLen=_factionStatus[factionId]._lastFireRound[_chapter].length;
-        if(_factionStatus[factionId]._lastFireRound[_chapter][fireLen-1]!=_lastRound)
+        uint256 len=_factionStatus[factionId]._lastFireRound[_chapter].length;
+        if(_factionStatus[factionId]._lastFireRound[_chapter][len-1]!=_lastRound)
             _factionStatus[factionId]._lastFireRound[_chapter].push( _lastRound);
         emit Fire(msg.sender, _chapter, _lastRound, factionId, amount, binary, _time);
     }
@@ -343,7 +350,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 _time = getTimestamp();
         require(_chapterStartTime[_chapter] + _weekTime <= _time, "The _chapter is not over.");
 
-        _lastRound = 1;
+        /** _lastRound初始2 在一回下单要结算前面2回合的wkc*/
+        _lastRound = 2;
         _chapter++;
         _chapterStartTime[_chapter] = _time;
         _roundStartTime[_chapter][0] = _time;
@@ -384,12 +392,12 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function getRoundWinnerKc(uint256 factionId,uint256 chapter,uint256 round) view internal returns (uint256) {
         if (
-            _poolState[chapter][round]._answer <
-            _poolState[chapter][round + 1]._answer
+            _poolState[chapter][round + 1]._answer <
+            _poolState[chapter][round + 2]._answer
         ) return  _factionStatus[factionId]._fire[chapter][round]._call;
         if (
-            _poolState[chapter][round]._answer >
-            _poolState[chapter][round + 1]._answer
+            _poolState[chapter][round + 1]._answer >
+            _poolState[chapter][round + 2]._answer
         ) return _factionStatus[factionId]._fire[chapter][round]._put;
         return 0;
     }
@@ -398,22 +406,32 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 fireLen= _factionStatus[factionId]._lastFireRound[factionChapter].length; 
         uint256 winner;
         if(factionChapter == _chapter){
+            /**当前回合下单 计算lastRound-2的wkc */            
             winner+=getRoundWinnerKc(factionId,factionChapter,_lastRound - 2);
-            if(_factionStatus[factionId]._lastFireRound[factionChapter][fireLen-1] < _lastRound - 1
+            /**如果前一回合没有下单 还需要计算lastRound-3的wkc */    
+            if(_factionStatus[factionId]._lastFireRound[factionChapter][fireLen-2] < _lastRound - 1
                 && isRoundFire(factionId,factionChapter,_lastRound-3))
             {
                 winner+=getRoundWinnerKc(factionId,factionChapter,_lastRound - 3);
             }
+            
         }else{
-            winner+=getRoundWinnerKc(factionId,factionChapter,_lastRound);
-            if(isRoundFire(factionId,factionChapter,_lastRound-1))
-                winner+=getRoundWinnerKc(factionId,factionChapter,_lastRound-1);
+            uint256 lastRound=_factionStatus[factionId]._lastFireRound[factionChapter][fireLen-1];
+            winner+=getRoundWinnerKc(factionId,factionChapter,lastRound);
+            /**如果最后一个回合和前一回合至少间隔一回合不需要结算
+               否则前一回合还没结算，需要进行结算*/
+            if(_factionStatus[factionId]._lastFireRound[factionChapter][fireLen-2] == _lastRound - 1
+                && isRoundFire(factionId,factionChapter,lastRound-1))
+                winner+=getRoundWinnerKc(factionId,factionChapter,lastRound-1);
         }
         _factionStatus[factionId]._factionWinnerKC[factionChapter] += winner;
     }
 
     function getAccountKC(uint256 factionId, uint256 chapter) view internal returns (uint256) {
         uint256 len = _accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex.length;
+        /**如果chapter 大于有记录的chapter值 ，通过计算全周期的质押量得到kc
+           否则遍历_accountKCIndex ，从大到小获取存储的周期值(c)，当chapter 大于c，返回值
+         */
         if(chapter>_accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex[len-1]){
             return calAccountKCInWholeCycle(factionId);
         }
@@ -425,12 +443,10 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function claimBonus() public returns (uint256) {
-        uint256 _time = getTimestamp();
+        uint256 time = getTimestamp();
         uint256 bonus = updateBonus();
-        if (bonus != 0) {
-            _kakiToken.transfer(msg.sender, bonus);
-            emit ClaimBonus(msg.sender, bonus);
-        }
+        emit ClaimBonus(msg.sender, bonus,time);
+       
     }
 
     function updateBonus() public returns (uint256) {
@@ -454,6 +470,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             }
         }
         _accountFactionInfo[msg.sender]._bonusChapter = _chapter;
+         if (bonus != 0) {
+            _kakiToken.transfer(msg.sender, bonus);            
+        }
         return bonus;
     }
 
