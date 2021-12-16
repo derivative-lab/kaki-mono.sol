@@ -101,6 +101,14 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _claimLimit = newClaimLimit;
     }
 
+    function clearClaimLimit(address[] memory accountList) public onlyOwner {
+        for (uint256 i; i < accountList.length; i++) {
+            if(_claimTimeLimit[msg.sender] == 1) {
+                _claimTimeLimit[msg.sender]--;
+            }
+        }
+    }
+
     function setFoundAdd(address newFoundAdd) public onlyOwner {
         require(newFoundAdd != BlackHole, "Invalid  address");
         _kakiFoundation = newFoundAdd;
