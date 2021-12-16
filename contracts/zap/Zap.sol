@@ -7,16 +7,22 @@ import "./interface/IZap.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract KakiZap is IZap, WithAdminRole {
 
+    address private constant KAKI = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56;
+    address private constant BUSD = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56;
     address private constant WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
-    IPancakeRouter02 private constant ROUTER = IPancakeRouter02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
-    
-    address[] public tokens;
+    address public kakiFoundation;
     address public safeSwapBNB;
-    mapping(address => bool) private notFlip;
+    address[] public tokens;
+    IPancakeRouter02 public ROUTER;
+    mapping(address => bool) private notLPToken;
 
     function initialize() public initializer {
         __WithAdminRole_init();
-
+        ROUTER = IPancakeRouter02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+        kakiFoundation = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56;
+        setNotLP(KAKI);
+        setNotLP(WBNB);
+        setNotLP(BUSD);
     }
 
     receive() external payable {}
@@ -35,7 +41,7 @@ contract KakiZap is IZap, WithAdminRole {
                 uint halfAmount = amount / 2;
                 uint otherAmount = _swap(from, halfAmount, other, address(this));
                 pair.skim(address(this));
-                ROUTER.addLiquidity(from, other, amount - halfAmount, halfAmount, 0, 0, msg.sender, block.timestamp);
+                ROUTER.addLiquidity(from, other, amount - halfAmount, otherAmount, 0, 0, msg.sender, block.timestamp);
             } else {
                 //wbnb => kaki-busd
                 uint bnbAmount = from == WBNB ? _safeSwapToBNB(amount) : _swapTokenForBNB(from, amount, address(this));
@@ -74,10 +80,6 @@ contract KakiZap is IZap, WithAdminRole {
         }
     }
 
-    //******************************* view ********************************/
-    function isLP(address lpToken) public view override returns (bool isLP) {
- 
-    }
     //******************************* private ********************************/
     function _approveTokenIfNeeded(address token) private {
         if (IERC20(token).allowance(address(this), address(ROUTER)) == 0) {
@@ -123,24 +125,75 @@ contract KakiZap is IZap, WithAdminRole {
         return amounts[amounts.length - 1];
     }
 
-    function _swapTokenForBNB(address token, uint amount, address receiver) private returns (uint){
+    function _swapTokenForBNB(address token, uint amount, address receiver) private returns (uint) {
         address[] memory path;
         path = new address[](2);
         path[0] = token;
         path[1] = WBNB;
 
         uint[] memory amounts = ROUTER.swapExactTokensForETH(amount, 0, path, receiver, block.timestamp);
-        return amounts[amounts.length -1];
+        return amounts[amounts.length - 1];
     }
 
-    function _swap(address from, uint amount, address to, address receiver) private {
+    function _swap(address from, uint amount, address to, address receiver) private returns (uint) {
+        address[] memory path;
+        // wbnb - kaki
+        if (from ==WBNB || to == WBNB) {
+            path = new address[](2);
+            path[0] = from;
+            path[1] = to;
+        } else {
+            //kaki - busd
+            path = new address[](3);
+            path[0] = from;
+            path[1] = WBNB;
+            path[2] = to;
+        }
 
+        uint[] memory amounts = ROUTER.swapExactTokensForTokens(amount, 0, path, to, block.timestamp);
+        return amounts[amounts.length - 1];
     }
 
     function _safeSwapToBNB(uint amount) private returns (uint) {
 
     }
 
+    //******************************* view ********************************/
+    function isLP(address token) public view override returns (bool) {
+        return !notLPToken[token];
+    }
+
     //*************************** admin *********************************** */
-    
+    function setNotLP(address token) public onlyOwner {
+        require(token != address(0), "Invalid address.");
+        if (notLPToken[token] == false) {
+            tokens.push(token);
+        }
+        notLPToken[token] = true;
+    }
+
+    function removeToken(uint index) public onlyOwner {
+        address token = tokens[index];
+        notLPToken[token] = false;
+        tokens[index] = tokens[tokens.length - 1];
+        tokens.pop();
+    }
+
+    function cleanLeft() public onlyOwner {
+        for (uint i = 0; i < tokens.length; i++) {
+            address token = tokens[i];
+            if (token == address(0)) continue;
+            uint amount = IERC20(token).balanceOf(address(this));
+            if (amount > 0) {
+                _swapTokenForBNB(token, amount, kakiFoundation);
+            }
+        }
+    }
+
+    function setFoundation(address newFoundation) public onlyOwner {
+        require(newFoundation != address(0), "Invalid foundation address");
+        kakiFoundation = newFoundation;
+
+        
+    }
 }
