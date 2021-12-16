@@ -345,7 +345,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _factionStatus[factionId]._chapterKC[_chapter - 1] = _factionStatus[factionId]._chapterKC[_chapter - 1] - amount;
 
         uint256 len=_factionStatus[factionId]._lastFireRound[_chapter].length;
-        if(_factionStatus[factionId]._lastFireRound[_chapter][len-1]!=_lastRound)
+        if(len==0 || _factionStatus[factionId]._lastFireRound[_chapter][len-1]!=_lastRound)
             _factionStatus[factionId]._lastFireRound[_chapter].push( _lastRound);
         emit Fire(msg.sender, _chapter, _lastRound, factionId, amount, binary, _time);
     }
@@ -434,16 +434,16 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function getAccountKC(uint256 factionId, uint256 chapter) view internal returns (uint256) {
-        uint256 len = _accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex.length;
+        uint256 len = _accountFactionStatus[msg.sender][factionId]._accountKCIndex.length;
         /**如果chapter 大于有记录的chapter值 ，通过计算全周期的质押量得到kc
            否则遍历_accountKCIndex ，从大到小获取存储的周期值(c)，当chapter 大于c，返回值
          */
-        if(chapter>_accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex[len-1]){
+        if(chapter>_accountFactionStatus[msg.sender][factionId]._accountKCIndex[len-1]){
             return calAccountKCInWholeCycle(factionId);
         }
         for (uint256 i = len - 1; i >= 0; i--) {
-            uint256 c = _accountFactionStatus[msg.sender][_nextFactionId]._accountKCIndex[i];
-            if (c <= chapter) return _accountFactionStatus[msg.sender][_nextFactionId]._accountKC[c];
+            uint256 c = _accountFactionStatus[msg.sender][factionId]._accountKCIndex[i];
+            if (c <= chapter) return _accountFactionStatus[msg.sender][factionId]._accountKC[c];
         }
         return 0;
     }
