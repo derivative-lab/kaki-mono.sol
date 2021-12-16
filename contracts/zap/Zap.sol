@@ -34,7 +34,7 @@ contract KakiZap is IZap, WithAdminRole {
             IPancakePair pair = IPancakePair(to);
             address token0 = pair.token0();
             address token1 = pair.token1();
-            // kaki/busd  => kaki-busd       wbnb/kaki => kaki-bnb
+            // kaki/busd  => kaki-busd       wbnb/kaki => kaki-wbnb
             if (from == token0 || from == token1) {
                 address other = from == token0 ? token1 : token0;
                 _approveTokenIfNeeded(other);
@@ -43,11 +43,10 @@ contract KakiZap is IZap, WithAdminRole {
                 pair.skim(address(this));
                 ROUTER.addLiquidity(from, other, amount - halfAmount, otherAmount, 0, 0, msg.sender, block.timestamp);
             } else {
-                //wbnb => kaki-busd
+                //wbnb => kaki-busd      busd => kaki-wbnb
                 uint bnbAmount = from == WBNB ? _safeSwapToBNB(amount) : _swapTokenForBNB(from, amount, address(this));
                 _swapBNBToLp(to, bnbAmount, msg.sender);
             }
-
         } else {
             _swap(from, amount, to, msg.sender);
         }
@@ -158,7 +157,11 @@ contract KakiZap is IZap, WithAdminRole {
         require(IERC20(WBNB).balanceOf(address(this)) >= amount, "Not enough WBNB balance.");
         require(safeSwapBNB != address(0), "SafeSwapBNB is not set.");
         uint beforeBNB = address(this).balance;
-        ISafeSwapBNB(safeSwapBNB).withdraw(amount);
+
+        IERC20(WBNB).transferFrom(msg.sender, address(this), amount);
+        IWETH(WBNB).withdraw(amount);
+        SafeToken.safeTransferETH(msg.sender, amount);
+
         return (address(this).balance) - beforeBNB;
     }
 
