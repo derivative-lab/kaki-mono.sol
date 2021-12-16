@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 // import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "../base/WithAdminRole.sol";
+import "hardhat/console.sol";
+
 
 contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     uint256 internal constant _BASE = 1000;
@@ -167,9 +169,11 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function initFactionChapterKC(uint256 factionId) internal {
-        if (_factionStatus[factionId]._lastCheckChapter != _chapter) {
-            updateFactionWinnerAmount(factionId, _factionStatus[factionId]._lastCheckChapter);
-            updateFactionIndex(factionId,_factionStatus[factionId]._lastCheckChapter);
+        uint256 lastCheckChapter=_factionStatus[factionId]._lastCheckChapter;
+        if (lastCheckChapter != _chapter) {
+            updateFactionWinnerAmount(factionId, lastCheckChapter);
+            if(_factionStatus[factionId]._factionWinnerKC[lastCheckChapter]>0)
+                updateFactionIndex(factionId,lastCheckChapter);
             _factionStatus[factionId]._chapterKC[_chapter] =
                 _captionKC +
                 calAllKcInWholeCycle(_factionStatus[factionId]._stakeAmount);
@@ -409,20 +413,22 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             /**当前回合下单 计算lastRound-2的wkc */            
             winner+=getRoundWinnerKc(factionId,factionChapter,_lastRound - 2);
             /**如果前一回合没有下单 还需要计算lastRound-3的wkc */    
-            if(_factionStatus[factionId]._lastFireRound[factionChapter][fireLen-2] < _lastRound - 1
+            if(fireLen>1 && _factionStatus[factionId]._lastFireRound[factionChapter][fireLen-2] < _lastRound - 1
                 && isRoundFire(factionId,factionChapter,_lastRound-3))
             {
                 winner+=getRoundWinnerKc(factionId,factionChapter,_lastRound - 3);
             }
             
         }else{
-            uint256 lastRound=_factionStatus[factionId]._lastFireRound[factionChapter][fireLen-1];
-            winner+=getRoundWinnerKc(factionId,factionChapter,lastRound);
-            /**如果最后一个回合和前一回合至少间隔一回合不需要结算
-               否则前一回合还没结算，需要进行结算*/
-            if(_factionStatus[factionId]._lastFireRound[factionChapter][fireLen-2] == _lastRound - 1
-                && isRoundFire(factionId,factionChapter,lastRound-1))
-                winner+=getRoundWinnerKc(factionId,factionChapter,lastRound-1);
+            if(fireLen>0){
+                uint256 lastRound=_factionStatus[factionId]._lastFireRound[factionChapter][fireLen-1];
+                winner+=getRoundWinnerKc(factionId,factionChapter,lastRound);
+                /**如果最后一个回合和前一回合至少间隔一回合不需要结算
+                否则前一回合还没结算，需要进行结算*/
+                if(fireLen>1 && _factionStatus[factionId]._lastFireRound[factionChapter][fireLen-2] == _lastRound - 1
+                    && isRoundFire(factionId,factionChapter,lastRound-1))
+                    winner+=getRoundWinnerKc(factionId,factionChapter,lastRound-1);
+            }
         }
         _factionStatus[factionId]._factionWinnerKC[factionChapter] += winner;
     }
