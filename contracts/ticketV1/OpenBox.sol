@@ -56,7 +56,7 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
 
     function claim() public override isClaimOver {
         require(_addressList.isInAddressList(msg.sender), "Not allow.");
-        require(_claimTimeLimit[msg.sender] <= _claimLimit, "Claim too much.");
+        require(_claimTimeLimit[msg.sender] < _claimLimit, "Claim too much.");
         _ticket.mint(msg.sender, true, _invalidTime, _ticketPrice, _ticketPrice);
         _busd.transferFrom(_squidCoinBase, _squidGameFound, _ticketPrice);
         _claimTimeLimit[msg.sender]++;
