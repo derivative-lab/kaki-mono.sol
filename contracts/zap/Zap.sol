@@ -155,7 +155,11 @@ contract KakiZap is IZap, WithAdminRole {
     }
 
     function _safeSwapToBNB(uint amount) private returns (uint) {
-
+        require(IERC20(WBNB).balanceOf(address(this)) >= amount, "Not enough WBNB balance.");
+        require(safeSwapBNB != address(0), "SafeSwapBNB is not set.");
+        uint beforeBNB = address(this).balance;
+        ISafeSwapBNB(safeSwapBNB).withdraw(amount);
+        return (address(this).balance) - beforeBNB;
     }
 
     //******************************* view ********************************/
@@ -194,6 +198,6 @@ contract KakiZap is IZap, WithAdminRole {
         require(newFoundation != address(0), "Invalid foundation address");
         kakiFoundation = newFoundation;
 
-        
+
     }
 }
