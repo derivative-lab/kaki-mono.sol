@@ -136,7 +136,7 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
         uint256 invalidTime = ticketInfo.invalidTime;
         require(invalidTime == 0 || block.timestamp <= invalidTime, "expired");
         _ticketNFT.transferFrom(msg.sender, address(0xdead), nftId);
-
+        emit StartGame(msg.sender, nftId, ticketInfo.isDrop);
         require(_users[msg.sender]._initChip[_chapter] == 0, "Had bought ticket.");
         uint256 time = getTimestamp();
         require(time < _nextGameTime, "The game is in the play status.");
