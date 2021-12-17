@@ -103,8 +103,8 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
 
     function clearClaimLimit(address[] memory accountList) public onlyOwner {
         for (uint256 i; i < accountList.length; i++) {
-            if(_claimTimeLimit[msg.sender] == 1) {
-                _claimTimeLimit[msg.sender]--;
+            if(_claimTimeLimit[accountList[i]] == 1) {
+                _claimTimeLimit[accountList[i]]--;
             }
         }
     }
@@ -131,6 +131,6 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 8;
+        return 9;
     }
 }
