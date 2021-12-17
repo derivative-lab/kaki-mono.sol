@@ -257,9 +257,9 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
         uint256 bonus;
         uint256 lastCheckChapter = _users[msg.sender]._lastCheckChapter;
         if ( _totalWinnerChip[lastCheckChapter] > 0 && lastCheckChapter != _chapter) {
-            if (_price[lastCheckChapter][_lastRound - 1] < _price[lastCheckChapter][_lastRound])
-                winChip = _placeCallStatus[lastCheckChapter][_lastRound - 1][msg.sender];
-            else winChip = _placePutStatus[lastCheckChapter][_lastRound - 1][msg.sender];
+            if (_price[lastCheckChapter][_roundSum - 1] < _price[lastCheckChapter][_roundSum])
+                winChip = _placeCallStatus[lastCheckChapter][_roundSum - 1][msg.sender];
+            else winChip = _placePutStatus[lastCheckChapter][_roundSum - 1][msg.sender];
         }
         if (winChip > 0) {
             bonus = _totalBonus[lastCheckChapter].mul(THOUSAND - kakiFoundationRate).div(THOUSAND).mul(winChip).div(
