@@ -4,6 +4,7 @@ import "../base/WithAdminRole.sol";
 import "./interface/IPancakePair.sol";
 import "./interface/IPancakeRouter02.sol";
 import "./interface/IZap.sol";
+import "./interface/IWETH.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract KakiZap is IZap, WithAdminRole {
 
@@ -34,7 +35,6 @@ contract KakiZap is IZap, WithAdminRole {
             IPancakePair pair = IPancakePair(to);
             address token0 = pair.token0();
             address token1 = pair.token1();
-            // kaki/busd  => kaki-busd       wbnb/kaki => kaki-wbnb
             if (from == token0 || from == token1) {
                 address other = from == token0 ? token1 : token0;
                 _approveTokenIfNeeded(other);
@@ -43,7 +43,6 @@ contract KakiZap is IZap, WithAdminRole {
                 pair.skim(address(this));
                 ROUTER.addLiquidity(from, other, amount - halfAmount, otherAmount, 0, 0, msg.sender, block.timestamp);
             } else {
-                //wbnb => kaki-busd      busd => kaki-wbnb
                 uint bnbAmount = from == WBNB ? _safeSwapToBNB(amount) : _swapTokenForBNB(from, amount, address(this));
                 _swapBNBToLp(to, bnbAmount, msg.sender);
             }
@@ -153,16 +152,18 @@ contract KakiZap is IZap, WithAdminRole {
         return amounts[amounts.length - 1];
     }
 
-    function _safeSwapToBNB(uint amount) private returns (uint) {
+    function _safeSwapToBNB(uint amount) private  returns (uint) {
         require(IERC20(WBNB).balanceOf(address(this)) >= amount, "Not enough WBNB balance.");
         require(safeSwapBNB != address(0), "SafeSwapBNB is not set.");
         uint beforeBNB = address(this).balance;
 
         IERC20(WBNB).transferFrom(msg.sender, address(this), amount);
         IWETH(WBNB).withdraw(amount);
-        SafeToken.safeTransferETH(msg.sender, amount);
+        //SafeToken.safeTransferETH(msg.sender, amount);
+        (bool success, ) = msg.sender.call{ value: amount }(new bytes(0));
+        require(success, "!safeTransferETH");
 
-        return (address(this).balance) - beforeBNB;
+        return address(this).balance - beforeBNB;
     }
 
     //******************************* view ********************************/
@@ -200,7 +201,5 @@ contract KakiZap is IZap, WithAdminRole {
     function setFoundation(address newFoundation) public onlyOwner {
         require(newFoundation != address(0), "Invalid foundation address");
         kakiFoundation = newFoundation;
-
-
     }
 }
