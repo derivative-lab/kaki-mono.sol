@@ -33,17 +33,27 @@ describe('noloss game', async () => {
       }
     }
 
-    let factionId = await noLoss._nextFactionId();
-    console.log('factionId**************', factionId);
     await noLoss.createFaction(1);
     await network.provider.send("evm_increaseTime", [7 * 24 * 60 * 60]);
-    const factionStatus = await noLoss._factionStatus(1);
-    printEtherResult(factionStatus);
-    printEtherResultArray(factionStatus);
-    const kc = await noLoss.getChapterKC(1);
-    console.log('kc:*********', kc);
-
-    console.log('factionId**************', factionId);
+    await noLoss.addLoot();
+    await noLoss.addBonus(parseEther('100'));
+    await noLoss.fire(1,parseEther(`10`),true);
+    await noLoss.fire(1,parseEther(`10`),false);
+    await network.provider.send("evm_increaseTime", [5 * 60]);
+    await noLoss.battleDamage();
+    await noLoss.fire(1,parseEther(`15`),true);
+    await noLoss.fire(1,parseEther(`15`),false);
+    await network.provider.send("evm_increaseTime", [5 * 60]);
+    await noLoss.battleDamage();
+    await network.provider.send("evm_increaseTime", [5 * 60]);
+    await noLoss.battleDamage();
+    await network.provider.send("evm_increaseTime", [5 * 60]);
+    await noLoss.battleDamage();
+    await network.provider.send("evm_increaseTime", [7 * 24 * 60 * 60-20*60]);
+    await noLoss.addLoot();
+    const kc = await noLoss.getChapterKC(1); 
+    console.log('kc:*********1', kc.toString());
+    await noLoss.claimBonus();
     //await noLoss.fire();
 
 
