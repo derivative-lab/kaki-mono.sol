@@ -201,6 +201,7 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
     function settle() public {
         uint256 time = getTimestamp();
         uint256 chapterEndTime = _nextGameTime.add((_lastRound + 1).mul(_roundTime));
+        uint256 curChapter=_chapter;
         require(chapterEndTime <= time, "This round of trading is not over.");
         _price[_chapter][++_lastRound] = _aggregator.latestAnswer();
         _lastRoundStartTime[_chapter][_lastRound] = chapterEndTime; //time;
@@ -225,7 +226,7 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
             _chapter++;
             _nextGameTime = _nextGameTime.add(_gameInterval);
         }
-        emit Settle(msg.sender, _lastRound, time, _price[_chapter][_lastRound - 1], _price[_chapter][_lastRound]);
+        emit Settle(msg.sender, _lastRound, time, _price[curChapter][_lastRound - 1], _price[curChapter][_lastRound]);
     }
 
     /*

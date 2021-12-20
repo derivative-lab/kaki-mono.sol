@@ -124,7 +124,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function createFaction(uint256 nftId) public {
         uint256 time = getTimestamp();
-        require(_chapterStartTime[_chapter] <= time, "please wait new _chapter!");
+        console.log('createFaction',_chapterStartTime[_chapter]+_weekTime ,time);
+        require(_chapterStartTime[_chapter]+_weekTime < time, "please wait new _chapter!");
 
         _kakiToken.transferFrom(msg.sender, address(this), _captionKAKI);
 
@@ -152,7 +153,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     ) public {
         uint256 time = getTimestamp();
         require(factionId != 0, "Cannot join faction 0.");
-        require(_chapterStartTime[_chapter] > time, "please wait new _chapter!");
+        require(_chapterStartTime[_chapter]+_weekTime < time, "please wait new _chapter!");
         require(factionId < _nextFactionId, "Cannot join uncreated factions.");
         require(
             _accountFactionInfo[msg.sender]._factionArr.length == 0,
@@ -163,7 +164,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _tokenAssemble[tokenIndex].transferFrom(msg.sender, address(this), amount);
 
         updateFactioinAndAccount(factionId, tokenIndex, amount);
-
+        
         _accountFactionInfo[msg.sender]._factionArr.push(_nextFactionId);
         if (_accountFactionInfo[msg.sender]._bonusChapter == 0)
             _accountFactionInfo[msg.sender]._bonusChapter = _chapter;
@@ -179,7 +180,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             _factionStatus[factionId]._chapterKC[_chapter] =
                 _captionKC +
                 calAllKcInWholeCycle(_factionStatus[factionId]._stakeAmount);
-
+            console.log('initFactionChapterKC',factionId,_chapter,_factionStatus[factionId]._chapterKC[_chapter]);
             _factionStatus[factionId]._lastCheckChapter = _chapter;
         }
     }
