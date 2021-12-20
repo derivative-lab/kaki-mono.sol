@@ -7,7 +7,7 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
     uint256 public lowMember;
     uint256 public mediumMember;
     uint256 public highMember;
-
+    uint256 public kRate;
     uint256 public lowCombineRate;
     uint256 public mediumCombineRate;
     uint256 public highCombineRate;
@@ -27,6 +27,7 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
     }
 
     function getTicketMessage(uint256 tokenId) external override view returns (TicketPara memory) {
+        
 
         return (_ticketPara[tokenId]);
     }
