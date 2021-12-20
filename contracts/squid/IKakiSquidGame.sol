@@ -11,7 +11,7 @@ interface IKakiSquidGame {
     }
 
     event BuyTicket(address indexed account, uint256 amount);
-    event AddBonus(address indexed account, uint256 amount);
+    event AddBonus(address indexed account, uint256 chapter,uint256 amount);
     event PlaceBet(address indexed account, uint256 amount);
     event StartGame(address indexed account, uint256 tokenId, bool isBuy);
     event Claim(address indexed account, uint256 amount);
