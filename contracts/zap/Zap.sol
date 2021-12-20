@@ -152,7 +152,7 @@ contract KakiZap is IZap, WithAdminRole {
         return amounts[amounts.length - 1];
     }
 
-    function _safeSwapToBNB(uint amount) private  returns (uint) {
+    function _safeSwapToBNB(uint amount) private returns (uint) {
         require(IERC20(WBNB).balanceOf(address(this)) >= amount, "Not enough WBNB balance.");
         require(safeSwapBNB != address(0), "SafeSwapBNB is not set.");
         uint beforeBNB = address(this).balance;
