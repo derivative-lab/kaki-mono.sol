@@ -9,6 +9,7 @@ interface IKakiCaptain is IBaseERC721 {
         uint256 combineRate;
     }
 
+
     function mint(
         address _to
     ) external returns (uint256 tokenId);
