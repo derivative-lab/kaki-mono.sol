@@ -158,6 +158,7 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
         require(time < _nextGameTime, "The game is in the play status.");
         _totalBonus[_chapter] = _totalBonus[_chapter].add(extraAmount);
         _token.transferFrom(msg.sender, _kakiPayWalletAddress, extraAmount);
+        emit AddBonus(msg.sender, extraAmount);
     }
 
     /*
