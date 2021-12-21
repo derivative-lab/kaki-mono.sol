@@ -329,6 +329,10 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
         return block.timestamp;
     }
 
+    function getDataForRobot() public view returns (uint256,uint256,uint256,bool,uint256,uint256) {
+        return (block.timestamp,_nextGameTime,_chapter,isChapterStart[_chapter],_lastRound,_lastRoundStartTime[_chapter][_lastRound]);
+    }
+
     function getNextGameTime(uint256 random) public view returns (uint256) {
         return _nextGameTime;
     }
