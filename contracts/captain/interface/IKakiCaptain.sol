@@ -12,7 +12,8 @@ interface IKakiCaptain is IBaseERC721 {
 
 
     function mint(
-        address _to
+        address _to,
+        uint256 _tokenId
     ) external returns (uint256 tokenId);
 
     function getCapType(uint256 tokenId) external view returns (uint256);
