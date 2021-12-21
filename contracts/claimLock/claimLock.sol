@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
-import "./interface/IClaimLock.sol";
-import "./interface/IKaki.sol";
+import "../interfaces/IClaimLock.sol";
+import "../interfaces/IKaki.sol";
 import "../base/WithRandom.sol";
 import "../base/WithAdminRole.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";

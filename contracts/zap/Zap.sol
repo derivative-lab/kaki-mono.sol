@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "../base/WithAdminRole.sol";
-import "./interface/IPancakePair.sol";
-import "./interface/IPancakeRouter02.sol";
-import "./interface/IZap.sol";
-import "./interface/IWETH.sol";
+import "../interfaces/IPancakePair.sol";
+import "../interfaces/IPancakeRouter02.sol";
+import "../interfaces/IZap.sol";
+import "../interfaces/IWETH.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract KakiZap is IZap, WithAdminRole {
 

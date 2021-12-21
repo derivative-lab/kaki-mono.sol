@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./interface/IkakiTicket.sol";
+import "../interfaces/IkakiTicket.sol";
 import "../base/BaseERC721.sol";
 contract KakiTicket is IkakiTicket, BaseERC721 {
 
