@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./interface/ICaptainClaim.sol";
-import "./interface/IKakiCaptain.sol";
+import "../interfaces/ICaptainClaim.sol";
+import "../interfaces/IKakiCaptain.sol";
 import "../base/WithRandom.sol";
 import "../base/BaseERC721.sol";
 import "../base/WithAdminRole.sol";
