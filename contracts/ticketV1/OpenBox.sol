@@ -9,12 +9,12 @@ import "../interfaces/IAddressList.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
-    mapping(address => bool) _claim;
-    mapping(address => uint256) _claimTimeLimit;
+    mapping(address => bool) public _claim;
+    mapping(address => uint256) public _claimTimeLimit;
 
-    IERC20 _busd;
+    IERC20 public _busd;
     ITicket public _ticket;
-    IAddressList _addressList;
+    IAddressList public _addressList;
 
     string[] _uri;
     bool _able;
@@ -127,10 +127,10 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
     //***************************************** read   ***************************************** */  
 
     function getClaimLimit(address account) public view override returns(uint256 claimLimit) {
-        return _claimTimeLimit[msg.sender];
+        return _claimTimeLimit[account];
     }
 
     function version() public pure returns (uint256) {
-        return 9;
+        return 10;
     }
 }
