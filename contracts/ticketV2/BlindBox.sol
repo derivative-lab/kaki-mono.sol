@@ -3,8 +3,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../base/WithRandom.sol";
 import "../base/WithAdminRole.sol";
-import "./interface/IkakiTicket.sol";
-import "./interface/IBlindBox.sol";
+import "../interfaces/IkakiTicket.sol";
+import "../interfaces/IBlindBox.sol";
 
 contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
 
