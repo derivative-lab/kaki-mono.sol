@@ -16,9 +16,9 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     IKakiCaptain public _captain;
     IAddressList _addressList;
 
-    string[] _uri;
     bool _able;
     bool _claimAble;
+    uint256[] tokenIdList;
     uint256 _count;
     uint256 public _mintPrice;
     uint256 public _claimLimit;
@@ -51,19 +51,34 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     function claim() public override isClaimOver {
         require(_addressList.isInAddressList(msg.sender), "Not allow.");
         require(_claimTimeLimit[msg.sender] < _claimLimit, "Claim too much.");
-        _captain.mint(msg.sender);
+        uint256 tokenId = getRandId();
+        _captain.mint(msg.sender, tokenId);
         _claimTimeLimit[msg.sender]++;
-        emit Claim(msg.sender);
+        emit Claim(msg.sender, tokenId);
     }
 
     function mint() public override payable isAble {
         (bool sent, ) = address(this).call{value: _mintPrice}(new bytes(0));
         require(sent, "Failed to send Ether");
-        _captain.mint(msg.sender);
-        emit Mint(msg.sender);
+        uint256 tokenId = getRandId();
+        _captain.mint(msg.sender, tokenId);
+        emit Mint(msg.sender, tokenId);
+    }
+
+    function getRandId() internal returns(uint256 tokenId) {
+        uint256 tokenIndex = random(0, tokenIdList.length);
+        tokenId = tokenIdList[tokenIndex];
+        tokenIdList[tokenIndex] = tokenIdList[tokenIdList.length - 1];
+        tokenIdList.pop();
     }
 
     //****************************** admin function ***************************************** */
+    function setTokenIdList(uint256 start, uint256 end) public onlyOwner {
+        for(uint256 i = start; i <= end; i++) {
+            tokenIdList[i] = i + 1;
+        }
+    }
+
     function setTicketPrice(uint256 mintPrice) public onlyOwner {
         _mintPrice = mintPrice;
     }
