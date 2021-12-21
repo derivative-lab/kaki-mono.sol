@@ -94,7 +94,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     }
 
     function setFoundAdd(address newFoundAdd) public onlyOwner {
-        require(newFoundAdd != BlackHole, "Invalid  address");
+        require(newFoundAdd != BlackHole, "Invalid address");
         _kakiFoundation = newFoundAdd;
     }
 }
