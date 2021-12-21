@@ -1,11 +1,13 @@
-import { IKaki } from './../typechain/IKaki.d';
+import { BigNumber } from '@ethersproject/bignumber';
 import { ethers, upgrades, deployments } from 'hardhat';
 import {
   MockChainLink,
   MockChainLink__factory,
   MockToken__factory,
   MockToken,
-  KakiSquidGame,  
+  KakiBlindBox__factory,
+  KakiBlindBox,
+  KakiSquidGame,
   KakiSquidGame__factory,
   KakiNoLoss,
   KakiNoLoss__factory,
@@ -34,7 +36,7 @@ export async function deployMockChainLink() {
   return instance as MockChainLink;
 }
 
-export async function deployMockUsdt(signerIndex=0) {
+export async function deployMockUsdt(signerIndex = 0) {
   const signer0 = await getSigner(signerIndex);
   const factory = new MockToken__factory(signer0);
   const instance = await deployments.deploy('MockToken', {
@@ -49,17 +51,17 @@ export async function deployMockUsdt(signerIndex=0) {
   return factory.attach(instance.address);
 }
 
-export async function deployMockUsdt2(signerIndex=0) {
+export async function deployMockERC20(name: string, symbol: string, issue: BigNumber, signerIndex = 0) {
   const signer0 = await getSigner(signerIndex);
   const factory = new MockToken__factory(signer0);
   const instance = await deployments.deploy('MockToken', {
     from: signer0.address,
     log: true,
     autoMine: true,
-    args: ['USDT', 'USDT', 18, ethers.utils.parseEther(`1${'0'.repeat(10)}`)],
+    args: [name, symbol, 18, issue],
   });
   // factory.deploy('USDT', "USDT", 18, ethers.utils.parseEther(`1${'0'.repeat(10)}`));
-  console.log(`deploy mock usdt to: ${instance.address}`);
+  console.log(`deploy mock ${name} - ${symbol} to: ${instance.address}`);
   // await instance.deployed();
   return factory.attach(instance.address);
 }
@@ -72,7 +74,7 @@ export async function deployMockUsdt2(signerIndex=0) {
 //   return instance as KakiBlindBox;
 // }
 
-export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink: MockChainLink, payWallet:string) {
+export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink: MockChainLink, payWallet: string) {
   const signer0 = await getSigner(0);
   const factory = new KakiSquidGame__factory(signer0);
   const args: Parameters<KakiSquidGame['initialize']> = [
@@ -86,7 +88,7 @@ export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink
   await instance.deployed();
   return instance as KakiSquidGame;
 }
-export async function deployNoLoss(kaki: MockToken, bnbToken: MockToken,busdToken: MockToken, kakiBNBToken: MockToken,kakiBUSDToken: MockToken, chainlink: MockChainLink) {
+export async function deployNoLoss(kaki: MockToken, bnbToken: MockToken, busdToken: MockToken, kakiBNBToken: MockToken, kakiBUSDToken: MockToken, chainlink: MockChainLink) {
   const signer0 = await getSigner(0);
   const factory = new KakiNoLoss__factory(signer0);
   const args: Parameters<KakiNoLoss['initialize']> = [
@@ -94,7 +96,7 @@ export async function deployNoLoss(kaki: MockToken, bnbToken: MockToken,busdToke
     bnbToken.address,
     busdToken.address,
     kakiBNBToken.address,
-    kakiBUSDToken.address,    
+    kakiBUSDToken.address,
     chainlink.address
   ];
   const instance = await upgrades.deployProxy(factory, args);
@@ -112,7 +114,7 @@ export async function deployTicket() {
 }
 
 
-export async function deployOpenBox(ticket: Ticket, busd: IERC20, invalidTime:number, allowList: AddressList) {
+export async function deployOpenBox(ticket: Ticket, busd: IERC20, invalidTime: number, allowList: AddressList) {
   const signer0 = await getSigner(0);
   const args: Parameters<OpenBox['initialize']> = [
     ticket.address,
@@ -166,18 +168,24 @@ export async function deployBlindBox(kakiTicket: KakiTicket, busd:IERC20) {
 // }
 
 export async function deployAll() {
-  const usdt = await deployMockUsdt();
-  const usdt2 = await deployMockUsdt2();
+  // const usdt = await deployMockUsdt();
+  const kakiToken = await deployMockERC20('KAKI', 'KAKI', ethers.utils.parseEther(`1${'0'.repeat(10)}`));
+  const usdt = await deployMockERC20('USDT', 'USDT', ethers.utils.parseEther(`1${'0'.repeat(10)}`));
+  const kakiUsdtLp = await deployMockERC20('USDT-KAKI', 'uk-LP', ethers.utils.parseEther(`1${'0'.repeat(10)}`));
+  const wbnbToken = await deployMockERC20('WBNB', 'WBNB', ethers.utils.parseEther(`1${'0'.repeat(10)}`));
+
+  const kakiBnbLP = await deployMockERC20('BNB-KAKI', 'bk-LP', ethers.utils.parseEther(`1${'0'.repeat(10)}`));
+
   const chainlink = await deployMockChainLink();
   const ticket = await deployTicket();
   const kakiTicket = await deployKakiTicket();
 
-  const signer0 =await getSigner(0);
+  const signer0 = await getSigner(0);
   const allowList = await deployAddrssList();
-  const openBox = await deployOpenBox(ticket, usdt, Math.ceil( Date.now() /1000 +  24 * 3600 ), allowList);
-  const game = await deploySquidGame(ticket, usdt, chainlink,signer0.address);
-  const blindBox = await deployBlindBox(kakiTicket, usdt);  
-  const noLoss = await deployNoLoss(usdt, usdt, usdt,usdt,usdt2,chainlink);
+  const openBox = await deployOpenBox(ticket, usdt, Math.ceil(Date.now() / 1000 + 24 * 3600), allowList);
+  const game = await deploySquidGame(ticket, usdt, chainlink, signer0.address);
+  const blindBox = await deployBlindBox(kakiTicket, usdt);
+  const noLoss = await deployNoLoss(kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
 
-  return { usdt, usdt2,chainlink, game, openBox, ticket,noLoss, allowClaimTicket: allowList, blindBox, kakiTicket };
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, noLoss, allowClaimTicket: allowList,  blindBox, kakiTicket};
 }

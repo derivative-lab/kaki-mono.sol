@@ -136,7 +136,7 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
         uint256 invalidTime = ticketInfo.invalidTime;
         require(invalidTime == 0 || block.timestamp <= invalidTime, "expired");
         _ticketNFT.transferFrom(msg.sender, address(0xdead), nftId);
-
+        emit StartGame(msg.sender, nftId, ticketInfo.isDrop);
         require(_users[msg.sender]._initChip[_chapter] == 0, "Had bought ticket.");
         uint256 time = getTimestamp();
         require(time < _nextGameTime, "The game is in the play status.");
@@ -158,6 +158,7 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
         require(time < _nextGameTime, "The game is in the play status.");
         _totalBonus[_chapter] = _totalBonus[_chapter].add(extraAmount);
         _token.transferFrom(msg.sender, _kakiPayWalletAddress, extraAmount);
+        emit AddBonus(msg.sender, _chapter,extraAmount);
     }
 
     /*
@@ -201,6 +202,7 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
     function settle() public {
         uint256 time = getTimestamp();
         uint256 chapterEndTime = _nextGameTime.add((_lastRound + 1).mul(_roundTime));
+        uint256 curChapter=_chapter;
         require(chapterEndTime <= time, "This round of trading is not over.");
         _price[_chapter][++_lastRound] = _aggregator.latestAnswer();
         _lastRoundStartTime[_chapter][_lastRound] = chapterEndTime; //time;
@@ -225,7 +227,7 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
             _chapter++;
             _nextGameTime = _nextGameTime.add(_gameInterval);
         }
-        emit Settle(msg.sender, _lastRound, time, _price[_chapter][_lastRound - 1], _price[_chapter][_lastRound]);
+        emit Settle(msg.sender, _lastRound, time, _price[curChapter][_lastRound - 1], _price[curChapter][_lastRound]);
     }
 
     /*
@@ -257,9 +259,9 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
         uint256 bonus;
         uint256 lastCheckChapter = _users[msg.sender]._lastCheckChapter;
         if ( _totalWinnerChip[lastCheckChapter] > 0 && lastCheckChapter != _chapter) {
-            if (_price[lastCheckChapter][_lastRound - 1] < _price[lastCheckChapter][_lastRound])
-                winChip = _placeCallStatus[lastCheckChapter][_lastRound - 1][msg.sender];
-            else winChip = _placePutStatus[lastCheckChapter][_lastRound - 1][msg.sender];
+            if (_price[lastCheckChapter][_roundSum - 1] < _price[lastCheckChapter][_roundSum])
+                winChip = _placeCallStatus[lastCheckChapter][_roundSum - 1][msg.sender];
+            else winChip = _placePutStatus[lastCheckChapter][_roundSum - 1][msg.sender];
         }
         if (winChip > 0) {
             bonus = _totalBonus[lastCheckChapter].mul(THOUSAND - kakiFoundationRate).div(THOUSAND).mul(winChip).div(
@@ -391,6 +393,6 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
     }
 
     function version() public pure returns (uint256) {
-        return 6;
+        return 8;
     }
 }
