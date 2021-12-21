@@ -53,12 +53,12 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
     }
 
     function mint(
-        address _to
+        address _to,
+        uint256 _tokenId
     ) external override restricted returns (uint256 tokenId) {
         uint256 tokenIdex = totalMinted();
         require(tokenIdex < 2020, "Reach the upper limit.");
         _mint(_to, tokenId);
-        increaceTokenId();
     }
 
     function setMember(uint256 newLowMember, uint256 newMediumMember, uint256 newHighMember) public onlyOwner {
