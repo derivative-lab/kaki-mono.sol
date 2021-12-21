@@ -47,4 +47,6 @@ interface IKakiSquidGame {
     function getRoundPrice(uint256 chapter, uint256 round) external view returns (uint256, uint256);
 
     function getTimestamp() external view returns (uint256);
+
+    function getDataForRobot() external view returns (uint256,uint256,uint256,bool,uint256,uint256);
 }
