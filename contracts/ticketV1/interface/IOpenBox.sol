@@ -8,4 +8,5 @@ interface IOpenBox {
 
     function claim() external;
     function buyTicket(uint256 num) external;
+    function getClaimLimit(address account) external view returns(uint256 claimLimit);
 }

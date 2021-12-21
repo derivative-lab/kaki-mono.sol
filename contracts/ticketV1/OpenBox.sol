@@ -9,12 +9,12 @@ import "../interfaces/IAddressList.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
-    mapping(address => bool) _claim;
-    mapping(address => uint256) _claimTimeLimit;
+    mapping(address => bool) public _claim;
+    mapping(address => uint256) public _claimTimeLimit;
 
-    IERC20 _busd;
+    IERC20 public _busd;
     ITicket public _ticket;
-    IAddressList _addressList;
+    IAddressList public _addressList;
 
     string[] _uri;
     bool _able;
@@ -66,8 +66,8 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
     function buyTicket(uint256 num) public override isAble {
         require(num > 0, "Invalid num.");
         require(_busd.balanceOf(msg.sender) >= _ticketPrice * num, "Do not have enough BUSD.");
+        _busd.transferFrom(msg.sender, _squidGameFound, _ticketPrice * num);
         for(uint256 i; i < num; i++) {
-            _busd.transferFrom(msg.sender, _squidGameFound, _ticketPrice);
             _ticket.mint(msg.sender, false, 0, _ticketPrice, _ticketPrice);
         }
         emit BuyTicket(msg.sender, num);
@@ -103,6 +103,14 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _claimLimit = newClaimLimit;
     }
 
+    function clearClaimLimit(address[] memory accountList) public onlyOwner {
+        for (uint256 i; i < accountList.length; i++) {
+            if(_claimTimeLimit[accountList[i]] == 1) {
+                _claimTimeLimit[accountList[i]]--;
+            }
+        }
+    }
+
     function setFoundAdd(address newFoundAdd) public onlyOwner {
         require(newFoundAdd != BlackHole, "Invalid  address");
         _kakiFoundation = newFoundAdd;
@@ -118,7 +126,13 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _squidCoinBase = newSquidCoinBaseAdd;
     }
 
+    //***************************************** read   ***************************************** */  
+
+    function getClaimLimit(address account) public view override returns(uint256 claimLimit) {
+        return _claimTimeLimit[account];
+    }
+
     function version() public pure returns (uint256) {
-        return 6;
+        return 10;
     }
 }
