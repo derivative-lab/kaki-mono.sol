@@ -64,7 +64,7 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     function lockTradingReward(address account, uint256 amount) public override isTrading {
         require(amount > 0, "Invalid amount");
         if(_userLockedTradeRewards[account]._lastClaimTime != 0) {
-            claimTradingReward(msg.sender);
+            claimTradingReward(account);
         }
         _userLockedTradeRewards[account]._locked += amount;
     }
@@ -79,7 +79,7 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     }
 
     function claimTradingReward(address account) public override {
-        require(_userLockedTradeRewards[account]._lastClaimTime != 0, "You do not have bounus to claim.");
+        require(_userLockedTradeRewards[account]._locked != 0, "You do not have bounus to claim.");
         uint256 bonus;
         uint256 currentTime = block.timestamp;
         if (currentTime - _userLockedTradeRewards[account]._lastClaimTime < _tradingPeriod) {

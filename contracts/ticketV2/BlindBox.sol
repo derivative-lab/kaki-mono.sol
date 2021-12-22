@@ -55,15 +55,13 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
     }
 
     function aBoxOpen() public override isAble {
-        //require(_kaki.balanceOf(msg.sender) >= _aPrice, "Do not have enough kaki token.");
         _kaki.transferFrom(msg.sender, _squidCoinBase, _aPrice);
-        uint256 rand = random(0, 10);
-        _kakiTicket.mint(msg.sender, _commonChip, rand + 5, _aPrice, 0);
+        uint256 rand = random(5, 15);
+        _kakiTicket.mint(msg.sender, _commonChip, rand, _aPrice, 0);
         emit BuyABox(msg.sender);
     }
 
     function bBoxOpen() public override isAble {
-        //require(_kaki.balanceOf(msg.sender) >= _bPrice, "Do not have enough kaki token.");
         _kaki.transferFrom(msg.sender, _squidCoinBase, _bPrice);
         uint256 randTicket = random(1, 100);
         uint256 rand = random(0, 10);
