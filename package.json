@@ -82,6 +82,7 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.4.0",
     "@openzeppelin/contracts-upgradeable": "^4.4.0",
-    "abdk-libraries-solidity": "^3.0.0"
+    "abdk-libraries-solidity": "^3.0.0",
+    "chalk": "^4.1.2"
   }
 }
