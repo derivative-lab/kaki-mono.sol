@@ -27,7 +27,7 @@ contract KakiZap is IZap, WithAdminRole {
     }
 
     receive() external payable {}
-    //******************************************************************** */
+    
     function zapInToken(address from, uint amount, address to) public override {
         IERC20(from).transferFrom(msg.sender, address(this), amount);
         _approveTokenIfNeeded(from);
@@ -78,7 +78,6 @@ contract KakiZap is IZap, WithAdminRole {
         }
     }
 
-    //******************************* private ********************************/
     function _approveTokenIfNeeded(address token) private {
         if (IERC20(token).allowance(address(this), address(ROUTER)) == 0) {
             IERC20(token).approve(address(ROUTER), uint(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)); 

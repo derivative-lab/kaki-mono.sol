@@ -26,7 +26,7 @@ contract KakiTicket is IkakiTicket, BaseERC721 {
         increaceTokenId();
     }
 
-    function getTicketMessage(uint256 tokenId) external override view returns (TicketPara memory) {
+    function getTicketInfo(uint256 tokenId) external override view returns (TicketPara memory) {
         return (_ticketPara[tokenId]);
     }
 }

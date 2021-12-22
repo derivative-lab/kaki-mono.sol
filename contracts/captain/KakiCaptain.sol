@@ -19,10 +19,12 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
     uint256[30] startId;
     uint256[30] endId;
     uint256[30] mineRate;
+    address claimCon;
     mapping(uint256 => CapPara) _capPara;
 
     function initialize() public initializer{
         __BaseERC721_init("", "");
+        claimCon = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;
         lowMember = 2;
         mediumMember = 5;
         highMember = 10;
@@ -61,6 +63,7 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
         _mint(_to, tokenId);
     }
 
+    //*************************** admin *********************************** */
     function setMember(uint256 newLowMember, uint256 newMediumMember, uint256 newHighMember) public onlyOwner {
         lowMember = newLowMember;
         mediumMember = newMediumMember;
@@ -78,6 +81,7 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
         highCombineRate = newHighCombineRate;
     }
 
+    //*************************** view *********************************** */
     function getCapType(uint256 tokenId) public override view returns (uint256) {
         uint256 capType;
         for (uint i; i < 30; i++) {
