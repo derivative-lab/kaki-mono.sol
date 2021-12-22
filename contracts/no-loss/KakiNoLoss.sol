@@ -40,15 +40,19 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     mapping(uint256 => mapping(uint256 => uint256)) public _roundStartTime;
     mapping(uint256 => bool) public _isChapterEnd;
     mapping(uint256 => uint256) public _interest;
+    mapping(uint256 => uint256) public _nftFactionInterest;
 
     uint256 public _nextFactionId;
     mapping(uint256 => Faction) public _factionStatus;
-    mapping(address => Account) public _accountFactionInfo;
+    mapping(address => Account) public _accountGlobalInfo;
     mapping(address => mapping(uint256 => AccountFaction)) public _accountFactionStatus;
 
     mapping(uint256 => mapping(uint256 => Pool)) public _poolState;
     mapping(uint256 => uint256) public _winnerKC;
     struct Faction {
+        uint256 _factionType;  //船队类型 1普通船队 2nft船队
+        uint256 _memberLimit;
+        uint256 _kcAddRatio;        
         address _captain;
         uint256 _captainBonus;
         uint256 _createTime;
@@ -139,9 +143,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         initAccountChapterKcInner(_nextFactionId,_chapter,captionKc);
         _accountFactionStatus[msg.sender][_nextFactionId]._lastCheckChapter = _chapter;
 
-        if (_accountFactionInfo[msg.sender]._bonusChapter == 0)
-            _accountFactionInfo[msg.sender]._bonusChapter = _chapter;
-        _accountFactionInfo[msg.sender]._factionArr.push(_nextFactionId);
+        if (_accountGlobalInfo[msg.sender]._bonusChapter == 0)
+            _accountGlobalInfo[msg.sender]._bonusChapter = _chapter;
+        _accountGlobalInfo[msg.sender]._factionArr.push(_nextFactionId);
         emit CreateFaction(msg.sender, _nextFactionId, time);
         _nextFactionId++;
     }
@@ -156,7 +160,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         require(_chapterStartTime[_chapter]+_weekTime > time, "please wait new _chapter!");
         require(factionId < _nextFactionId, "Cannot join uncreated factions.");
         require(
-            _accountFactionInfo[msg.sender]._factionArr.length == 0,
+            _accountGlobalInfo[msg.sender]._factionArr.length == 0,
             "Before join a faction, please leave other factions."
         );
         require(amount > 0, "Amount must be greater than 0.");
@@ -166,9 +170,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         updateFactioinAndAccount(factionId, tokenIndex, amount);
         
-        _accountFactionInfo[msg.sender]._factionArr.push(_nextFactionId);
-        if (_accountFactionInfo[msg.sender]._bonusChapter == 0)
-            _accountFactionInfo[msg.sender]._bonusChapter = _chapter;
+        _accountGlobalInfo[msg.sender]._factionArr.push(_nextFactionId);
+        if (_accountGlobalInfo[msg.sender]._bonusChapter == 0)
+            _accountGlobalInfo[msg.sender]._bonusChapter = _chapter;
         emit JoinFaction(msg.sender, factionId, tokenIndex, amount, time);
     }
 
@@ -298,11 +302,11 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function delAccountFaction(uint256 factionId) internal {
-        uint256 len = _accountFactionInfo[msg.sender]._factionArr.length;
+        uint256 len = _accountGlobalInfo[msg.sender]._factionArr.length;
         for (uint256 i; i < len; i++) {
-            if (_accountFactionInfo[msg.sender]._factionArr[i] == factionId) {
-                _accountFactionInfo[msg.sender]._factionArr[i] = _accountFactionInfo[msg.sender]._factionArr[len - 1];
-                delete _accountFactionInfo[msg.sender]._factionArr[len - 1];
+            if (_accountGlobalInfo[msg.sender]._factionArr[i] == factionId) {
+                _accountGlobalInfo[msg.sender]._factionArr[i] = _accountGlobalInfo[msg.sender]._factionArr[len - 1];
+                delete _accountGlobalInfo[msg.sender]._factionArr[len - 1];
             }
         }
     }
@@ -468,7 +472,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function updateBonus() public returns (uint256) {
         uint256 bonus;
-        uint256 chapter=_accountFactionInfo[msg.sender]._bonusChapter;
+        uint256 chapter=_accountGlobalInfo[msg.sender]._bonusChapter;
         uint256 endChapter;
         //判断当前chapter没有结束
         if(_isChapterEnd[_chapter])
@@ -476,8 +480,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         else if(_chapter>0)
             endChapter=_chapter-1;    
             
-        for (uint256 fi; fi < _accountFactionInfo[msg.sender]._factionArr.length; fi++) {
-            uint256 factionId = _accountFactionInfo[msg.sender]._factionArr[fi];
+        for (uint256 fi; fi < _accountGlobalInfo[msg.sender]._factionArr.length; fi++) {
+            uint256 factionId = _accountGlobalInfo[msg.sender]._factionArr[fi];
             initFactionChapterKC(factionId);            
             Faction storage faction = _factionStatus[factionId];
             /**_lastCheckChapter 当前chapter没有结束 */
@@ -501,7 +505,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 faction._captainBonus = 0;
             }
         }
-        _accountFactionInfo[msg.sender]._bonusChapter = endChapter;
+        _accountGlobalInfo[msg.sender]._bonusChapter = endChapter;
          if (bonus != 0) {
             _kakiToken.transfer(msg.sender, bonus);            
         }
@@ -544,7 +548,12 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function addBonus(uint256 amount) public{
         require(amount > 0, "The amount cannot be 0.");
-        _interest[_chapter]+=amount;
+        _interest[_chapter+]+=amount;
+    }
+
+    function addNFTFactionBonus(uint256 amount) public{
+        require(amount > 0, "The amount cannot be 0.");
+        _nftFactionInterest[_chapter+]+=amount;
     }
 
     /*
