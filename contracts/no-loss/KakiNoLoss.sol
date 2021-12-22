@@ -165,7 +165,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         );
         require(amount > 0, "Amount must be greater than 0.");
 
-        console.log('balance',_tokenAssemble[tokenIndex].balanceOf(msg.sender));
         _tokenAssemble[tokenIndex].transferFrom(msg.sender, address(this), amount);
 
         updateFactioinAndAccount(factionId, tokenIndex, amount);
@@ -306,7 +305,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         for (uint256 i; i < len; i++) {
             if (_accountGlobalInfo[msg.sender]._factionArr[i] == factionId) {
                 _accountGlobalInfo[msg.sender]._factionArr[i] = _accountGlobalInfo[msg.sender]._factionArr[len - 1];
-                delete _accountGlobalInfo[msg.sender]._factionArr[len - 1];
+                _accountGlobalInfo[msg.sender]._factionArr.pop();
             }
         }
     }
@@ -548,12 +547,12 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function addBonus(uint256 amount) public{
         require(amount > 0, "The amount cannot be 0.");
-        _interest[_chapter+]+=amount;
+        _interest[_chapter+1]+=amount;
     }
 
     function addNFTFactionBonus(uint256 amount) public{
         require(amount > 0, "The amount cannot be 0.");
-        _nftFactionInterest[_chapter+]+=amount;
+        _nftFactionInterest[_chapter+1]+=amount;
     }
 
     /*
