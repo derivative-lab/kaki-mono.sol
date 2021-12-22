@@ -50,11 +50,11 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     function lockFarmReward(address account, uint256 amount) public override isFarm {
         uint256 currentTimestamp = block.timestamp;
         uint256 claimableAmount = amount * _farmRate / THOUSAND;
-        _userFarmUnlockedAmount[account] += amount - claimableAmount;
-        _userFarmLockedAmount[account] += claimableAmount;
+        _userFarmUnlockedAmount[account] += claimableAmount;
+        _userFarmLockedAmount[account] += amount - claimableAmount;
         _userLockedFarmRewards[account].push(
             LockedFarmReward({
-                    _locked: claimableAmount,
+                    _locked: amount - claimableAmount,
                     _timestamp: currentTimestamp,
                     _claim: true
                 })
