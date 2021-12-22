@@ -91,7 +91,6 @@ contract KakiZap is IZap, WithAdminRole {
             IPancakePair pair = IPancakePair(lp);
             address token0 = pair.token0();
             address token1 = pair.token1();
-            //kaki-wbnb
             if (token0 == WBNB || token1 == WBNB) {
                 address token = token0 == WBNB ? token1 : token0;
                 uint swapValue = amount / 2;
@@ -100,7 +99,6 @@ contract KakiZap is IZap, WithAdminRole {
                 pair.skim(address(this));
                 ROUTER.addLiquidityETH{value : amount - swapValue}(token, tokenAmount, 0, 0, receiver, block.timestamp);
             } else {
-                //kaki-busd
                 uint swapValue = amount / 2;
                 uint token0Amount = _swapBNBForToken(token0, swapValue, address(this));
                 uint token1Amount = _swapBNBForToken(token1, amount - swapValue, address(this));
@@ -134,13 +132,11 @@ contract KakiZap is IZap, WithAdminRole {
 
     function _swap(address from, uint amount, address to, address receiver) private returns (uint) {
         address[] memory path;
-        // wbnb - kaki
         if (from ==WBNB || to == WBNB) {
             path = new address[](2);
             path[0] = from;
             path[1] = to;
         } else {
-            //kaki - busd
             path = new address[](3);
             path[0] = from;
             path[1] = WBNB;
@@ -153,14 +149,12 @@ contract KakiZap is IZap, WithAdminRole {
 
     function _safeSwapToBNB(uint amount) private returns (uint) {
         require(IERC20(WBNB).balanceOf(address(this)) >= amount, "Not enough WBNB balance.");
-        require(safeSwapBNB != address(0), "SafeSwapBNB is not set.");
         uint beforeBNB = address(this).balance;
 
         IERC20(WBNB).transferFrom(msg.sender, address(this), amount);
         IWETH(WBNB).withdraw(amount);
-        //SafeToken.safeTransferETH(msg.sender, amount);
         (bool success, ) = msg.sender.call{ value: amount }(new bytes(0));
-        require(success, "!safeTransferETH");
+        require(success, "! safe transfer bnb");
 
         return address(this).balance - beforeBNB;
     }
