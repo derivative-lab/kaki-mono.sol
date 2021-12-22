@@ -63,7 +63,7 @@ contract ClaimLock is IClaimLock, WithAdminRole {
 
     function lockTradingReward(address account, uint256 amount) public override isTrading {
         require(amount > 0, "Invalid amount");
-        if(_userLockedTradeRewards[account]._lastClaimTime !=0) {
+        if(_userLockedTradeRewards[account]._lastClaimTime != 0) {
             claimTradingReward(msg.sender);
         }
         _userLockedTradeRewards[account]._locked += amount;
