@@ -4,6 +4,7 @@ import "../base/WithAdminRole.sol";
 import "../interfaces/IERC20.sol";
 import "../interfaces/IKakiGarden.sol";
 import "../interfaces/IClaimLock.sol";
+import {DebtToken} from "./DebtToken.sol";
 
 contract KakiGarden is IKakiGarden, WithAdminRole {
     // start mine block number
@@ -33,6 +34,30 @@ contract KakiGarden is IKakiGarden, WithAdminRole {
 
     function setRewardLocker(IClaimLock rewardLocker) public restricted {
         _rewardLocker = rewardLocker;
+    }
+
+    function addPool(
+        uint256 allocPoint,
+        IERC20 token,
+        string memory name
+    ) public {
+        require(_poolId1[address(token)] == 0, "addPool: token is already in pool");
+
+        uint256 pl = _poolInfo.length;
+        _poolId1[address(token)] = pl + 1;
+
+        _poolInfo.push(
+            PoolInfo({
+                allocPoint: allocPoint,
+                pid: pl,
+                token: token,
+                debtToken: new DebtToken(
+                    string(abi.encodePacked("k-", token.name())),
+                    string(abi.encodePacked("k-", token.symbol()))
+                ),
+                name: name
+            })
+        );
     }
 
     function harvest(uint256 pid) public override {

@@ -1,6 +1,7 @@
 pragma solidity ^0.8.0;
 
-import "../interfaces/IERC20.sol";
+import "./IERC20.sol";
+import {IDebtToken} from "./IDebtToken.sol";
 
 interface IKakiGarden {
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
@@ -18,9 +19,8 @@ interface IKakiGarden {
     struct PoolInfo {
         uint256 allocPoint;
         uint256 pid;
-        uint256 totalStake;
         IERC20 token;
-        IERC20 debtToken;
+        IDebtToken debtToken;
         string name;
     }
 
