@@ -18,6 +18,12 @@ import {
   OpenBox,
   OpenBox__factory,
   IERC20,
+  BlindBox,
+  BlindBox__factory,
+  KakiTicket,
+  KakiTicket__factory,
+  ClaimLock,
+  ClaimLock__factory
 } from '~/typechain';
 
 import { getSigner } from '~/utils/contract';
@@ -60,13 +66,13 @@ export async function deployMockERC20(name: string, symbol: string, issue: BigNu
   return factory.attach(instance.address);
 }
 
-export async function deployBlindBoxDrop() {
-  const signer0 = await getSigner(0);
-  const factory = new KakiBlindBox__factory(signer0);
-  const instance = await upgrades.deployProxy(factory);
-  console.log(`BlindBoxDrop deployed to : ${instance.address}`)
-  return instance as KakiBlindBox;
-}
+// export async function deployBlindBoxDrop() {
+//   const signer0 = await getSigner(0);
+//   const factory = new KakiBlindBox__factory(signer0);
+//   const instance = await upgrades.deployProxy(factory);
+//   console.log(`BlindBoxDrop deployed to : ${instance.address}`)
+//   return instance as KakiBlindBox;
+// }
 
 export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink: MockChainLink, payWallet: string) {
   const signer0 = await getSigner(0);
@@ -100,10 +106,8 @@ export async function deployNoLoss(kaki: MockToken, bnbToken: MockToken, busdTok
 }
 
 export async function deployTicket() {
-
   const signer0 = await getSigner(0);
   const factory = new Ticket__factory(signer0)
-
   const instance = await upgrades.deployProxy(factory);
   console.log(`Ticket deployed to : ${instance.address}`)
   return instance as Ticket;
@@ -132,6 +136,37 @@ export async function deployAddrssList() {
   return instance as AddressList;
 }
 
+export async function deployKakiTicket() {
+  const signer0 = await getSigner(0);
+  const factory = new KakiTicket__factory(signer0);
+  const instance = await upgrades.deployProxy(factory);
+  console.log(`kakiTicket deployed to : ${instance.address}`);
+  return instance as KakiTicket;
+}
+
+export async function deployBlindBox(kakiTicket: KakiTicket, busd:IERC20) {
+  const signer0 = await getSigner(0);
+  const args: Parameters<BlindBox['initialize']> = [
+    kakiTicket.address,
+    busd.address
+  ];
+  const factory = new BlindBox__factory(signer0);
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`blindBox deployed to : ${instance.address}`);
+  return instance as BlindBox;
+}
+
+// export async function deployClaimLock(farm: , trading: , kaki: IKaki, pool) {
+//   const signer0 = await getSigner(0);
+//   const args: Parameters<ClaimLock['initialize']> = [
+
+//   ];
+//   const factory = new ClaimLock__factory(signer0);
+//   const instance = await upgrades.deployProxy(factory, args);
+//   console.log(`blindBox deployed to : ${instance.address}`);
+//   return instance as ClaimLock;
+// }
+
 export async function deployAll() {
   // const usdt = await deployMockUsdt();
   const kakiToken = await deployMockERC20('KAKI', 'KAKI', ethers.utils.parseEther(`1${'0'.repeat(10)}`));
@@ -143,12 +178,14 @@ export async function deployAll() {
 
   const chainlink = await deployMockChainLink();
   const ticket = await deployTicket();
+  const kakiTicket = await deployKakiTicket();
 
   const signer0 = await getSigner(0);
   const allowList = await deployAddrssList();
   const openBox = await deployOpenBox(ticket, usdt, Math.ceil(Date.now() / 1000 + 24 * 3600), allowList);
   const game = await deploySquidGame(ticket, usdt, chainlink, signer0.address);
+  const blindBox = await deployBlindBox(kakiTicket, usdt);
   const noLoss = await deployNoLoss(kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
 
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, noLoss, allowClaimTicket: allowList };
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, noLoss, allowClaimTicket: allowList,  blindBox, kakiTicket};
 }
