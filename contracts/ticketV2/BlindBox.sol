@@ -3,19 +3,19 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../base/WithRandom.sol";
 import "../base/WithAdminRole.sol";
-import "../interfaces/IkakiTicket.sol";
+import "../interfaces/IKakiTicket.sol";
+import "../interfaces/IKakiCaptain.sol";
 import "../interfaces/IBlindBox.sol";
 
 contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
 
     IERC20 _kaki;
-    IkakiTicket _kakiTicket;
-    //IkakiCaptain _kakiCaptain;
+    IKakiTicket _kakiTicket;
+    IKakiCaptain _kakiCaptain;
 
     string[] _uri;
     bool _able;
-    uint256 _count;
-    uint256 _sTicketCount;
+    uint256 _startTime;
     uint256 public _aPrice;
     uint256 public _bPrice;
     uint256 public _sTicketProb;
@@ -27,12 +27,14 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
     address public _squidCoinBase;
     address public _squidGameFound;
     address constant BlackHole = 0x0000000000000000000000000000000000000000;
+    mapping(uint256 => uint256) _sTicketCount;
 
-    function initialize(IkakiTicket ercAdd, IERC20 kTokenAdd) public initializer {
+    function initialize(IKakiTicket ercAdd, IERC20 kTokenAdd, IKakiCaptain capAdd) public initializer {
         __WithAdminRole_init();
         _kaki = kTokenAdd;
         _kakiTicket = ercAdd;
-        //_kakiCaptain = ;
+        _startTime = ;
+        _kakiCaptain = capAdd;
         _aPrice = 100 ether;
         _bPrice = 150 ether;
         _commonChip = 16;
@@ -68,9 +70,9 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
 
         if (randTicket <= 80) {
             _kakiTicket.mint(msg.sender, _commonChip, rand + 5, _aPrice, 0);
-        } else if (randTicket > 95 && _sTicketCount < 6) {
+        } else if (randTicket > 95 && _sTicketCount[(block.timestamp - _startTime) / 86400] < 6) {
             _kakiTicket.mint(msg.sender, _rareChip, _sTicketProb, _bPrice, 2);
-            _sTicketCount++;
+            _sTicketCount[(block.timestamp - _startTime) / 86400]++;
         } else {
             _kakiTicket.mint(msg.sender, _rareChip, rand + 10, _bPrice, 1);
         }
@@ -123,7 +125,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
     }
 
     function setERC721(address ercAdd) public onlyOwner {
-        _kakiTicket = IkakiTicket(ercAdd);
+        _kakiTicket = IKakiTicket(ercAdd);
     }
 
     function setSquidFoundAdd(address newSquidFoundAdd) public onlyOwner {

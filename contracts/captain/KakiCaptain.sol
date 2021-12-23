@@ -81,6 +81,7 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
         highCombineRate = newHighCombineRate;
     }
 
+
     //*************************** view *********************************** */
     function getCapType(uint256 tokenId) public override view returns (uint256) {
         uint256 capType;
@@ -93,22 +94,22 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
         return capType;
     }
 
-    function getCapInfo(uint256 tokenId) public override view returns (CapPara[] memory capPara) {
+    function getCapInfo(uint256 tokenId) public override view returns (CapPara memory capPara) {
         uint256 capType = getCapType(tokenId);
-        capPara[tokenId].captainType = capType;
+        capPara.captainType = capType;
         if (capType <= 14) {
-            capPara[tokenId].combineRate = lowCombineRate;
-            capPara[tokenId].capName = capName[0];
+            capPara.combineRate = lowCombineRate;
+            capPara.capName = capName[0];
         } else if (capType <= 22) {
-            capPara[tokenId].combineRate = mediumCombineRate;
-            capPara[tokenId].capName = capName[1];
+            capPara.combineRate = mediumCombineRate;
+            capPara.capName = capName[1];
         } else {
-            capPara[tokenId].combineRate = highCombineRate;
-            capPara[tokenId].capName = capName[2];
+            capPara.combineRate = highCombineRate;
+            capPara.capName = capName[2];
         }
 
-        capPara[tokenId].miningRate = mineRate[capType - 1];
+        capPara.miningRate = mineRate[capType - 1];
         capType = capType - capType / 3;
-        capPara[tokenId].memberNum = member[capType];
+        capPara.memberNum = member[capType];
     }
 }
