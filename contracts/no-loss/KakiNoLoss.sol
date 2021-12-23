@@ -12,9 +12,9 @@ import "hardhat/console.sol";
 
 contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     uint256 internal constant _BASE = 1000;
-    uint256 internal constant _DEPOSIT_TOKEN_SORT = 4;
     uint256 internal constant _KTOKENDECIMALS = 10**18;
-
+    uint256 internal constant _DEPOSIT_TOKEN_SORT = 4;
+    
     IAggregatorInterface _aggregator;
     IERC20 internal _kakiToken;
     IERC20 internal _bnbToken;
@@ -30,6 +30,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     uint256 _tradingTime;
     uint256 _captionKC;
     uint256 _captionKAKI;
+    
     uint256 public _captainRateLimit;
     uint256 public _kakiFoundationRate;
     address public _kakiFoundationAddress;
@@ -51,21 +52,23 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     mapping(uint256 => uint256) public _winnerKC;
     struct Faction {
         uint256 _factionType;  //船队类型 1普通船队 2nft船队
-        uint256 _memberLimit;
-        uint256 _kcAddRatio;        
-        address _captain;
+        uint256 _memberLimit;  //船员人数限制
+        uint256 _kcAddRatio;   //kc加成     
+        uint256 _enableWhiteList; //nft船队 0不开启白名单 1开启白名单
         uint256 _captainBonus;
         uint256 _createTime;
         uint256 _lastCheckChapter;
         uint256 _lastIndexChapter;
         uint256[_DEPOSIT_TOKEN_SORT] _stakeAmount;
         uint256 _totalIndex;
+        address _captain;
         mapping(uint256 => uint256) _index;
         mapping(uint256 => uint256[]) _lastFireRound;
         mapping(uint256 => uint256) _chapterKC;
         mapping(uint256 => uint256) _totalChapterKC;
         mapping(uint256 => uint256) _factionWinnerKC;
         mapping(uint256 => mapping(uint256 => FirePool)) _fire;
+        mapping(address => uint256) _whiteList;
     }
 
     struct Account {
@@ -128,9 +131,16 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function createFaction(uint256 nftId) public {
         uint256 time = getTimestamp();
-        console.log('createFaction',_chapterStartTime[_chapter]+_weekTime ,time);
         require(_chapterStartTime[_chapter]+_weekTime > time, "please wait new _chapter!");
 
+        if(nftId>0){
+            _factionStatus[_nextFactionId]._memberLimit=3;  //船员人数限制
+            _factionStatus[_nextFactionId]._kcAddRatio=1;   //kc加成    
+            _factionStatus[_nextFactionId]._factionType=2;
+        }else{
+            require(_accountGlobalInfo[msg.sender]._factionArr.length == 0,"Before create a normal faction, please leave other factions.");
+            _factionStatus[_nextFactionId]._factionType=1;
+        }
         _kakiToken.transferFrom(msg.sender, address(this), _captionKAKI);
 
         uint256 captionKc = calKc(_captionKC);
