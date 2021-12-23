@@ -33,7 +33,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
         __WithAdminRole_init();
         _kaki = kTokenAdd;
         _kakiTicket = ercAdd;
-        _startTime = ;
+        _startTime = 7776000;   //!
         _kakiCaptain = capAdd;
         _aPrice = 100 ether;
         _bPrice = 150 ether;
@@ -136,10 +136,6 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
     function setSquidCoinBaseAdd(address newSquidCoinBaseAdd) public onlyOwner {
         require(newSquidCoinBaseAdd != BlackHole, "Invalid  address");
         _squidCoinBase = newSquidCoinBaseAdd;
-    }
-
-    function setSuperTCount() public onlyOwner {
-        _sTicketCount = 0;
     }
 
     function setAble() public onlyOwner {
