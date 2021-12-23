@@ -1,5 +1,8 @@
+import { BlindBox } from './../typechain/BlindBox.d';
+import { KakiBlindBox } from './../typechain/KakiBlindBox.d';
+import { KakiTicket } from './../typechain/KakiTicket.d';
 import { deployments, ethers, network } from 'hardhat';
-import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -18,6 +21,8 @@ export const frontendUsedContracts = [
   "IBlindBox",
   "IBaseERC721",
   "AddressList",
+  "IKakiTicket",
+  "IBlindBox"
 ];
 
 export const webToolsContractNames = [
@@ -77,6 +82,12 @@ export const contractAddress = {
   get squidOpenBox() {
     return getItem('squidOpenBox');
   },
+  get kakiTicket() {
+    return getItem('kakiTicket');
+  },
+  get blindBox() {
+    return getItem('blindBox');
+  },
   get facet() {
     return getItem('facet');
   },
@@ -111,6 +122,7 @@ export async function busdContract() {
 export async function oracleContract() {
   return MockChainLink__factory.connect(contractAddress.oracle, await getSigner(0));
 }
+
 export async function squidAllowListContract(signerIndex = 0) {
   return AddressList__factory.connect(contractAddress.squidAllowList, await getSigner(signerIndex));
 }
@@ -123,7 +135,14 @@ export async function squidOpenBoxContract(signerIndex = 0) {
   return OpenBox__factory.connect(contractAddress.squidOpenBox, await getSigner(signerIndex));
 }
 
-
 export async function squidGameContract(signerIndex = 0) {
   return KakiSquidGame__factory.connect(contractAddress.squidGame, await getSigner(signerIndex));
+}
+
+export async function kakiTicketContract(signerIndex = 0) {
+  return KakiTicket__factory.connect(contractAddress.kakiTicket, await getSigner(signerIndex));
+}
+
+export async function blindBoxContract(signerIndex = 0) {
+  return BlindBox__factory.connect(contractAddress.blindBox, await getSigner(signerIndex));
 }
