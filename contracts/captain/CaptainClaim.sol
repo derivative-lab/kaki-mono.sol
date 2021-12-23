@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     mapping(address => bool) _claim;
     mapping(address => uint256) _claimTimeLimit;
+    mapping(address => uint256) _mintTimeLimit;
 
     IERC20 _busd;
     IKakiCaptain public _captain;
@@ -21,6 +22,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     uint256[] tokenIdList;
     uint256 _count;
     uint256 public _mintPrice;
+    uint256 public _mintLimit;
     uint256 public _claimLimit;
     uint256 public _invalidTime;
     uint256 public _foundationRate;
@@ -34,6 +36,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         _addressList = allowList;
         _mintPrice = 0.1 ether;
         _claimLimit = 1;
+        _mintLimit = 1;
         _invalidTime = invalidTime;
         _kakiFoundation = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d; // kaki foundation address
     }
@@ -58,10 +61,11 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     }
 
     function mint() public override payable isAble {
-        (bool sent, ) = address(this).call{value: _mintPrice}(new bytes(0));
-        require(sent, "Failed to send Ether");
+        require(msg.value == _mintPrice, "BNB not enough");
+        require(_mintTimeLimit[msg.sender] < _mintLimit, "Claim too much.");
         uint256 tokenId = getRandId();
         _captain.mint(msg.sender, tokenId);
+        _mintTimeLimit[msg.sender]++;
         emit Mint(msg.sender, tokenId);
     }
 
