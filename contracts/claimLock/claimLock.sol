@@ -101,11 +101,22 @@ contract ClaimLock is IClaimLock, WithAdminRole {
         LockedFarmReward[] memory user = _userLockedFarmRewards[account];
         if(user.length != 0) {
             for(uint256 i; i < user.length; i++) {
-                if(currentTime - user[i]._timestamp < _farmPeriod){
-                    if(user[i]._claim) {
-                        unlockedAmount += user[i]._locked * (currentTime - user[i]._timestamp) / _farmPeriod;
-                    }
+                unlockedAmount += getClaimableFarmRewardSingle(account, i);
+            }
+        }
+        return unlockedAmount;
+    }
+
+    function getClaimableFarmRewardSingle(address account, uint256 index) public override view returns (uint256) {
+        uint256 currentTime = block.timestamp;
+        uint256 unlockedAmount = _userFarmUnlockedAmount[account];
+        LockedFarmReward[] memory user = _userLockedFarmRewards[account];
+        if(index < user.length) {
+            if(user[index]._claim) {
+                if(currentTime - user[index]._timestamp < _farmPeriod){
+                    unlockedAmount = user[index]._locked * (currentTime - user[index]._timestamp) / _farmPeriod;
                 }
+                else unlockedAmount = user[index]._locked;
             }
         }
         return unlockedAmount;
