@@ -18,28 +18,20 @@ function prettyAndEscape(abi: any) {
   return abiEscaped;
 }
 
-async function copyAbiToMetaProject() {
-  for (const name of webToolsContractNames) {
-    const abi = JSON.stringify((<any>typechain)[`${name}__factory`].abi);
-    await fs.writeFile(`../blade-game-meta/src/abi/${name}.json`, abi);
-    console.log(
-      `copy ${chalk.cyan(name)} to blade-game-meta/src/abi/${name}.json`
-    );
-  }
-}
+
 
 async function copyAbiToWebTools() {
   const repoBase = `/Volumes/data/workspace/startup/bladegame/web-tools`;
 
 
   const repo = gitP(repoBase);
+  await repo.checkout('kaki');
   if ((await repo.status()).isClean()) {
     for (const name of webToolsContractNames) {
       const abi = JSON.stringify((<any>typechain)[`${name}__factory`].abi);
       await fs.writeFile(`${repoBase}/contracts/${name}.json`, abi);
       console.log(`copy ${chalk.cyan(name)} to web-tools/contracts/${name}.json`);
     }
-    await repo.checkout('kaki');
     await repo.add(".");
     await repo.commit("add abi");
     await repo.push('fox');
