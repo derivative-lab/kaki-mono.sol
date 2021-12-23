@@ -69,9 +69,13 @@ describe('noloss game', async () => {
     await noLoss.battleDamage();
     await network.provider.send("evm_increaseTime", [5 * 60]);
     await noLoss.battleDamage();
-    await network.provider.send("evm_increaseTime", [7 * 24 * 60 * 60-15*60]);
+    await network.provider.send("evm_increaseTime", [ 24 * 60 * 60-15*60]);
+    await noLoss.claimBonus(); 
+    await network.provider.send("evm_increaseTime", [ 6 * 24 * 60 * 60]);
     await noLoss.addLoot();
-    await noLoss.claimBonus();
+    users[1].noLoss.claimBonus();
+    users[2].noLoss.claimBonus();
+    //await noLoss.claimBonus();   
     //await noLoss.fire();
 
 
