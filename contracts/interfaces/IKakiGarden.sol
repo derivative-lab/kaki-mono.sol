@@ -27,4 +27,8 @@ interface IKakiGarden {
     function harvest(uint256 pid) external;
 
     function harvestMany(uint256[] memory pids) external;
+
+    function withdraw(uint256 pid, uint256 amount) external;
+
+    function deposit(uint256 pid, uint256 amount) external;
 }
