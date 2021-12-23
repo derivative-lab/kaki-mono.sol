@@ -13,7 +13,6 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     uint256 public _farmPeriod;
     uint256 public _tradingPeriod;
     uint256 public _farmRate;
-    uint256 public _tradingRate;
     address public _addFarm;
     address public _addTrading;
     address public _addPool;
@@ -36,15 +35,13 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     function initialize(address farmAdd, address tradingAdd, IKaki kTokenAdd, address poolAdd) public initializer {
         __WithAdminRole_init();
         _farmPeriod = 7776000;
-        _tradingPeriod = 15552000;
-        //trading start time
-        //_tradingStartTime = xxxxxxx
+        _tradingPeriod = 31104000;
+        _tradingStartTime = 31104000; //trading start time !!!!
         _addFarm = farmAdd;
         _addTrading = tradingAdd;
         _addPool = poolAdd;
         _kaki = kTokenAdd;
         _farmRate = 500;
-        _tradingRate = 200;
     }
 
     function lockFarmReward(address account, uint256 amount) public override isFarm {
@@ -63,7 +60,7 @@ contract ClaimLock is IClaimLock, WithAdminRole {
 
     function lockTradingReward(address account, uint256 amount) public override isTrading {
         require(amount > 0, "Invalid amount");
-        if(_userLockedTradeRewards[account]._lastClaimTime != 0) {
+        if(_userLockedTradeRewards[account]._locked != 0) {
             claimTradingReward(account);
         }
         _userLockedTradeRewards[account]._locked += amount;
@@ -82,10 +79,13 @@ contract ClaimLock is IClaimLock, WithAdminRole {
         require(_userLockedTradeRewards[account]._locked != 0, "You do not have bounus to claim.");
         uint256 bonus;
         uint256 currentTime = block.timestamp;
+        if (_userLockedTradeRewards[account]._lastClaimTime == 0) {
+            _userLockedTradeRewards[account]._lastClaimTime = _tradingStartTime;
+        }
         if (currentTime - _userLockedTradeRewards[account]._lastClaimTime < _tradingPeriod) {
             bonus = _userLockedTradeRewards[account]._locked 
                             * (currentTime - _userLockedTradeRewards[account]._lastClaimTime) 
-                            / _tradingPeriod;
+                            / (_tradingPeriod + _tradingStartTime - _userLockedTradeRewards[account]._lastClaimTime);
         } else {
             bonus = _userLockedTradeRewards[account]._locked;
         }
@@ -113,7 +113,7 @@ contract ClaimLock is IClaimLock, WithAdminRole {
 
     function getTradingUnlockReward(address account) public override view returns (uint256) {
         return _userLockedTradeRewards[account]._locked;
-    } 
+    }
 
     //**************************** admin function ****************************/
     function setTradingAdd(address newTradingAdd) public onlyOwner {
