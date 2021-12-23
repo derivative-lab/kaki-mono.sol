@@ -43,7 +43,13 @@ contract Ticket is BaseERC721, ITicket {
         }
     }
 
+    function setInvalidTime(uint256[] memory idList,uint256 newTime) public onlyOwner {
+        for (uint256 i; i < idList.length; i++) {
+            _ticketInfo[idList[i]].invalidTime=newTime;
+        }
+    }
+
     function version() public pure returns (uint256) {
-        return 2;
+        return 3;
     }
 }
