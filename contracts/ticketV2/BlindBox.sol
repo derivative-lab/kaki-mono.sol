@@ -33,7 +33,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
         __WithAdminRole_init();
         _kaki = kTokenAdd;
         _kakiTicket = ercAdd;
-        _startTime = 7776000;   //!
+        _startTime = 7776000;   //start time set before deploy!
         _kakiCaptain = capAdd;
         _aPrice = 100 ether;
         _bPrice = 150 ether;
