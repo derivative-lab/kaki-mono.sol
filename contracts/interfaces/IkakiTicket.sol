@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
-import "../../interfaces/IBaseERC721.sol";
-interface IkakiTicket is IBaseERC721 {
+import "./IBaseERC721.sol";
+interface IKakiTicket is IBaseERC721 {
 
     struct TicketPara {
         uint256 chip;
@@ -17,5 +17,5 @@ interface IkakiTicket is IBaseERC721 {
         uint256 _ticketType
     ) external returns (uint256 tokenId) ;
 
-    function getTicketMessage(uint256 tokenId) external view returns (TicketPara memory);
+    function getTicketInfo(uint256 tokenId) external view returns (TicketPara memory);
 }
