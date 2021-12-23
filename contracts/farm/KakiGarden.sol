@@ -40,7 +40,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole {
         uint256 allocPoint,
         IERC20 token,
         string memory name
-    ) public {
+    ) public restricted {
         require(_poolId1[address(token)] == 0, "addPool: token is already in pool");
 
         uint256 pl = _poolInfo.length;
@@ -58,6 +58,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole {
                 name: name
             })
         );
+        _totalAllocPoint += allocPoint;
     }
 
     function harvest(uint256 pid) public override {
