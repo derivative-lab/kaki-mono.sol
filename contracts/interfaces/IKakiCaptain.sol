@@ -1,5 +1,5 @@
 pragma solidity ^0.8.0;
-import "../../interfaces/IBaseERC721.sol";
+import "./IBaseERC721.sol";
 interface IKakiCaptain is IBaseERC721 {
 
     struct CapPara {
@@ -17,5 +17,5 @@ interface IKakiCaptain is IBaseERC721 {
     ) external returns (uint256 tokenId);
 
     function getCapType(uint256 tokenId) external view returns (uint256);
-    function getCapInfo(uint256 tokenId) external view returns (CapPara[] memory capPara);
+    function getCapInfo(uint256 tokenId) external view returns (CapPara memory capPara);
 }
