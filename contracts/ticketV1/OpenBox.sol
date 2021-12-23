@@ -103,6 +103,7 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
         _claimLimit = newClaimLimit;
     }
 
+
     function clearClaimLimit(address[] memory accountList) public onlyOwner {
         for (uint256 i; i < accountList.length; i++) {
             if(_claimTimeLimit[accountList[i]] == 1) {
@@ -110,6 +111,7 @@ contract OpenBox is IOpenBox, WithRandom, WithAdminRole {
             }
         }
     }
+    
 
     function setFoundAdd(address newFoundAdd) public onlyOwner {
         require(newFoundAdd != BlackHole, "Invalid  address");
