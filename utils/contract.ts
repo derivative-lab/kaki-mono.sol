@@ -1,6 +1,4 @@
-import { BlindBox } from './../typechain/BlindBox.d';
-import { KakiBlindBox } from './../typechain/KakiBlindBox.d';
-import { KakiTicket } from './../typechain/KakiTicket.d';
+import { BlindBox ,KakiTicket} from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
 import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory } from '~/typechain';
 
