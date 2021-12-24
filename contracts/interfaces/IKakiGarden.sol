@@ -19,6 +19,7 @@ interface IKakiGarden {
     struct PoolInfo {
         uint256 allocPoint;
         uint256 pid;
+        uint256 stakingAmount;
         IERC20 token;
         IDebtToken debtToken;
         string name;

@@ -51,6 +51,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
             PoolInfo({
                 allocPoint: allocPoint,
                 pid: pl,
+                stakingAmount: 0,
                 token: token,
                 debtToken: new DebtToken(
                     string(abi.encodePacked("k-", token.name())),
@@ -71,6 +72,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
         PoolInfo memory poolInfo = _poolInfo[pid];
         poolInfo.token.transferFrom(msg.sender, address(this), amount);
         user.amount += amount;
+        poolInfo.stakingAmount += amount;
         poolInfo.debtToken.mint(msg.sender, amount);
         emit Deposit(msg.sender, pid, amount);
     }
@@ -88,6 +90,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
         poolInfo.token.transfer(msg.sender, amount);
         poolInfo.debtToken.burn(msg.sender, amount);
         user.amount -= amount;
+        poolInfo.stakingAmount -= amount;
         emit Withdraw(msg.sender, pid, amount);
     }
 
