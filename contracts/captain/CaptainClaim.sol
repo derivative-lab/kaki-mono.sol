@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     mapping(address => bool) _claim;
     mapping(address => uint256) _claimTimeLimit;
+    mapping(address => uint256) _mintTimeLimit;
 
     IERC20 _busd;
     IKakiCaptain public _captain;
@@ -21,8 +22,8 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     uint256[] tokenIdList;
     uint256 _count;
     uint256 public _mintPrice;
+    uint256 public _mintLimit;
     uint256 public _claimLimit;
-    uint256 public _invalidTime;
     uint256 public _foundationRate;
     address public _kakiFoundation;
     address constant BlackHole = 0x0000000000000000000000000000000000000000;
@@ -32,9 +33,9 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         _captain = capAdd;
         _busd = busdAdd;
         _addressList = allowList;
-        _mintPrice = 0.1 ether;
+        _mintPrice = 0.5 ether;
         _claimLimit = 1;
-        _invalidTime = invalidTime;
+        _mintLimit = 1;
         _kakiFoundation = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d; // kaki foundation address
     }
 
@@ -51,21 +52,22 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     function claim() public override isClaimOver {
         require(_addressList.isInAddressList(msg.sender), "Not allow.");
         require(_claimTimeLimit[msg.sender] < _claimLimit, "Claim too much.");
-        uint256 tokenId = getRandId();
+        uint256 tokenId = _getRandId();
         _captain.mint(msg.sender, tokenId);
         _claimTimeLimit[msg.sender]++;
         emit Claim(msg.sender, tokenId);
     }
 
     function mint() public override payable isAble {
-        (bool sent, ) = address(this).call{value: _mintPrice}(new bytes(0));
-        require(sent, "Failed to send Ether");
-        uint256 tokenId = getRandId();
+        require(msg.value == _mintPrice, "BNB not enough");
+        require(_mintTimeLimit[msg.sender] < _mintLimit, "Claim too much.");
+        uint256 tokenId = _getRandId();
         _captain.mint(msg.sender, tokenId);
+        _mintTimeLimit[msg.sender]++;
         emit Mint(msg.sender, tokenId);
     }
 
-    function getRandId() internal returns(uint256 tokenId) {
+    function _getRandId() internal returns(uint256 tokenId) {
         uint256 tokenIndex = random(0, tokenIdList.length);
         tokenId = tokenIdList[tokenIndex];
         tokenIdList[tokenIndex] = tokenIdList[tokenIdList.length - 1];
@@ -85,10 +87,6 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
 
     function setCapAdd(address capAdd) public onlyOwner {
         _captain = IKakiCaptain(capAdd);
-    }
-
-    function setInvalidTime(uint256 newInvalidTime) public onlyOwner {
-        _invalidTime = newInvalidTime;
     }
 
     function setClaimWhiteList(IAddressList allowList) public onlyOwner {
@@ -111,5 +109,11 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     function setFoundAdd(address newFoundAdd) public onlyOwner {
         require(newFoundAdd != BlackHole, "Invalid address");
         _kakiFoundation = newFoundAdd;
+    }
+
+    function sendToFoundation() public onlyOwner {
+        uint256 amount = address(this).balance;
+        (bool success, ) = _kakiFoundation.call{ value: amount }(new bytes(0));
+        require(success, "! safe transfer bnb");
     }
 }

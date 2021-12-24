@@ -23,10 +23,13 @@ import {
   KakiTicket,
   KakiTicket__factory,
   ClaimLock,
-  ClaimLock__factory
+  ClaimLock__factory,
+  KakiGarden,
+  KakiGarden__factory,
 } from '~/typechain';
 
 import { getSigner } from '~/utils/contract';
+import { parseEther } from 'ethers/lib/utils';
 
 export async function deployMockChainLink() {
   const signer0 = await getSigner(0);
@@ -74,6 +77,21 @@ export async function deployMockERC20(name: string, symbol: string, issue: BigNu
 //   return instance as KakiBlindBox;
 // }
 
+
+export async function deployKakiGarden(kakiToken: string) {
+  const signer = await getSigner(0);
+  const currentBlock = await signer.provider?.getBlockNumber() as number;
+  const args: Parameters<KakiGarden["initialize"]> = [
+    kakiToken,
+    parseEther('10'),
+    currentBlock + 10
+  ];
+
+  const factory = new KakiGarden__factory(signer);
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`KakiGarden deployed to: ${instance.address}`);
+  return instance as KakiGarden;
+}
 export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink: MockChainLink, payWallet: string) {
   const signer0 = await getSigner(0);
   const factory = new KakiSquidGame__factory(signer0);
@@ -144,7 +162,7 @@ export async function deployKakiTicket() {
   return instance as KakiTicket;
 }
 
-export async function deployBlindBox(kakiTicket: KakiTicket, busd:IERC20) {
+export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20) {
   const signer0 = await getSigner(0);
   const args: Parameters<BlindBox['initialize']> = [
     kakiTicket.address,
@@ -186,6 +204,7 @@ export async function deployAll() {
   const game = await deploySquidGame(ticket, usdt, chainlink, signer0.address);
   const blindBox = await deployBlindBox(kakiTicket, usdt);
   const noLoss = await deployNoLoss(kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
+  const garden = await deployKakiGarden(kakiToken.address);
 
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, noLoss, allowClaimTicket: allowList,  blindBox, kakiTicket};
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, noLoss, allowClaimTicket: allowList, blindBox, kakiTicket, garden };
 }
