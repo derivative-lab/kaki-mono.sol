@@ -6,8 +6,9 @@ import "../interfaces/IKakiGarden.sol";
 import "../interfaces/IClaimLock.sol";
 import {DebtToken} from "./DebtToken.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
+contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, PausableUpgradeable {
     // start mine block number
     uint256 public _startBlockNumber;
     // total allocation point
@@ -28,6 +29,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
     ) public initializer {
         __WithAdminRole_init();
         __ReentrancyGuard_init();
+        __Pausable_init();
         _rewardToken = rewardToken;
         _rewardPerBlock = rewardPerBlock;
         _startBlockNumber = startBlock;
@@ -63,7 +65,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
         _totalAllocPoint += allocPoint;
     }
 
-    function deposit(uint256 pid, uint256 amount) public override nonReentrant {
+    function deposit(uint256 pid, uint256 amount) public override whenNotPaused nonReentrant {
         uint256 currentBlock = block.number;
         require(currentBlock >= _startBlockNumber, "not begin yet");
         UserInfo storage user = _userInfo[pid][msg.sender];
@@ -79,8 +81,20 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
         emit Deposit(msg.sender, pid, amount);
     }
 
-    function withdraw(uint256 pid, uint256 amount) public override nonReentrant {
+    function withdraw(uint256 pid, uint256 amount) public override whenNotPaused nonReentrant {
         _withdraw(pid, amount);
+    }
+
+    function withdrawAll(uint256 pid) public override whenNotPaused nonReentrant {
+        _harvest(pid);
+        UserInfo storage user = _userInfo[pid][msg.sender];
+        PoolInfo storage poolInfo = _poolInfo[pid];
+        uint256 amount = user.amount;
+        poolInfo.token.transfer(msg.sender, amount);
+        poolInfo.debtToken.burn(msg.sender, amount);
+        user.amount = 0;
+        poolInfo.stakingAmount -= amount;
+        emit Withdraw(msg.sender, pid, amount);
     }
 
     function _withdraw(uint256 pid, uint256 amount) internal {
@@ -96,7 +110,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
         emit Withdraw(msg.sender, pid, amount);
     }
 
-    function harvest(uint256 pid) public override nonReentrant {
+    function harvest(uint256 pid) public override nonReentrant whenNotPaused {
         _harvest(pid);
     }
 
@@ -109,7 +123,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
         emit Harvest(msg.sender, pid, rAmount);
     }
 
-    function harvestMany(uint256[] memory pids) public override nonReentrant {
+    function harvestMany(uint256[] memory pids) public override whenNotPaused nonReentrant {
         uint256 pl = pids.length;
         require(pl > 0, "empoty pids");
 
