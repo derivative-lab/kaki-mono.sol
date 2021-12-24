@@ -6,7 +6,7 @@ import {formatEther} from 'ethers/lib/utils'
 
   const ticket = await squidTicketContract();
     console.log('ticket invalidate...');
-    let a = [370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386]
+    let a = [387]
 
    
     const tx2=await ticket.setInvalidTime(a,1640311200);
