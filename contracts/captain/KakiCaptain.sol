@@ -41,26 +41,23 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
         endId = [16,62,120,246,366,442,572,698,810,928,1048,1144,1248,1344,1416,
                 1512,1584,1636,1708,1764,1800,1846,1876,1902,1932,1952,1968,1994,2010,2020];
         mineRate = [basicMiningRate * miningK, basicMiningRate * miningK, basicMiningRate * miningK,
-                        basicMiningRate * miningK * 2, basicMiningRate * miningK * 2, basicMiningRate * miningK * 2,
-                        basicMiningRate * miningK * 3, basicMiningRate * miningK * 3, basicMiningRate * miningK * 3,
-                        basicMiningRate * miningK * 4, basicMiningRate * miningK * 4, basicMiningRate * miningK * 4,
-                        basicMiningRate * miningK * 5, basicMiningRate * miningK * 5, basicMiningRate * miningK * 5,
-                        basicMiningRate * miningK * 6, basicMiningRate * miningK * 6, basicMiningRate * miningK * 6,
-                        basicMiningRate * miningK * 7, basicMiningRate * miningK * 7, basicMiningRate * miningK * 7,
-                        basicMiningRate * miningK * 8, basicMiningRate * miningK * 8, basicMiningRate * miningK * 8,
-                        basicMiningRate * miningK * 9, basicMiningRate * miningK * 9, basicMiningRate * miningK * 9,
-                        basicMiningRate * miningK * 10, basicMiningRate * miningK * 10, basicMiningRate * miningK * 10];
+                    basicMiningRate * miningK * 2, basicMiningRate * miningK * 2, basicMiningRate * miningK * 2,
+                    basicMiningRate * miningK * 3, basicMiningRate * miningK * 3, basicMiningRate * miningK * 3,
+                    basicMiningRate * miningK * 4, basicMiningRate * miningK * 4, basicMiningRate * miningK * 4,
+                    basicMiningRate * miningK * 5, basicMiningRate * miningK * 5, basicMiningRate * miningK * 5,
+                    basicMiningRate * miningK * 6, basicMiningRate * miningK * 6, basicMiningRate * miningK * 6,
+                    basicMiningRate * miningK * 7, basicMiningRate * miningK * 7, basicMiningRate * miningK * 7,
+                    basicMiningRate * miningK * 8, basicMiningRate * miningK * 8, basicMiningRate * miningK * 8,
+                    basicMiningRate * miningK * 9, basicMiningRate * miningK * 9, basicMiningRate * miningK * 9,
+                    basicMiningRate * miningK * 10, basicMiningRate * miningK * 10, basicMiningRate * miningK * 10];
         member = [lowMember, mediumMember, highMember];
         capName = ["Mate", "Pilot", "Enginner"];
     }
 
-    function mint(
-        address _to,
-        uint256 _tokenId
-    ) external override restricted returns (uint256 tokenId) {
+    function mint(address _to, uint256 _tokenId) external override restricted {
         uint256 tokenIdex = totalMinted();
         require(tokenIdex < 2020, "Reach the upper limit.");
-        _mint(_to, tokenId);
+        _mint(_to, _tokenId);
     }
 
     //*************************** admin *********************************** */
@@ -107,7 +104,6 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
             capPara.combineRate = highCombineRate;
             capPara.capName = capName[2];
         }
-
         capPara.miningRate = mineRate[capType - 1];
         capType = capType - capType / 3;
         capPara.memberNum = member[capType];
