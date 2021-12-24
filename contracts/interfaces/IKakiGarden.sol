@@ -32,4 +32,6 @@ interface IKakiGarden {
     function withdraw(uint256 pid, uint256 amount) external;
 
     function deposit(uint256 pid, uint256 amount) external;
+
+    function withdrawAll(uint256 pid) external;
 }
