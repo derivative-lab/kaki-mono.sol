@@ -1,6 +1,7 @@
 pragma solidity ^0.8.0;
 
-import "../interfaces/IERC20.sol";
+import "./IERC20.sol";
+import {IDebtToken} from "./IDebtToken.sol";
 
 interface IKakiGarden {
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
@@ -18,13 +19,17 @@ interface IKakiGarden {
     struct PoolInfo {
         uint256 allocPoint;
         uint256 pid;
-        uint256 totalStake;
+        uint256 stakingAmount;
         IERC20 token;
-        IERC20 debtToken;
+        IDebtToken debtToken;
         string name;
     }
 
     function harvest(uint256 pid) external;
 
     function harvestMany(uint256[] memory pids) external;
+
+    function withdraw(uint256 pid, uint256 amount) external;
+
+    function deposit(uint256 pid, uint256 amount) external;
 }
