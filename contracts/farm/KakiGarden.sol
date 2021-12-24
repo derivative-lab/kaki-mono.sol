@@ -64,12 +64,14 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
     }
 
     function deposit(uint256 pid, uint256 amount) public override nonReentrant {
+        uint256 currentBlock = block.number;
+        require(currentBlock >= _startBlockNumber, "not begin yet");
         UserInfo storage user = _userInfo[pid][msg.sender];
         if (user.amount > 0) {
             _harvest(pid);
         }
-        user.rewardAtBlock = block.number;
-        PoolInfo memory poolInfo = _poolInfo[pid];
+        user.rewardAtBlock = currentBlock;
+        PoolInfo storage poolInfo = _poolInfo[pid];
         poolInfo.token.transferFrom(msg.sender, address(this), amount);
         user.amount += amount;
         poolInfo.stakingAmount += amount;
@@ -86,7 +88,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
         UserInfo storage user = _userInfo[pid][msg.sender];
         require(user.amount >= amount, "out of balance");
         _harvest(pid);
-        PoolInfo memory poolInfo = _poolInfo[pid];
+        PoolInfo storage poolInfo = _poolInfo[pid];
         poolInfo.token.transfer(msg.sender, amount);
         poolInfo.debtToken.burn(msg.sender, amount);
         user.amount -= amount;
@@ -133,6 +135,10 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable {
             rAmount = (_rewardPerBlock * (currentBlock - user.rewardAtBlock) * pool.allocPoint) / _totalAllocPoint;
             user.rewardAtBlock = currentBlock;
         }
+    }
+
+    function poolInfoLength() public view returns (uint256) {
+        return _poolInfo.length;
     }
 
     function version() public pure returns (uint256) {
