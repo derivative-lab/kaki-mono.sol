@@ -29,7 +29,7 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
         mediumMember = 5;
         highMember = 10;
 
-        basicMiningRate = 20;
+        basicMiningRate = 5;
         miningK = 1;
 
         lowCombineRate = 20;
@@ -43,13 +43,13 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
         mineRate = [basicMiningRate * miningK, basicMiningRate * miningK, basicMiningRate * miningK,
                         basicMiningRate * miningK * 2, basicMiningRate * miningK * 2, basicMiningRate * miningK * 2,
                         basicMiningRate * miningK * 3, basicMiningRate * miningK * 3, basicMiningRate * miningK * 3,
+                        basicMiningRate * miningK * 4, basicMiningRate * miningK * 4, basicMiningRate * miningK * 4,
                         basicMiningRate * miningK * 5, basicMiningRate * miningK * 5, basicMiningRate * miningK * 5,
+                        basicMiningRate * miningK * 6, basicMiningRate * miningK * 6, basicMiningRate * miningK * 6,
                         basicMiningRate * miningK * 7, basicMiningRate * miningK * 7, basicMiningRate * miningK * 7,
+                        basicMiningRate * miningK * 8, basicMiningRate * miningK * 8, basicMiningRate * miningK * 8,
                         basicMiningRate * miningK * 9, basicMiningRate * miningK * 9, basicMiningRate * miningK * 9,
-                        basicMiningRate * miningK * 13, basicMiningRate * miningK * 13, basicMiningRate * miningK * 13,
-                        basicMiningRate * miningK * 16, basicMiningRate * miningK * 16, basicMiningRate * miningK * 16,
-                        basicMiningRate * miningK * 20, basicMiningRate * miningK * 20, basicMiningRate * miningK * 20,
-                        basicMiningRate * miningK * 25, basicMiningRate * miningK * 25, basicMiningRate * miningK * 25];
+                        basicMiningRate * miningK * 10, basicMiningRate * miningK * 10, basicMiningRate * miningK * 10];
         member = [lowMember, mediumMember, highMember];
         capName = ["Mate", "Pilot", "Enginner"];
     }
