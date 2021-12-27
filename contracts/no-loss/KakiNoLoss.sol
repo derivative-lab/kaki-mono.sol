@@ -55,7 +55,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         address _captain;
         uint256 _kcAddRatio;
         uint256 _nftId; //船队类型 0普通船队 nft船队>0
-        uint256 _memberLimit; //船员人数限制
         uint256 _enableWhiteList; //nft船队 0不开启白名单 1开启白名单
         uint256 _captainBonus;
         uint256 _createTime;
@@ -140,7 +139,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (nftId > 0) {
             require(_captainNFT.ownerOf(nftId) == msg.sender, "not owner");
             IKakiCaptain.CapPara memory captaionInfo = _captainNFT.getCapInfo(nftId);
-            _factionStatus[_nextFactionId]._memberLimit = captaionInfo.memberNum;
             _factionStatus[_nextFactionId]._kcAddRatio = captaionInfo.miningRate;
             _factionStatus[_nextFactionId]._nftId = nftId;
             _captainNFT.transferFrom(msg.sender, address(this), nftId);
@@ -185,10 +183,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         require(amount > 0, "Amount must be greater than 0.");
 
         if (_factionStatus[factionId]._nftId > 0) {
-            require(
-                _factionStatus[factionId]._accountArr.length < _factionStatus[factionId]._memberLimit,
-                "member limit"
-            );
+            IKakiCaptain.CapPara memory captaionInfo = _captainNFT.getCapInfo(_factionStatus[factionId]._nftId);
+            require(_factionStatus[factionId]._accountArr.length < captaionInfo.memberNum, "member limit");
             if (_factionStatus[factionId]._enableWhiteList == 1)
                 require(_factionStatus[factionId]._whiteList[msg.sender] > 1, "need in white list");
         }
@@ -245,9 +241,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         console.log("updateFactionIndex", factionId, chapter, _factionStatus[factionId]._totalIndex);
     }
 
-    /**
-        更新lastCheckChpater后面chapter的_accountKC ,通过index计算bonus时使用
-    */
     function initAccountChapterKcInner(
         uint256 factionId,
         uint256 chapter,
@@ -265,7 +258,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             _accountFactionStatus[msg.sender][factionId]._lastCheckKC = accountKC;
             _accountFactionStatus[msg.sender][factionId]._accountKC[_chapter] = accountKC;
             _accountFactionStatus[msg.sender][factionId]._lastCheckChapter = _chapter;
-            /** 计算lastCheckChpater 后面chapter的kc值 */
+            /** 更新lastCheckChpater后面chapter的_accountKC ,通过index计算bonus时使用 */
             if (_chapter > lastCheckChpater + 1) {
                 initAccountChapterKcInner(factionId, lastCheckChpater + 1, accountKC);
             }
@@ -336,7 +329,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (_factionStatus[_nextFactionId]._captain == msg.sender) {
             _kakiToken.transfer(msg.sender, _getCaptionLeaveKAKIReturn(factionId));
             if (_factionStatus[_nextFactionId]._nftId > 0)
-                _captainNFT.transferFrom(address(this),msg.sender, _factionStatus[_nextFactionId]._nftId);
+                _captainNFT.transferFrom(address(this), msg.sender, _factionStatus[_nextFactionId]._nftId);
         }
 
         if (_accountFactionStatus[msg.sender][factionId]._lastCheckChapter != _chapter) {
@@ -500,25 +493,25 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function updateFactionWinnerAmount(uint256 factionId, uint256 factionChapter) internal {
         uint256 fireLen = _factionStatus[factionId]._lastFireRound[factionChapter].length;
+        uint256 lastRound = _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 1];
         uint256 winner;
-        if (factionChapter == _chapter) {
-            /**当前回合下单 计算lastRound-2的wkc */
-            winner += getRoundWinnerKc(factionId, factionChapter, _lastRound - 2);
-            /**如果前一回合没有下单 还需要计算lastRound-3的wkc */
-            if (
-                fireLen > 1 &&
-                _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 2] < _lastRound - 1 &&
-                isRoundFire(factionId, factionChapter, _lastRound - 3)
-            ) {
-                winner += getRoundWinnerKc(factionId, factionChapter, _lastRound - 3);
-            }
-        } else {
-            if (fireLen > 0) {
-                uint256 lastRound = _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 1];
+        /**当前chapter，判断lastRound是否至少间隔一个回合，否则不需要结算
+            如果最近两个回合相邻，前面一个回合也需要结算
+         */
+        if (fireLen > 0) {
+            if (factionChapter == _chapter) {
+                if (lastRound < _lastRound - 1) {
+                    winner += getRoundWinnerKc(factionId, factionChapter, lastRound);
+                    if (
+                        fireLen > 1 &&
+                        _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 2] == lastRound - 1 &&
+                        isRoundFire(factionId, factionChapter, lastRound - 1)
+                    ) winner += getRoundWinnerKc(factionId, factionChapter, lastRound - 1);
+                }
+            } else {
                 winner += getRoundWinnerKc(factionId, factionChapter, lastRound);
                 /**如果最后一个回合和前一回合至少间隔一回合不需要结算
                 否则前一回合还没结算，需要进行结算*/
-                console.log("updateFactionWinnerAmount", lastRound, fireLen);
                 if (
                     fireLen > 1 &&
                     _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 2] == lastRound - 1 &&
@@ -526,6 +519,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 ) winner += getRoundWinnerKc(factionId, factionChapter, lastRound - 1);
             }
         }
+
         _factionStatus[factionId]._factionWinnerKC[factionChapter] += winner;
         console.log(
             "updateFactionWinnerAmount",
