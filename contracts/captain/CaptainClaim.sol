@@ -34,10 +34,9 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         _;
     }
 
-    function initialize(IKakiCaptain capAdd, IERC20 busdAdd, IAddressList allowList, IAddressList mintList) public initializer {
+    function initialize(IKakiCaptain capAdd, IAddressList allowList, IAddressList mintList) public initializer {
         __WithAdminRole_init();
         _captain = capAdd;
-        _busd = busdAdd;
         _addressList = allowList;
         _mintList = mintList;
         _mintPrice = 0.5 ether;
