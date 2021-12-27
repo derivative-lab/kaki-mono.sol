@@ -16,11 +16,13 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
     
     string[3] capName;
     uint256[3] member;
+    uint256[3] combineRate;
     uint256[30] startId;
     uint256[30] endId;
     uint256[30] mineRate;
     address claimCon;
     mapping(uint256 => CapPara) _capPara;
+    mapping(uint256 => uint256) _capComb;
 
     function initialize() public initializer{
         __BaseERC721_init("", "");
@@ -50,13 +52,16 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
                     basicMiningRate * miningK * 8, basicMiningRate * miningK * 8, basicMiningRate * miningK * 8,
                     basicMiningRate * miningK * 9, basicMiningRate * miningK * 9, basicMiningRate * miningK * 9,
                     basicMiningRate * miningK * 10, basicMiningRate * miningK * 10, basicMiningRate * miningK * 10];
+
         member = [lowMember, mediumMember, highMember];
+        combineRate = [lowCombineRate, mediumCombineRate, highCombineRate];
         capName = ["Mate", "Pilot", "Enginner"];
     }
 
-    function mint(address _to, uint256 _tokenId) external override restricted {
+    function mint(address _to, uint256 _tokenId, uint256 _rad) external override restricted {
         uint256 tokenIdex = totalMinted();
         require(tokenIdex < 2020, "Reach the upper limit.");
+        _capComb[_tokenId] = _rad;
         _mint(_to, _tokenId);
     }
 
@@ -91,21 +96,27 @@ contract KakiCaptain is IKakiCaptain, BaseERC721 {
         return capType;
     }
 
+    function getCapComb(uint256 tokenId) public override view returns (uint256) {
+        uint256 capComb;
+        capComb = combineRate[_capComb[tokenId] - 1];
+        return capComb;
+    }
+
     function getCapInfo(uint256 tokenId) public override view returns (CapPara memory capPara) {
         uint256 capType = getCapType(tokenId);
+        uint256 capComb = getCapComb(tokenId);
         capPara.captainType = capType;
+        capPara.combineRate = capComb;
+        capPara.miningRate = mineRate[capType - 1];
+        capType = capType % 3;
+        capPara.memberNum = member[capType];
+        
         if (capType <= 14) {
-            capPara.combineRate = lowCombineRate;
             capPara.capName = capName[0];
         } else if (capType <= 22) {
-            capPara.combineRate = mediumCombineRate;
             capPara.capName = capName[1];
         } else {
-            capPara.combineRate = highCombineRate;
             capPara.capName = capName[2];
         }
-        capPara.miningRate = mineRate[capType - 1];
-        capType = capType - capType / 3;
-        capPara.memberNum = member[capType];
     }
 }

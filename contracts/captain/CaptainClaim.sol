@@ -58,8 +58,9 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     function claim() public override isClaimOver onlyNoneContract {
         require(_addressList.isInAddressList(msg.sender), "Not allow.");
         require(_claimTimeLimit[msg.sender] < _claimLimit, "Claim too much.");
-        uint256 tokenId = _getRandId();
-        _captain.mint(msg.sender, tokenId);
+        uint256 tokenId = getRandId();
+        uint256 rad = random(1, 3);
+        _captain.mint(msg.sender, tokenId, rad);
         _claimTimeLimit[msg.sender]++;
         emit Claim(msg.sender, tokenId);
     }
@@ -68,13 +69,14 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         require(_mintList.isInAddressList(msg.sender), "Not allow.");
         require(msg.value == _mintPrice, "BNB not enough");
         require(_mintTimeLimit[msg.sender] < _mintLimit, "Claim too much.");
-        uint256 tokenId = _getRandId();
-        _captain.mint(msg.sender, tokenId);
+        uint256 tokenId = getRandId();
+        uint256 rad = random(1, 3);
+        _captain.mint(msg.sender, tokenId, rad);
         _mintTimeLimit[msg.sender]++;
         emit Mint(msg.sender, tokenId);
     }
 
-    function _getRandId() internal returns(uint256 tokenId) {
+    function getRandId() internal returns(uint256 tokenId) {
         uint256 tokenIndex = random(0, tokenIdList.length);
         tokenId = tokenIdList[tokenIndex];
         tokenIdList[tokenIndex] = tokenIdList[tokenIdList.length - 1];
