@@ -48,7 +48,7 @@ abstract contract BaseERC721 is WithAdminRole, IBaseERC721, ERC721EnumerableUpgr
         return super.supportsInterface(interfaceId);
     }
 
-    function batchTransfer(address[] memory to, uint256[] memory tokenIds) public override {
+    function batchTransfer(address[] memory to, uint256[] memory tokenIds) public virtual override {
         uint256 toLen = to.length;
         require(toLen == tokenIds.length, "LNE"); // length not equal
         for (uint256 i = 0; i < toLen; i++) {
@@ -56,7 +56,7 @@ abstract contract BaseERC721 is WithAdminRole, IBaseERC721, ERC721EnumerableUpgr
         }
     }
 
-    function batchTransferSame(address to, uint256[] memory tokenIds) public override {
+    function batchTransferSame(address to, uint256[] memory tokenIds) public virtual override {
         uint256 len = tokenIds.length;
         for (uint256 i = 0; i < len; i++) {
             _transfer(msg.sender, to, tokenIds[i]);

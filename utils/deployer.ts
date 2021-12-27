@@ -5,8 +5,6 @@ import {
   MockChainLink__factory,
   MockToken__factory,
   MockToken,
-  KakiBlindBox__factory,
-  KakiBlindBox,
   KakiSquidGame,
   KakiSquidGame__factory,
   KakiNoLoss,
@@ -26,6 +24,10 @@ import {
   ClaimLock__factory,
   KakiGarden,
   KakiGarden__factory,
+  KakiCaptain,
+  KakiCaptain__factory,
+  CaptainClaim,
+  CaptainClaim__factory
 } from '~/typechain';
 
 import { getSigner } from '~/utils/contract';
@@ -76,6 +78,26 @@ export async function deployMockERC20(name: string, symbol: string, issue: BigNu
 //   console.log(`BlindBoxDrop deployed to : ${instance.address}`)
 //   return instance as KakiBlindBox;
 // }
+export async function deployKakiCaptain() {
+  const signer = await getSigner(0);
+  const args: Parameters<KakiCaptain["initialize"]> = [];
+
+  const factory = new KakiCaptain__factory(signer);
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`KakiCaptain deployed to: ${instance.address}`);
+  return instance as KakiCaptain;
+}
+
+export async function deployCaptainClaim(kakiCaptain: Ticket, allowList: AddressList, mintList: AddressList) {
+  const signer = await getSigner(0);
+  const args: Parameters<CaptainClaim["initialize"]> = [
+    kakiCaptain.address,
+    allowList.address,
+    mintList.address
+  ];
+  const factory = new CaptainClaim__factory(signer);
+  const instance = await upgrades.deployProxy(factory, args);
+}
 
 
 export async function deployKakiGarden(kakiToken: string) {
@@ -92,6 +114,7 @@ export async function deployKakiGarden(kakiToken: string) {
   console.log(`KakiGarden deployed to: ${instance.address}`);
   return instance as KakiGarden;
 }
+
 export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink: MockChainLink, payWallet: string) {
   const signer0 = await getSigner(0);
   const factory = new KakiSquidGame__factory(signer0);
