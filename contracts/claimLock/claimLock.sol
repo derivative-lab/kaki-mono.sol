@@ -96,7 +96,6 @@ contract ClaimLock is IClaimLock, WithAdminRole {
 
     //********************************  view **********************************/
     function getClaimableFarmReward(address account) public override view returns (uint256) {
-        uint256 currentTime = block.timestamp;
         uint256 unlockedAmount = _userFarmUnlockedAmount[account];
         LockedFarmReward[] memory user = _userLockedFarmRewards[account];
         if(user.length != 0) {
