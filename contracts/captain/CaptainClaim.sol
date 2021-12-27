@@ -16,6 +16,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     IERC20 _busd;
     IKakiCaptain public _captain;
     IAddressList _addressList;
+    IAddressList _mintList;
 
     bool _able;
     bool _claimAble;
@@ -28,11 +29,16 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     address public _kakiFoundation;
     address constant BlackHole = 0x0000000000000000000000000000000000000000;
 
-    function initialize(IKakiCaptain capAdd, IERC20 busdAdd, uint256 invalidTime, IAddressList allowList) public initializer {
+    modifier onlyNoneContract() {
+        require(msg.sender == tx.origin, "only non contract call");
+        _;
+    }
+
+    function initialize(IKakiCaptain capAdd, IAddressList allowList, IAddressList mintList) public initializer {
         __WithAdminRole_init();
         _captain = capAdd;
-        _busd = busdAdd;
         _addressList = allowList;
+        _mintList = mintList;
         _mintPrice = 0.5 ether;
         _claimLimit = 1;
         _mintLimit = 1;
@@ -49,7 +55,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         _;
     }
 
-    function claim() public override isClaimOver {
+    function claim() public override isClaimOver onlyNoneContract {
         require(_addressList.isInAddressList(msg.sender), "Not allow.");
         require(_claimTimeLimit[msg.sender] < _claimLimit, "Claim too much.");
         uint256 tokenId = _getRandId();
@@ -58,7 +64,8 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         emit Claim(msg.sender, tokenId);
     }
 
-    function mint() public override payable isAble {
+    function mint() public override payable isAble onlyNoneContract {
+        require(_mintList.isInAddressList(msg.sender), "Not allow.");
         require(msg.value == _mintPrice, "BNB not enough");
         require(_mintTimeLimit[msg.sender] < _mintLimit, "Claim too much.");
         uint256 tokenId = _getRandId();
@@ -93,6 +100,10 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         _addressList = allowList;
     }
 
+    function setMintWhiteList(IAddressList mintList) public onlyOwner {
+        _addressList = mintList;
+    }
+
     function setClaimAble() public onlyOwner {
         _claimAble = !_claimAble;
     }
@@ -115,5 +126,10 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         uint256 amount = address(this).balance;
         (bool success, ) = _kakiFoundation.call{ value: amount }(new bytes(0));
         require(success, "! safe transfer bnb");
+    }
+
+    function setMintPrice(uint256 newMintPrice) public onlyOwner {
+        require(newMintPrice > 0, "mintPrice");
+        _mintPrice = newMintPrice;
     }
 }
