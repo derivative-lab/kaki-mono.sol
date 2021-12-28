@@ -32,7 +32,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
         _;
     }
 
-    function initialize(address _nloAddress) public initializer{
+    function initialize() public initializer{
         __BaseERC721_init("", "");
         lowMember = 2;
         mediumMember = 5;
@@ -64,7 +64,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
         combineRate = [lowCombineRate, mediumCombineRate, highCombineRate];
         capName = ["Mate", "Pilot", "Enginner"];
 
-        nloAddress = _nloAddress;
+        nloAddress = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;
     }
 
     function allowTransfer(uint256 tokenId)
@@ -148,4 +148,5 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
     function getCapStatus(uint256 tokenId) public override view returns (CapStatus memory capStatus) {
         capStatus = _capStatus[tokenId]; 
     }
+
 }
