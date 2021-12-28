@@ -1,5 +1,4 @@
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
-import { kakiCaptainContract } from '~/utils/contract';
 import { BlindBox ,KakiCaptain__factory,KakiTicket} from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
 import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory } from '~/typechain';
@@ -48,8 +47,11 @@ export const mutiContractAddrs = {
     squidTicket: '0x7dc99344aA0053BC2DC16aE111e83C1315409a07',
     squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
-    kakiCaptain: '',
+
+    kakiCaptain: '0x92F72Eb15EeE4D7A3E746FA921c46e236FcbDe9F',
     captainClaim: '',
+    captainMintList: '',
+    captainAllowList: '',
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
