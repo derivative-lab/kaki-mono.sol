@@ -34,6 +34,8 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         _;
     }
 
+    receive() external payable {}
+
     function initialize(IKakiCaptain capAdd, IAddressList allowList, IAddressList mintList) public initializer {
         __WithAdminRole_init();
         _captain = capAdd;
