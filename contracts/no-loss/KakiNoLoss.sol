@@ -125,7 +125,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _tokenFactor = [1, 2, 3, 4];
 
         _nextFactionId = 1;
-        _chapterStartTime[0] = getTimestamp();
+        _chapter = 1;
+        _chapterStartTime[_chapter] = getTimestamp();
 
         _captainRateLimit = 80; // 8%
         _kakiFoundationRate = 50; // 5%
@@ -139,7 +140,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (nftId > 0) {
             require(_captainNFT.ownerOf(nftId) == msg.sender, "not owner");
             IKakiCaptain.CapPara memory captaionInfo = _captainNFT.getCapInfo(nftId);
-            _factionStatus[_nextFactionId]._kcAddRatio = captaionInfo.miningRate;
+            _factionStatus[_nextFactionId]._kcAddRatio = captaionInfo.miningRate * _BASE;
             _factionStatus[_nextFactionId]._nftId = nftId;
             _captainNFT.transferFrom(msg.sender, address(this), nftId);
         } else {
@@ -147,13 +148,14 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 _accountGlobalInfo[msg.sender]._factionArr.length == 0,
                 "Before create a normal faction, please leave other factions."
             );
-            _factionStatus[_nextFactionId]._kcAddRatio = 1;
+            _factionStatus[_nextFactionId]._kcAddRatio = 1 * _BASE;
         }
         _kakiToken.transferFrom(msg.sender, address(this), _captionKAKI);
 
         uint256 captionKc = calKc(_factionStatus[_nextFactionId]._kcAddRatio, _captionKC);
         _factionStatus[_nextFactionId]._captain = msg.sender;
         _factionStatus[_nextFactionId]._lastCheckChapter = _chapter;
+        _factionStatus[_nextFactionId]._lastIndexChapter = _chapter;
         _factionStatus[_nextFactionId]._chapterKC[_chapter] = captionKc;
         _factionStatus[_nextFactionId]._createTime = time;
         _factionStatus[_nextFactionId]._accountArr.push(msg.sender);
@@ -204,41 +206,51 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 lastCheckChapter = _factionStatus[factionId]._lastCheckChapter;
         if (lastCheckChapter != _chapter) {
             updateFactionWinnerAmount(factionId, lastCheckChapter);
-            if (_factionStatus[factionId]._factionWinnerKC[lastCheckChapter] > 0)
-                updateFactionIndex(factionId, lastCheckChapter);
+            //if (_factionStatus[factionId]._factionWinnerKC[lastCheckChapter] > 0)
+            if (_factionStatus[factionId]._lastIndexChapter < _chapter) updateFactionIndex(factionId, lastCheckChapter);
+
             _factionStatus[factionId]._chapterKC[_chapter] =
                 _captionKC +
                 calAllKcInWholeCycle(factionId, _factionStatus[factionId]._stakeAmount);
-            console.log("initFactionChapterKC", factionId, _chapter, _factionStatus[factionId]._chapterKC[_chapter]);
-            _factionStatus[factionId]._lastCheckChapter = _chapter;
+
+            _factionStatus[factionId]._lastCheckChapter = _chapter;            
+        } else {
+            if (_isChapterEnd[_chapter]) updateFactionIndex(factionId, _chapter);
         }
+        console.log("initFactionChapterKC", factionId, _chapter, lastCheckChapter);
     }
 
     function updateFactionIndex(uint256 factionId, uint256 chapter) internal {
         Faction storage fa = _factionStatus[factionId];
         uint256 factionWinnerKC = fa._factionWinnerKC[chapter];
         uint256 totalChapterKC = fa._chapterKC[chapter];
-        uint256 teamBonus = (_interest[chapter] * factionWinnerKC) / _winnerKC[chapter];
-        console.log("updateFactionIndex1", _interest[chapter], factionWinnerKC, _winnerKC[chapter]);
-        console.log("updateFactionIndex2", teamBonus, totalChapterKC);
-        if (_captainRateLimit != 0 || _kakiFoundationRate != 0) {
-            uint256 captainBonus = (teamBonus * _captainRateLimit) / _BASE;
-            uint256 kakiFoundationBonus = (teamBonus * _kakiFoundationRate) / _BASE;
-            teamBonus = teamBonus - captainBonus - kakiFoundationBonus;
-            if (captainBonus != 0) {
-                if (fa._captain == address(0)) kakiFoundationBonus += captainBonus;
-                else _factionStatus[factionId]._captainBonus += captainBonus;
-            }
+        if (_winnerKC[chapter] > 0) {
+            uint256 teamBonus = (_interest[chapter] * factionWinnerKC) / _winnerKC[chapter];
+            console.log("updateFactionIndex1", _interest[chapter], factionWinnerKC, _winnerKC[chapter]);
+            console.log("updateFactionIndex2", teamBonus, totalChapterKC);
+            if (_captainRateLimit != 0 || _kakiFoundationRate != 0) {
+                uint256 captainBonus = (teamBonus * _captainRateLimit) / _BASE;
+                uint256 kakiFoundationBonus = (teamBonus * _kakiFoundationRate) / _BASE;
+                teamBonus = teamBonus - captainBonus - kakiFoundationBonus;
+                if (captainBonus != 0) {
+                    if (fa._captain == address(0)) kakiFoundationBonus += captainBonus;
+                    else _factionStatus[factionId]._captainBonus += captainBonus;
+                }
 
-            if (kakiFoundationBonus != 0) {
-                _kakiToken.transfer(_kakiFoundationAddress, kakiFoundationBonus);
+                if (kakiFoundationBonus != 0) {
+                    _kakiToken.transfer(_kakiFoundationAddress, kakiFoundationBonus);
+                }
             }
+            console.log("updateFactionIndex3", teamBonus, totalChapterKC);
+            _factionStatus[factionId]._totalIndex += (teamBonus * _BASE) / totalChapterKC;
         }
-        console.log("updateFactionIndex3", teamBonus, totalChapterKC);
-        _factionStatus[factionId]._totalIndex += (teamBonus * _BASE) / totalChapterKC;
         _factionStatus[factionId]._index[chapter] = _factionStatus[factionId]._totalIndex;
         _factionStatus[factionId]._lastIndexChapter = chapter;
-        console.log("updateFactionIndex", factionId, chapter, _factionStatus[factionId]._totalIndex);
+        //if (_isChapterEnd[_chapter]) _factionStatus[factionId]._lastIndexChapter = chapter;
+        //else _factionStatus[factionId]._lastIndexChapter = _chapter-1;
+
+        console.log("updateFactionIndex", factionId, chapter, _factionStatus[factionId]._lastIndexChapter);
+        console.log("updateFactionIndex value", factionId, _factionStatus[factionId]._totalIndex);
     }
 
     function initAccountChapterKcInner(
@@ -253,16 +265,16 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     function initAccountChapterKC(uint256 factionId) internal {
         uint256 lastCheckChpater = _accountFactionStatus[msg.sender][factionId]._lastCheckChapter;
         if (lastCheckChpater != 0 && lastCheckChpater != _chapter) {
-            uint256[_DEPOSIT_TOKEN_SORT] memory stakeAmount = _accountFactionStatus[msg.sender][factionId]._stakeAmount;
             uint256 accountKC = calAccountKCInWholeCycle(factionId);
             _accountFactionStatus[msg.sender][factionId]._lastCheckKC = accountKC;
             _accountFactionStatus[msg.sender][factionId]._accountKC[_chapter] = accountKC;
-            _accountFactionStatus[msg.sender][factionId]._lastCheckChapter = _chapter;
             /** 更新lastCheckChpater后面chapter的_accountKC ,通过index计算bonus时使用 */
             if (_chapter > lastCheckChpater + 1) {
                 initAccountChapterKcInner(factionId, lastCheckChpater + 1, accountKC);
             }
+            console.log("initAccountChapterKC", lastCheckChpater, _chapter, accountKC);
         }
+        _accountFactionStatus[msg.sender][factionId]._lastCheckChapter = _chapter;
     }
 
     function updateFactioinAndAccount(
@@ -375,9 +387,11 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function getChapterKC(uint256 factionId) public view returns (uint256) {
         if (_factionStatus[factionId]._lastCheckChapter != _chapter) {
-            return calKc(_factionStatus[factionId]._kcAddRatio, _captionKC) + calFactionAllKc(factionId);
+            if (_chapter > _factionStatus[factionId]._lastCheckChapter + 1)
+                return calKc(_factionStatus[factionId]._kcAddRatio, _captionKC) + calFactionAllKc(factionId);
+            else return _factionStatus[factionId]._chapterKC[_chapter - 1];
         }
-        return _factionStatus[factionId]._chapterKC[_chapter];
+        return _factionStatus[factionId]._chapterKC[_chapter - 1];
     }
 
     function isRoundFire(
@@ -397,21 +411,25 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     ) public {
         uint256 _time = getTimestamp();
         uint256 lastCheckChpater = _factionStatus[factionId]._lastCheckChapter;
-        bool hasRoundFire = isRoundFire(factionId, _chapter, _lastRound);
-        console.log("has round fire ", _lastRound, hasRoundFire);
         require(amount > 0, "The amount cannot be 0.");
         require(_chapterStartTime[_chapter] + _dayTime >= _time, "The trading day has ended.");
         require(_factionStatus[factionId]._captain == msg.sender, "The function caller must be the captain.");
         if (_factionStatus[factionId]._lastCheckChapter != _chapter) {
+            /**下单用前一周期的队伍kc，如果前一周期队伍没有更新过，这两周期kc 相等 */
+            console.log("fire lastCheckChapter");
             initFactionChapterKC(factionId);
             if (_chapter > lastCheckChpater + 1)
                 _factionStatus[factionId]._chapterKC[_chapter - 1] = _factionStatus[factionId]._chapterKC[_chapter];
-            _factionStatus[factionId]._totalChapterKC[_chapter - 1] = _factionStatus[factionId]._chapterKC[
-                _chapter - 1
-            ];
         } else {
+            bool hasRoundFire = isRoundFire(factionId, _chapter, _lastRound);
+            console.log("has round fire1 ", _lastRound, hasRoundFire);
             if (!hasRoundFire) updateFactionWinnerAmount(factionId, _chapter);
         }
+        console.log(
+            "fire kc",
+            _factionStatus[factionId]._chapterKC[_chapter - 1],
+            _factionStatus[factionId]._chapterKC[_chapter - 1] - amount
+        );
         require(
             _factionStatus[factionId]._chapterKC[_chapter - 1] >= amount,
             "The number of KC used cannot be greater than the number of remaining KC."
@@ -425,12 +443,14 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             _poolState[_chapter][_lastRound]._put += amount;
         }
 
-        _factionStatus[factionId]._chapterKC[_chapter - 1] =
-            _factionStatus[factionId]._chapterKC[_chapter - 1] -
-            amount;
         uint256 len = _factionStatus[factionId]._lastFireRound[_chapter].length;
+        if (len == 0)
+            _factionStatus[factionId]._totalChapterKC[_chapter - 1] = _factionStatus[factionId]._chapterKC[
+                _chapter - 1
+            ];
         if (len == 0 || _factionStatus[factionId]._lastFireRound[_chapter][len - 1] != _lastRound)
             _factionStatus[factionId]._lastFireRound[_chapter].push(_lastRound);
+        _factionStatus[factionId]._chapterKC[_chapter - 1] -= amount;
         emit Fire(msg.sender, _chapter, _lastRound, factionId, amount, binary, _time);
     }
 
@@ -439,7 +459,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         require(_chapterStartTime[_chapter] + _weekTime <= _time, "The _chapter is not over.");
 
         /** _lastRound初始2 在一回下单要结算前面2回合的wkc*/
-        _lastRound = 2;
+        _lastRound = 1;
         _chapter++;
         _chapterStartTime[_chapter] = _time;
         _roundStartTime[_chapter][0] = _time;
@@ -493,12 +513,12 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function updateFactionWinnerAmount(uint256 factionId, uint256 factionChapter) internal {
         uint256 fireLen = _factionStatus[factionId]._lastFireRound[factionChapter].length;
-        uint256 lastRound = _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 1];
         uint256 winner;
         /**当前chapter，判断lastRound是否至少间隔一个回合，否则不需要结算
             如果最近两个回合相邻，前面一个回合也需要结算
          */
         if (fireLen > 0) {
+            uint256 lastRound = _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 1];
             if (factionChapter == _chapter) {
                 if (lastRound < _lastRound - 1) {
                     winner += getRoundWinnerKc(factionId, factionChapter, lastRound);
@@ -523,12 +543,14 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _factionStatus[factionId]._factionWinnerKC[factionChapter] += winner;
         console.log(
             "updateFactionWinnerAmount",
+            factionId,
             _lastRound,
             _factionStatus[factionId]._factionWinnerKC[factionChapter]
         );
     }
 
     function getAccountKC(uint256 factionId, uint256 chapter) internal view returns (uint256) {
+        console.log("getAccountKC", factionId, chapter);
         uint256 len = _accountFactionStatus[msg.sender][factionId]._accountKCIndex.length;
         /**如果chapter 大于有记录的chapter值 ，通过计算全周期的质押量得到kc
            否则遍历_accountKCIndex ，从大到小获取存储的周期值(c)，当chapter 大于c，返回值
@@ -557,44 +579,49 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (_isChapterEnd[_chapter]) endChapter = _chapter;
         else if (_chapter > 0) endChapter = _chapter - 1;
 
-        for (uint256 fi; fi < _accountGlobalInfo[msg.sender]._factionArr.length; fi++) {
-            uint256 factionId = _accountGlobalInfo[msg.sender]._factionArr[fi];
-            initFactionChapterKC(factionId);
-            Faction storage faction = _factionStatus[factionId];
-            /**_lastCheckChapter 当前chapter没有结束 */
-            console.log("updateBonus0", faction._lastCheckChapter, faction._lastIndexChapter, _chapter);
-            uint256 endChapter2 = faction._lastCheckChapter < endChapter
-                ? faction._lastCheckChapter
-                : faction._lastIndexChapter;
-            uint256 index0 = _factionStatus[factionId]._index[chapter];
-            uint256 index1 = _factionStatus[factionId]._index[chapter + 1];
-            uint256 index2 = _factionStatus[factionId]._index[endChapter2];
-            if (index1 == 0) index1 = index0;
-            console.log("updateBonus1", chapter, endChapter2);
-            console.log("updateBonus2", index0, index1, index2);
-            console.log("updateBonus3", getAccountKC(factionId, chapter), getAccountKC(factionId, chapter + 1));
-            uint256 bonus0 = ((index1 - index0) * getAccountKC(factionId, chapter)) / _BASE;
-            uint256 bonus1 = ((index2 - index1) * getAccountKC(factionId, chapter + 1)) / _BASE;
+        if (endChapter > chapter) {
+            for (uint256 fi; fi < _accountGlobalInfo[msg.sender]._factionArr.length; fi++) {
+                uint256 factionId = _accountGlobalInfo[msg.sender]._factionArr[fi];
+                initFactionChapterKC(factionId);
+                Faction storage faction = _factionStatus[factionId];
+                /**_lastCheckChapter 当前chapter没有结束 */
+                console.log("updateBonus0", factionId, faction._lastCheckChapter, faction._lastIndexChapter);
+                uint256 endChapter2 = faction._lastCheckChapter < faction._lastIndexChapter
+                    ? faction._lastCheckChapter
+                    : faction._lastIndexChapter;
+                //if (endChapter2 > endChapter) endChapter2 = endChapter;
+                uint256 index0 = _factionStatus[factionId]._index[chapter];
+                uint256 index1 = _factionStatus[factionId]._index[chapter + 1];
+                uint256 index2 = _factionStatus[factionId]._index[endChapter2];
+                if (index1 == 0) index1 = index0;
+                console.log("updateBonus1", chapter, endChapter2);
+                console.log("updateBonus2", index0, index1, index2);
+                console.log("updateBonus3", getAccountKC(factionId, chapter), getAccountKC(factionId, chapter + 1));
+                uint256 bonus0 = ((index1 - index0) * getAccountKC(factionId, chapter)) / _BASE;
+                uint256 bonus1 = ((index2 - index1) * getAccountKC(factionId, chapter + 1)) / _BASE;
 
-            bonus = bonus + bonus0 + bonus1;
-            console.log("bonus", bonus0, bonus1);
-            if (faction._captain == msg.sender && faction._captainBonus != 0) {
-                bonus = bonus + faction._captainBonus;
-                faction._captainBonus = 0;
+                bonus = bonus + bonus0 + bonus1;
+                console.log("bonus", bonus0, bonus1);
+                if (faction._captain == msg.sender && faction._captainBonus != 0) {
+                    bonus = bonus + faction._captainBonus;
+                    faction._captainBonus = 0;
+                }
             }
+            _accountGlobalInfo[msg.sender]._bonusChapter = endChapter;
+            console.log("updateBonus4", msg.sender, _accountGlobalInfo[msg.sender]._bonusChapter);
         }
-        _accountGlobalInfo[msg.sender]._bonusChapter = endChapter;
+
         if (bonus != 0) {
             _kakiToken.transfer(msg.sender, bonus);
         }
-        console.log("updateBonus", bonus);
+        console.log("updateBonus", endChapter, chapter, bonus);
         return bonus;
     }
 
     function calKc(uint256 kcRation, uint256 v) internal view returns (uint256) {
         uint256 time = getTimestamp();
         uint256 deltaTime = _weekTime - (time - _chapterStartTime[_chapter]);
-        uint256 kc = (kcRation * (v * deltaTime)) / _weekTime / _BASE;
+        uint256 kc = (kcRation * v * deltaTime) / _weekTime / _BASE;
         return kc;
     }
 
@@ -615,7 +642,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 kc;
         uint256 len = stakeAmount.length;
         for (uint256 i; i < len; i++) {
-            kc += (kcRation * stakeAmount[i] * _tokenFactor[i]) / _BASE;
+            if (stakeAmount[i] > 0) kc += (kcRation * stakeAmount[i] * _tokenFactor[i]) / _BASE;
         }
         return kc;
     }
@@ -625,7 +652,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256[_DEPOSIT_TOKEN_SORT] memory stakeAmount = _factionStatus[factionId]._stakeAmount;
         uint256 len = stakeAmount.length;
         for (uint256 i; i < len; i++) {
-            kc += calKc(_factionStatus[factionId]._kcAddRatio, stakeAmount[i] * _tokenFactor[i]);
+            if (stakeAmount[i] > 0)
+                kc += calKc(_factionStatus[factionId]._kcAddRatio, stakeAmount[i] * _tokenFactor[i]);
         }
         return kc;
     }
