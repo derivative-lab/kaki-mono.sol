@@ -33,17 +33,21 @@ describe('noloss game', async () => {
       }
     }
 
-    await noLoss.createFaction(1);
-    await users[2].noLoss.createFaction(1);
-    await users[1].noLoss.joinFaction(1,1,parseEther('100'));
-    await network.provider.send("evm_increaseTime", [7 * 24 * 60 * 60]);
-    await noLoss.addLoot();
+    await noLoss.createFaction(0);
+    await network.provider.send("evm_increaseTime", [24 * 60 * 60]);
+    await noLoss.addStake(1,1,parseEther('150'));
+    await network.provider.send("evm_increaseTime", [6 * 24 * 60 * 60]);
     await noLoss.addBonus(parseEther('100'));
-    await noLoss.fire(1,parseEther(`10`),true);
-    await noLoss.fire(1,parseEther(`10`),false);
+    await noLoss.addLoot();
+    console.log('addLoot1');
+
+    const kc0 = await noLoss.getChapterKC(1); 
+    console.log('kc:*********2', kc0.toString());
+    await noLoss.addBonus(parseEther('100'));
+    await noLoss.fire(1,parseEther(`20`),true);
+    await noLoss.fire(1,parseEther(`20`),false);
     await network.provider.send("evm_increaseTime", [5 * 60]);
-    await noLoss.battleDamage();
-   
+    await noLoss.battleDamage();   
     await network.provider.send("evm_increaseTime", [5 * 60]);
     await noLoss.battleDamage();
     await noLoss.fire(1,parseEther(`15`),true);
@@ -52,32 +56,55 @@ describe('noloss game', async () => {
     await noLoss.battleDamage();
     await network.provider.send("evm_increaseTime", [5 * 60]);
     await noLoss.battleDamage();
+    await noLoss.addStake(1,1,parseEther('200'));
     await network.provider.send("evm_increaseTime", [7 * 24 * 60 * 60-20*60]);
     await noLoss.addLoot();
-    const kc = await noLoss.getChapterKC(1); 
-    console.log('kc:*********1', kc.toString());
-    //await noLoss.claimBonus();
+    console.log('addLoot2');
 
+    const kc = await noLoss.getChapterKC(1); 
+    console.log('kc:*********3', kc.toString());
+    await users[1].noLoss.joinFaction(1,1,parseEther('300'));
     await noLoss.addBonus(parseEther('100'));
     await noLoss.fire(1,parseEther(`10`),true);
     await noLoss.fire(1,parseEther(`10`),false);
-    await users[2].noLoss.fire(2,parseEther(`10`),true);
-    await users[2].noLoss.fire(2,parseEther(`10`),false);
     await network.provider.send("evm_increaseTime", [5 * 60]);
     await noLoss.battleDamage();
     await network.provider.send("evm_increaseTime", [5 * 60]);
     await noLoss.battleDamage();
-    await network.provider.send("evm_increaseTime", [5 * 60]);
-    await noLoss.battleDamage();
-    await network.provider.send("evm_increaseTime", [ 24 * 60 * 60-15*60]);
-    await noLoss.claimBonus(); 
-    await network.provider.send("evm_increaseTime", [ 6 * 24 * 60 * 60]);
+    await network.provider.send("evm_increaseTime", [7 * 24 * 60 * 60-10*60]);
     await noLoss.addLoot();
-    users[1].noLoss.claimBonus();
-    users[2].noLoss.claimBonus();
-    //await noLoss.claimBonus();   
-    //await noLoss.fire();
+    console.log('addLoot3');
 
+    const kc2 = await noLoss.getChapterKC(1); 
+    console.log('kc:*********4', kc2.toString());
+    await users[2].noLoss.createFaction(0);
+    await users[3].noLoss.joinFaction(2,2,parseEther('300'));
+    await users[4].noLoss.createFaction(0);
+    await network.provider.send("evm_increaseTime", [7 * 24 * 60 * 60]);
+    await noLoss.addLoot();
+    console.log('addLoot4');
+
+    await noLoss.addBonus(parseEther('100'));
+    await noLoss.fire(1,parseEther(`10`),true);
+    await users[2].noLoss.fire(2,parseEther(`10`),true);
+    await users[4].noLoss.fire(3,parseEther(`30`),false);
+    await network.provider.send("evm_increaseTime", [5 * 60]);
+    await noLoss.battleDamage();
+    await noLoss.claimBonus();
+    await network.provider.send("evm_increaseTime", [5 * 60]);
+    await noLoss.battleDamage();
+    await network.provider.send("evm_increaseTime", [7 * 24 * 60 * 60-10*60]);
+    await noLoss.addBonus(parseEther('100'));
+    await users[1].noLoss.claimBonus();
+    await users[3].noLoss.leaveFaction(2);
+    await network.provider.send("evm_increaseTime", [5 * 60]);
+    await network.provider.send("evm_increaseTime", [24 * 60 * 60-5*60]);
+    await users[4].noLoss.leaveFaction(4);
+
+    await network.provider.send("evm_increaseTime", [6 * 24 * 60 * 60]);
+    
+    await noLoss.addLoot();
+    users[2].noLoss.claimBonus();
 
 
   });
