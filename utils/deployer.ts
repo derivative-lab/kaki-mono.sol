@@ -80,9 +80,8 @@ export async function deployMockERC20(name: string, symbol: string, issue: BigNu
 // }
 export async function deployKakiCaptain() {
   const signer = await getSigner(0);
-  const args: Parameters<KakiCaptain["initialize"]> = [];
-
   const factory = new KakiCaptain__factory(signer);
+  const args: Parameters<KakiCaptain["initialize"]> = [];
   const instance = await upgrades.deployProxy(factory, args);
   console.log(`KakiCaptain deployed to: ${instance.address}`);
   return instance as KakiCaptain;
@@ -97,6 +96,8 @@ export async function deployCaptainClaim(kakiCaptain: Ticket, allowList: Address
   ];
   const factory = new CaptainClaim__factory(signer);
   const instance = await upgrades.deployProxy(factory, args);
+  console.log(`CaptainClaim deployed to: ${instance.address}`);
+  return instance as CaptainClaim;
 }
 
 
