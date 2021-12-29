@@ -1,11 +1,11 @@
 import { deployCaptainClaim } from '~/utils/deployer'
-import { kakiCaptainContract, allowListContract, mintListContract } from '~/utils/contract'
+import { kakiCaptainContract, captainAllowListContract, captainMintContract } from '~/utils/contract'
 import { CaptainClaim } from '~/typechain';
 import {deploy} from '~/utils/upgrader';
 (async () => {
   const captain = await kakiCaptainContract();
-  const allowList = await allowListContract();
-  const mintList = await mintListContract();
+  const allowList = await captainAllowListContract();
+  const mintList = await captainMintContract();
 
 
   const args : Parameters<CaptainClaim["initialize"]> = [
