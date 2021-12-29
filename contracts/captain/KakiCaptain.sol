@@ -148,5 +148,4 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
     function getCapStatus(uint256 tokenId) public override view returns (CapStatus memory capStatus) {
         capStatus = _capStatus[tokenId]; 
     }
-
 }
