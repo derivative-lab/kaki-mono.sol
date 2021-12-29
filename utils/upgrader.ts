@@ -116,6 +116,7 @@ export async function deploy(
   const rst = await repo.init();
   // }
   const r = await repo.remote(["-v"]);
+  console.log({remote:r, branchName});
   if (!(r && r.includes(origin))) {
     await repo.addRemote(origin, manifestRepo);
   }
@@ -124,7 +125,7 @@ export async function deploy(
       try {
         // await repo.fetch(origin, branchName);
         await repo.pull(origin, branchName);
-        // const ck = await repo.checkout(branchName);
+        const ck = await repo.checkout(branchName);
       } catch (e) {
         console.log(
           `branch: ${chalk.cyan(branchName)} not exists ${chalk.green(
@@ -145,7 +146,6 @@ export async function deploy(
     }
   }
   console.log(`will deploy ${chalk.green(branchName)}`);
-  console.log(factory)
   const instance = await upgrades.deployProxy(
     new factory(await getSigner(0)),
     args
