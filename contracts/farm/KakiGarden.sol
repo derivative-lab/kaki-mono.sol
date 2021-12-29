@@ -141,6 +141,12 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         emit HarvestMany(msg.sender, pids, rAmounts);
     }
 
+    function pendingReward(uint256 pid) public view override returns (uint256) {
+        PoolInfo memory pool = _poolInfo[pid];
+        UserInfo memory user = _userInfo[pid][msg.sender];
+        return (_rewardPerBlock * (block.number - user.rewardAtBlock) * pool.allocPoint) / _totalAllocPoint;
+    }
+
     function onlyHarvest(uint256 pid) internal returns (uint256 rAmount) {
         PoolInfo storage pool = _poolInfo[pid];
         UserInfo storage user = _userInfo[pid][msg.sender];
