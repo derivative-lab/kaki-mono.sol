@@ -27,7 +27,8 @@ import {
   KakiCaptain,
   KakiCaptain__factory,
   CaptainClaim,
-  CaptainClaim__factory
+  CaptainClaim__factory,
+  
 } from '~/typechain';
 
 import { getSigner } from '~/utils/contract';
