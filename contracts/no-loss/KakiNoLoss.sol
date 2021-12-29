@@ -206,16 +206,15 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 lastCheckChapter = _factionStatus[factionId]._lastCheckChapter;
         if (lastCheckChapter != _chapter) {
             updateFactionWinnerAmount(factionId, lastCheckChapter);
-            //if (_factionStatus[factionId]._factionWinnerKC[lastCheckChapter] > 0)
             if (_factionStatus[factionId]._lastIndexChapter < _chapter) updateFactionIndex(factionId, lastCheckChapter);
 
-            _factionStatus[factionId]._chapterKC[_chapter] =
+            _factionStatus[factionId]._chapterKC[_chapter] = 
                 _captionKC +
                 calAllKcInWholeCycle(factionId, _factionStatus[factionId]._stakeAmount);
 
-            _factionStatus[factionId]._lastCheckChapter = _chapter;            
+            _factionStatus[factionId]._lastCheckChapter = _chapter;
         } else {
-            if (_isChapterEnd[_chapter]) updateFactionIndex(factionId, _chapter);
+            if (_isChapterEnd[_chapter]  && _factionStatus[factionId]._lastIndexChapter<_chapter) updateFactionIndex(factionId, _chapter);
         }
         console.log("initFactionChapterKC", factionId, _chapter, lastCheckChapter);
     }
@@ -223,11 +222,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     function updateFactionIndex(uint256 factionId, uint256 chapter) internal {
         Faction storage fa = _factionStatus[factionId];
         uint256 factionWinnerKC = fa._factionWinnerKC[chapter];
-        uint256 totalChapterKC = fa._chapterKC[chapter];
+        uint256 totalChapterKC = fa._totalChapterKC[chapter - 1];
         if (_winnerKC[chapter] > 0) {
             uint256 teamBonus = (_interest[chapter] * factionWinnerKC) / _winnerKC[chapter];
-            console.log("updateFactionIndex1", _interest[chapter], factionWinnerKC, _winnerKC[chapter]);
-            console.log("updateFactionIndex2", teamBonus, totalChapterKC);
             if (_captainRateLimit != 0 || _kakiFoundationRate != 0) {
                 uint256 captainBonus = (teamBonus * _captainRateLimit) / _BASE;
                 uint256 kakiFoundationBonus = (teamBonus * _kakiFoundationRate) / _BASE;
@@ -241,16 +238,18 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                     _kakiToken.transfer(_kakiFoundationAddress, kakiFoundationBonus);
                 }
             }
-            console.log("updateFactionIndex3", teamBonus, totalChapterKC);
+            console.log("updateFactionIndex", chapter, teamBonus, totalChapterKC);
             _factionStatus[factionId]._totalIndex += (teamBonus * _BASE) / totalChapterKC;
         }
         _factionStatus[factionId]._index[chapter] = _factionStatus[factionId]._totalIndex;
         _factionStatus[factionId]._lastIndexChapter = chapter;
-        //if (_isChapterEnd[_chapter]) _factionStatus[factionId]._lastIndexChapter = chapter;
-        //else _factionStatus[factionId]._lastIndexChapter = _chapter-1;
 
-        console.log("updateFactionIndex", factionId, chapter, _factionStatus[factionId]._lastIndexChapter);
-        console.log("updateFactionIndex value", factionId, _factionStatus[factionId]._totalIndex);
+        console.log(
+            "updateFactionIndex",
+            factionId,
+            _factionStatus[factionId]._lastIndexChapter,
+            _factionStatus[factionId]._totalIndex
+        );
     }
 
     function initAccountChapterKcInner(
@@ -422,7 +421,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 _factionStatus[factionId]._chapterKC[_chapter - 1] = _factionStatus[factionId]._chapterKC[_chapter];
         } else {
             bool hasRoundFire = isRoundFire(factionId, _chapter, _lastRound);
-            console.log("has round fire1 ", _lastRound, hasRoundFire);
             if (!hasRoundFire) updateFactionWinnerAmount(factionId, _chapter);
         }
         console.log(
@@ -481,7 +479,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         else winner = _poolState[_chapter][_lastRound - 1]._put;
 
         _winnerKC[_chapter] = (_winnerKC[_chapter]) + winner;
-        console.log("battleDamage", _chapter, _winnerKC[_chapter]);
+        console.log("battleDamage", _chapter, _lastRound, _winnerKC[_chapter]);
 
         if (
             (_chapterStartTime[_chapter]) + _dayTime <= uint256(time) &&
@@ -520,7 +518,13 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (fireLen > 0) {
             uint256 lastRound = _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 1];
             if (factionChapter == _chapter) {
-                if (lastRound < _lastRound - 1) {
+                console.log("updateFactionWinnerAmount", lastRound, _lastRound);
+                if (lastRound == _lastRound - 1) {
+                    if (
+                        fireLen > 1 &&
+                        _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 2] == lastRound - 1
+                    ) winner += getRoundWinnerKc(factionId, factionChapter, lastRound - 1);
+                } else {
                     winner += getRoundWinnerKc(factionId, factionChapter, lastRound);
                     if (
                         fireLen > 1 &&
@@ -530,6 +534,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 }
             } else {
                 winner += getRoundWinnerKc(factionId, factionChapter, lastRound);
+                console.log("updateFactionWinnerAmount2", winner);
                 /**如果最后一个回合和前一回合至少间隔一回合不需要结算
                 否则前一回合还没结算，需要进行结算*/
                 if (
@@ -550,7 +555,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function getAccountKC(uint256 factionId, uint256 chapter) internal view returns (uint256) {
-        console.log("getAccountKC", factionId, chapter);
         uint256 len = _accountFactionStatus[msg.sender][factionId]._accountKCIndex.length;
         /**如果chapter 大于有记录的chapter值 ，通过计算全周期的质押量得到kc
            否则遍历_accountKCIndex ，从大到小获取存储的周期值(c)，当chapter 大于c，返回值
@@ -585,7 +589,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 initFactionChapterKC(factionId);
                 Faction storage faction = _factionStatus[factionId];
                 /**_lastCheckChapter 当前chapter没有结束 */
-                console.log("updateBonus0", factionId, faction._lastCheckChapter, faction._lastIndexChapter);
+
                 uint256 endChapter2 = faction._lastCheckChapter < faction._lastIndexChapter
                     ? faction._lastCheckChapter
                     : faction._lastIndexChapter;
@@ -601,13 +605,13 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 uint256 bonus1 = ((index2 - index1) * getAccountKC(factionId, chapter + 1)) / _BASE;
 
                 bonus = bonus + bonus0 + bonus1;
-                console.log("bonus", bonus0, bonus1);
+                //console.log("bonus", bonus0, bonus1);
                 if (faction._captain == msg.sender && faction._captainBonus != 0) {
                     bonus = bonus + faction._captainBonus;
                     faction._captainBonus = 0;
                 }
             }
-            _accountGlobalInfo[msg.sender]._bonusChapter = endChapter;
+            _accountGlobalInfo[msg.sender]._bonusChapter = endChapter ;
             console.log("updateBonus4", msg.sender, _accountGlobalInfo[msg.sender]._bonusChapter);
         }
 

@@ -27,10 +27,7 @@ import {
   KakiCaptain,
   KakiCaptain__factory,
   CaptainClaim,
-  CaptainClaim__factory,
-  MysteryBox,
-  MysteryBox__factory
-
+  CaptainClaim__factory
 } from '~/typechain';
 
 import { getSigner } from '~/utils/contract';
@@ -90,26 +87,19 @@ export async function deployKakiCaptain() {
   return instance as KakiCaptain;
 }
 
-export async function deployMysteryBox() {
-  const signer = await getSigner(0);
-  const factory = new MysteryBox__factory(signer);
-  const instance = await factory.deploy("https://ipfs.io/ipfs/QmbgMfXVThUP2s8vFeUD7AXQmqASSBG5bkqosf7XCFrMP1?filename=KakiSeedBox.json");
-  await instance.deployed();
-  console.log(`MysteryBox deployed to: ${instance.address}`);
-  return instance as MysteryBox;
-}
-
-export async function deployCaptainClaim(kakiCaptain: KakiCaptain, mysteryBox: MysteryBox) {
+export async function deployCaptainClaim(kakiCaptain: Ticket, allowList: AddressList, mintList: AddressList) {
   const signer = await getSigner(0);
   const args: Parameters<CaptainClaim["initialize"]> = [
     kakiCaptain.address,
-    mysteryBox.address
-  ]; 
+    allowList.address,
+    mintList.address
+  ];
   const factory = new CaptainClaim__factory(signer);
   const instance = await upgrades.deployProxy(factory, args);
   console.log(`CaptainClaim deployed to: ${instance.address}`);
   return instance as CaptainClaim;
 }
+
 
 export async function deployKakiGarden(kakiToken: string) {
   const signer = await getSigner(0);
@@ -140,22 +130,23 @@ export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink
   await instance.deployed();
   return instance as KakiSquidGame;
 }
-// export async function deployNoLoss(kaki: MockToken, bnbToken: MockToken, busdToken: MockToken, kakiBNBToken: MockToken, kakiBUSDToken: MockToken, chainlink: MockChainLink) {
-//   const signer0 = await getSigner(0);
-//   const factory = new KakiNoLoss__factory(signer0);
-//   const args: Parameters<KakiNoLoss['initialize']> = [
-//     kaki.address,
-//     bnbToken.address,
-//     busdToken.address,
-//     kakiBNBToken.address,
-//     kakiBUSDToken.address,
-//     chainlink.address
-//   ];
-//   const instance = await upgrades.deployProxy(factory, args);
-//   console.log(`deploy noloss to: ${instance.address}`);
-//   await instance.deployed();
-//   return instance as KakiNoLoss;
-// }
+export async function deployNoLoss(caption:KakiCaptain,kaki: MockToken, bnbToken: MockToken, busdToken: MockToken, kakiBNBToken: MockToken, kakiBUSDToken: MockToken, chainlink: MockChainLink) {
+  const signer0 = await getSigner(0);
+  const factory = new KakiNoLoss__factory(signer0);
+  const args: Parameters<KakiNoLoss['initialize']> = [
+    caption.address,
+    kaki.address,
+    bnbToken.address,
+    busdToken.address,
+    kakiBNBToken.address,
+    kakiBUSDToken.address,
+    chainlink.address
+  ];
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`deploy noloss to: ${instance.address}`);
+  await instance.deployed();
+  return instance as KakiNoLoss;
+}
 
 export async function deployTicket() {
   const signer0 = await getSigner(0);
@@ -238,12 +229,9 @@ export async function deployAll() {
   const game = await deploySquidGame(ticket, usdt, chainlink, signer0.address);
   const kakiCaptain = await deployKakiCaptain();
   // const blindBox = await deployBlindBox(kakiTicket, usdt);
-  // const noLoss = await deployNoLoss(kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
+  const noLoss = await deployNoLoss(kakiCaptain,kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
   const garden = await deployKakiGarden(kakiToken.address);
-  const mysteryBox = await deployMysteryBox();
-  const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox);
-  //captainClaim
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, mysteryBox};
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain,noLoss};
 
   //return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, noLoss, allowClaimTicket: allowList, blindBox, kakiTicket, garden };
 }
