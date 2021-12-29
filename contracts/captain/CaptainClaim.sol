@@ -6,6 +6,7 @@ import "../base/WithRandom.sol";
 import "../base/BaseERC721.sol";
 import "../base/WithAdminRole.sol";
 import "../interfaces/IAddressList.sol";
+import "../interfaces/IMysteryBox.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
@@ -15,13 +16,15 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
 
     IERC20 _busd;
     IKakiCaptain public _captain;
-    IAddressList _addressList;
-    IAddressList _mintList;
+    IMysteryBox public _mysBox;
+    // IAddressList _addressList;
+    // IAddressList _mintList;
 
     bool _able;
-    bool _claimAble;
+    bool _switchAble;
     uint256[] tokenIdList;
     uint256 _count;
+    uint256 _limit;
     uint256 public _mintPrice;
     uint256 public _mintLimit;
     uint256 public _claimLimit;
@@ -36,14 +39,14 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
 
     receive() external payable {}
 
-    function initialize(IKakiCaptain capAdd, IAddressList allowList, IAddressList mintList) public initializer {
+    function initialize(IKakiCaptain capAdd, IMysteryBox mysBoxAdd) public initializer {
         __WithAdminRole_init();
         _captain = capAdd;
-        _addressList = allowList;
-        _mintList = mintList;
+        _mysBox = mysBoxAdd;
         _mintPrice = 0.5 ether;
         _claimLimit = 1;
         _mintLimit = 1;
+        _limit = 200;
         _kakiFoundation = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d; // kaki foundation address
     }
 
@@ -52,29 +55,40 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         _;
     }
 
-    modifier isClaimOver() {
-        require(!_claimAble, "Claim had ended.");
+    modifier isSwitchAble() {
+        require(!_switchAble, "Claim had ended.");
         _;
     }
 
-    function claim() public override isClaimOver onlyNoneContract {
-        require(_addressList.isInAddressList(msg.sender), "Not allow.");
-        require(_claimTimeLimit[msg.sender] < _claimLimit, "Claim too much.");
-        uint256 tokenId = getRandId();
-        uint256 rad = random(1, 3);
-        _captain.mint(msg.sender, tokenId, rad);
-        _claimTimeLimit[msg.sender]++;
-        emit Claim(msg.sender, tokenId);
-    }
+    // function claim() public override isClaimOver onlyNoneContract {
+    //     require(_addressList.isInAddressList(msg.sender), "Not allow.");
+    //     require(_claimTimeLimit[msg.sender] < _claimLimit, "Claim too much.");
+    //     uint256 tokenId = getRandId();
+    //     uint256 rad = random(1, 3);
+    //     _captain.mint(msg.sender, tokenId, rad);
+    //     _claimTimeLimit[msg.sender]++;
+    //     emit Claim(msg.sender, tokenId);
+    // }
 
     function mint() public override payable isAble onlyNoneContract {
-        require(_mintList.isInAddressList(msg.sender), "Not allow.");
+        //require(_mintList.isInAddressList(msg.sender), "Not allow.");
         require(msg.value == _mintPrice, "BNB not enough");
+        require(_count < _limit, "Mint over.");
         require(_mintTimeLimit[msg.sender] < _mintLimit, "Claim too much.");
         uint256 tokenId = getRandId();
         uint256 rad = random(1, 3);
         _captain.mint(msg.sender, tokenId, rad);
+        _count++;
         _mintTimeLimit[msg.sender]++;
+        emit Mint(msg.sender, tokenId);
+    }
+
+    function switchByBox(uint256 boxId) public override isSwitchAble onlyNoneContract {
+        _mysBox.safeTransferFrom(msg.sender, BlackHole, boxId);
+        uint256 tokenId = getRandId();
+        uint256 rad = random(1, 3);
+        _captain.mint(msg.sender, tokenId, rad);
+        _count++;
         emit Mint(msg.sender, tokenId);
     }
 
@@ -100,16 +114,20 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         _captain = IKakiCaptain(capAdd);
     }
 
-    function setClaimWhiteList(IAddressList allowList) public onlyOwner {
-        _addressList = allowList;
+    function setLimit(uint256 newLimit) public onlyOwner {
+        _limit = newLimit;
     }
 
-    function setMintWhiteList(IAddressList mintList) public onlyOwner {
-        _addressList = mintList;
-    }
+    // function setClaimWhiteList(IAddressList allowList) public onlyOwner {
+    //     _addressList = allowList;
+    // }
 
-    function setClaimAble() public onlyOwner {
-        _claimAble = !_claimAble;
+    // function setMintWhiteList(IAddressList mintList) public onlyOwner {
+    //     _addressList = mintList;
+    // }
+
+    function setSwitchAble() public onlyOwner {
+        _switchAble = !_switchAble;
     }
 
     function setAble() public onlyOwner {

@@ -1,3 +1,4 @@
+import { MysteryBox } from './../typechain/MysteryBox.d';
 import { BigNumber } from '@ethersproject/bignumber';
 import { ethers, upgrades, deployments } from 'hardhat';
 import {
@@ -28,7 +29,9 @@ import {
   KakiCaptain__factory,
   CaptainClaim,
   CaptainClaim__factory,
-  
+  MysteryBox,
+  MysteryBox__factory
+
 } from '~/typechain';
 
 import { getSigner } from '~/utils/contract';
@@ -88,19 +91,26 @@ export async function deployKakiCaptain() {
   return instance as KakiCaptain;
 }
 
-export async function deployCaptainClaim(kakiCaptain: Ticket, allowList: AddressList, mintList: AddressList) {
+export async function deployMysteryBox() {
+  const signer = await getSigner(0);
+  const factory = new MysteryBox__factory(signer);
+  const instance = await factory.deploy("https://ipfs.io/ipfs/QmbgMfXVThUP2s8vFeUD7AXQmqASSBG5bkqosf7XCFrMP1?filename=KakiSeedBox.json");
+  await instance.deployed();
+  console.log(`MysteryBox deployed to: ${instance.address}`);
+  return instance as MysteryBox;
+}
+
+export async function deployCaptainClaim(kakiCaptain: KakiCaptain, mysteryBox: MysteryBox) {
   const signer = await getSigner(0);
   const args: Parameters<CaptainClaim["initialize"]> = [
     kakiCaptain.address,
-    allowList.address,
-    mintList.address
-  ];
+    mysteryBox.address
+  ]; 
   const factory = new CaptainClaim__factory(signer);
   const instance = await upgrades.deployProxy(factory, args);
   console.log(`CaptainClaim deployed to: ${instance.address}`);
   return instance as CaptainClaim;
 }
-
 
 export async function deployKakiGarden(kakiToken: string) {
   const signer = await getSigner(0);
@@ -231,7 +241,9 @@ export async function deployAll() {
   // const blindBox = await deployBlindBox(kakiTicket, usdt);
   // const noLoss = await deployNoLoss(kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
   const garden = await deployKakiGarden(kakiToken.address);
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain};
+  const mysteryBox = await deployMysteryBox();
+  const captainClaim = await deployCaptainClaim(kakiCaptain.address, mysteryBox.address);
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, captainClaim};
 
   //return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, noLoss, allowClaimTicket: allowList, blindBox, kakiTicket, garden };
 }
