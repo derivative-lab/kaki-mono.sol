@@ -1,5 +1,5 @@
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
-import { BlindBox ,KakiCaptain__factory,KakiTicket} from './../typechain';
+import { BlindBox ,KakiCaptain__factory,KakiGarden__factory,KakiTicket, MysteryBox__factory} from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
 import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory } from '~/typechain';
 
@@ -47,11 +47,12 @@ export const mutiContractAddrs = {
     squidTicket: '0x7dc99344aA0053BC2DC16aE111e83C1315409a07',
     squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
-
+    farm:'',
     kakiCaptain: '0x92F72Eb15EeE4D7A3E746FA921c46e236FcbDe9F',
     captainClaim: '',
     captainMintList: '',
     captainAllowList: '',
+    mysteryBox: '0x7FCCAD7d4f0483381E226Ea6Ab021a709F7F1c7E',
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
@@ -98,17 +99,21 @@ export const contractAddress = {
   get kakiCaptain() {
     return getItem('kakiCaptain');
   },
-  get captainClaim() {
-    return getItem('captainClaim');
-  },
   get captainAllowList() {
     return getItem('captainAllowList');
   },
   get captainMintList() {
     return getItem('captainMintList');
-  }
-
-
+  },
+  get mysteryBox() {
+    return getItem('mysteryBox');
+  },
+  get captainClaim() {
+    return getItem('captainClaim');
+  },
+  get farm() {
+    return getItem('farm');
+  },
 };
 
 function getItem(key: string) {
@@ -176,3 +181,12 @@ export async function captainAllowListContract(signerIndex = 0) {
 export async function captainMintContract(signerIndex = 0) {
   return AddressList__factory.connect(contractAddress.captainMintList, await getSigner(signerIndex));
 }
+
+export async function mysteryBoxContract(signerIndex = 0) {
+  return MysteryBox__factory.connect(contractAddress.mysteryBox, await getSigner(signerIndex));
+}
+
+export async function farmContract(signerIndex = 0) {
+  return KakiGarden__factory.connect(contractAddress.farm, await getSigner(signerIndex));
+}
+
