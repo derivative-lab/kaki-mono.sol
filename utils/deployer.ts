@@ -130,22 +130,23 @@ export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink
   await instance.deployed();
   return instance as KakiSquidGame;
 }
-// export async function deployNoLoss(kaki: MockToken, bnbToken: MockToken, busdToken: MockToken, kakiBNBToken: MockToken, kakiBUSDToken: MockToken, chainlink: MockChainLink) {
-//   const signer0 = await getSigner(0);
-//   const factory = new KakiNoLoss__factory(signer0);
-//   const args: Parameters<KakiNoLoss['initialize']> = [
-//     kaki.address,
-//     bnbToken.address,
-//     busdToken.address,
-//     kakiBNBToken.address,
-//     kakiBUSDToken.address,
-//     chainlink.address
-//   ];
-//   const instance = await upgrades.deployProxy(factory, args);
-//   console.log(`deploy noloss to: ${instance.address}`);
-//   await instance.deployed();
-//   return instance as KakiNoLoss;
-// }
+export async function deployNoLoss(caption:KakiCaptain,kaki: MockToken, bnbToken: MockToken, busdToken: MockToken, kakiBNBToken: MockToken, kakiBUSDToken: MockToken, chainlink: MockChainLink) {
+  const signer0 = await getSigner(0);
+  const factory = new KakiNoLoss__factory(signer0);
+  const args: Parameters<KakiNoLoss['initialize']> = [
+    caption.address,
+    kaki.address,
+    bnbToken.address,
+    busdToken.address,
+    kakiBNBToken.address,
+    kakiBUSDToken.address,
+    chainlink.address
+  ];
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`deploy noloss to: ${instance.address}`);
+  await instance.deployed();
+  return instance as KakiNoLoss;
+}
 
 export async function deployTicket() {
   const signer0 = await getSigner(0);
@@ -228,9 +229,9 @@ export async function deployAll() {
   const game = await deploySquidGame(ticket, usdt, chainlink, signer0.address);
   const kakiCaptain = await deployKakiCaptain();
   // const blindBox = await deployBlindBox(kakiTicket, usdt);
-  // const noLoss = await deployNoLoss(kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
+  const noLoss = await deployNoLoss(kakiCaptain,kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
   const garden = await deployKakiGarden(kakiToken.address);
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain};
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain,noLoss};
 
   //return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, noLoss, allowClaimTicket: allowList, blindBox, kakiTicket, garden };
 }

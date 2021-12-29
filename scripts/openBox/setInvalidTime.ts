@@ -5,8 +5,8 @@ import {formatEther} from 'ethers/lib/utils'
 (async () => {
     console.log('set Invalid time!')
     const openBox = await squidOpenBoxContract();
-    const tx = await openBox.setInvalidTime(1640311200); //2021-12-24 10:00:00    
-    console.log(tx.hash);
+    //const tx = await openBox.setInvalidTime(1640829600); //2021-12-29 10:00:00    
+    //console.log(tx.hash);
 
     let l=await openBox._invalidTime();
     console.log(l.toString());
