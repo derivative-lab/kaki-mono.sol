@@ -154,4 +154,8 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         require(newMintPrice > 0, "mintPrice");
         _mintPrice = newMintPrice;
     }
+
+    function version() public pure returns (uint256) {
+        return 1;
+    }
 }

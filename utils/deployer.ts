@@ -1,4 +1,3 @@
-import { MysteryBox } from './../typechain/MysteryBox.d';
 import { BigNumber } from '@ethersproject/bignumber';
 import { ethers, upgrades, deployments } from 'hardhat';
 import {
@@ -242,8 +241,9 @@ export async function deployAll() {
   // const noLoss = await deployNoLoss(kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
   const garden = await deployKakiGarden(kakiToken.address);
   const mysteryBox = await deployMysteryBox();
-  const captainClaim = await deployCaptainClaim(kakiCaptain.address, mysteryBox.address);
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, captainClaim};
+  const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox);
+  //captainClaim
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, mysteryBox};
 
   //return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, noLoss, allowClaimTicket: allowList, blindBox, kakiTicket, garden };
 }
