@@ -21,6 +21,17 @@ contract WithRandom is Initializable {
         _randomNumber = RandomUtil.randomSeededMinMax(min, max, seed);
     }
 
+    function randomWithSeed(
+        uint256 min,
+        uint256 max,
+        uint256 seed
+    ) internal view returns (uint256 _randomNumber) {
+        uint256 fullSeed = uint256(
+            keccak256(abi.encodePacked(msg.sender, seed, blockhash(block.number - 1), gasleft()))
+        );
+        _randomNumber = RandomUtil.randomSeededMinMax(min, max, fullSeed);
+    }
+
     function currentDayth() public view returns (uint256) {
         return block.timestamp / (24 * 3600);
     }
