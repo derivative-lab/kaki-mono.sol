@@ -53,6 +53,7 @@ export const mutiContractAddrs = {
     captainMintList: '',
     captainAllowList: '',
     mysteryBox: '0x7FCCAD7d4f0483381E226Ea6Ab021a709F7F1c7E',
+    chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766'
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
