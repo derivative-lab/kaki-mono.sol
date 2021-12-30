@@ -8,4 +8,6 @@ interface ICaptainClaim {
     //function claim() external;
     function mint() external payable;
     function switchByBox(uint256 boxId) external;
+    function getList() external view returns(uint256[] memory idList);
+    function getTotalMint() external view returns(uint256 count);
 }
