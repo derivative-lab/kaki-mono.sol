@@ -49,10 +49,11 @@ export const mutiContractAddrs = {
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
     farm:'',
     kakiCaptain: '0x92F72Eb15EeE4D7A3E746FA921c46e236FcbDe9F',
-    captainClaim: '0x8E5597976d29C1Ae561fE3b91346235D2a19aCff',
+    captainClaim: '',
     captainMintList: '',
     captainAllowList: '',
-    mysteryBox: '0xE0c51a05C9ef982cA65b60123d286CE6f2c9261f',
+    mysteryBox: '0x7FCCAD7d4f0483381E226Ea6Ab021a709F7F1c7E',
+    chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766'
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
@@ -170,9 +171,9 @@ export async function kakiCaptainContract(signerIndex = 0) {
   return KakiCaptain__factory.connect(contractAddress.kakiCaptain, await getSigner(signerIndex));
 }
 
-// export async function captainClaimContract(signerIndex = 0) {
-//   return CaptainClaim__factory.connect(contractAddress.captainClaim, await getSigner(signerIndex));
-// }
+export async function captainClaimContract(signerIndex = 0) {
+  return CaptainClaim__factory.connect(contractAddress.captainClaim, await getSigner(signerIndex));
+}
 
 export async function captainAllowListContract(signerIndex = 0) {
   return AddressList__factory.connect(contractAddress.captainAllowList, await getSigner(signerIndex));
