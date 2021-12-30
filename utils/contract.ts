@@ -1,3 +1,4 @@
+import { ChainlinkRandoms } from './../typechain/ChainlinkRandoms.d';
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
 import { BlindBox ,KakiCaptain__factory,KakiGarden__factory,KakiTicket, MysteryBox__factory} from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
@@ -49,10 +50,10 @@ export const mutiContractAddrs = {
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
     farm:'',
     kakiCaptain: '0x92F72Eb15EeE4D7A3E746FA921c46e236FcbDe9F',
-    captainClaim: '',
+    captainClaim: '0xfAAC8D8A566bE83bB4675cF93deb5FAF250122f5',
     captainMintList: '',
     captainAllowList: '',
-    mysteryBox: '0x7FCCAD7d4f0483381E226Ea6Ab021a709F7F1c7E',
+    mysteryBox: '0xE0c51a05C9ef982cA65b60123d286CE6f2c9261f',
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766'
   },
   bsc: {
@@ -115,6 +116,9 @@ export const contractAddress = {
   get farm() {
     return getItem('farm');
   },
+  get chainlinkRandoms() {
+    return getItem('chainlinkRandoms');
+  },
 };
 
 function getItem(key: string) {
@@ -132,8 +136,6 @@ export async function getDeployment(name: string) {
 export async function getSigner(index = 0) {
   return (await ethers.getSigners())[index];
 }
-
-
 
 export async function busdContract() {
   return MockToken__factory.connect(contractAddress.busd, await getSigner(0));

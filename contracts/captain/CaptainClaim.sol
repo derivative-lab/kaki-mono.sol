@@ -23,8 +23,8 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     bool _able;
     bool _switchAble;
     uint256[] tokenIdList;
-    uint256 _count;
-    uint256 _limit;
+    uint256 public _count;
+    uint256 public _limit;
     uint256 public _mintPrice;
     uint256 public _mintLimit;
     uint256 public _claimLimit;
@@ -39,8 +39,9 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
 
     receive() external payable {}
 
-    function initialize(IKakiCaptain capAdd, IMysteryBox mysBoxAdd) public initializer {
+    function initialize(IKakiCaptain capAdd, IMysteryBox mysBoxAdd, IRandoms radomAdd) public initializer {
         __WithAdminRole_init();
+        __WithRandom_init(radomAdd);
         _captain = capAdd;
         _mysBox = mysBoxAdd;
         _mintPrice = 0.5 ether;
@@ -99,10 +100,20 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         tokenIdList.pop();
     }
 
+    //****************************** view ***************************************** */
+
+    function getList() public view returns(uint256[] memory idList) {
+        idList = tokenIdList;
+    }
+
+    function getTotalMint() public view returns(uint256 count) {
+        count = _count;
+    }
+
     //****************************** admin function ***************************************** */
     function setTokenIdList(uint256 start, uint256 end) public onlyOwner {
         for(uint256 i = start; i <= end; i++) {
-            tokenIdList[i] = i + 1;
+            tokenIdList.push(i);
         }
     }
 
@@ -150,12 +161,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         require(success, "! safe transfer bnb");
     }
 
-    function setMintPrice(uint256 newMintPrice) public onlyOwner {
-        require(newMintPrice > 0, "mintPrice");
-        _mintPrice = newMintPrice;
-    }
-
     function version() public pure returns (uint256) {
-        return 1;
+        return 3;
     }
 }
