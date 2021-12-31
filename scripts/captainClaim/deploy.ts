@@ -13,5 +13,5 @@ import {deploy} from '~/utils/upgrader';
   // await deployOpenBox(ticket, busd, 1639649100, allowList);
 
   console.log({args})
-  await deploy(`captain/CaptainClaim.sol`,args, null ,false)
+  await deploy(`captain/CaptainClaim.sol`,args)
 })()
