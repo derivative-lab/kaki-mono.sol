@@ -5,16 +5,16 @@ import { upgrades } from 'hardhat';
 
 
 (async () => {
-  // await upgrade(`captain/CaptainClaim.sol`,'0x54AB58b890118479663810df23a556dA42A497f3', CaptainClaim__factory, false)
+  await upgrade(`captain/CaptainClaim.sol`,contractAddress.captainClaim)
 
 
-  const signer = await getSigner();
+  // const signer = await getSigner();
 
-  const factory = new CaptainClaim__factory(signer);
+  // const factory = new CaptainClaim__factory(signer);
 
-  const instance = await upgrades.upgradeProxy('0x54AB58b890118479663810df23a556dA42A497f3',factory);
+  // const instance = await upgrades.upgradeProxy('0x925F3d41fe2Ae5213338Ed1fc85598b3e0dB8F6c',factory);
 
 
-  console.log(instance.address);
+  // console.log(instance.address);
 
 })();
