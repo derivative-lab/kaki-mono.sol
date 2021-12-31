@@ -85,7 +85,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     }
 
     function switchByBox(uint256 boxId) public override isSwitchAble onlyNoneContract {
-        _mysBox.safeTransferFrom(msg.sender, BlackHole, boxId);
+        _mysBox.safeTransferFrom(msg.sender, address(0xdead), boxId);
         uint256 tokenId = getRandId();
         uint256 rad = random(1, 3);
         _captain.mint(msg.sender, tokenId, rad);
@@ -102,11 +102,11 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
 
     //****************************** view ***************************************** */
 
-    function getList() public view returns(uint256[] memory idList) {
+    function getList() public view override returns(uint256[] memory idList) {
         idList = tokenIdList;
     }
 
-    function getTotalMint() public view returns(uint256 count) {
+    function getTotalMint() public view override returns(uint256 count) {
         count = _count;
     }
 
@@ -162,6 +162,6 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 3;
+        return 5;
     }
 }

@@ -50,6 +50,6 @@ contract Ticket is BaseERC721, ITicket {
     }
 
     function version() public pure returns (uint256) {
-        return 3;
+        return 4;
     }
 }
