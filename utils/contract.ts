@@ -53,7 +53,7 @@ export const mutiContractAddrs = {
     captainClaim: '0xbf24a4781DB2C353C45e328804FeAAc47d05f372',
     captainMintList: '',
     captainAllowList: '',
-    mysteryBox: '0xE0c51a05C9ef982cA65b60123d286CE6f2c9261f',
+    mysteryBox: '0x3e10c9a4F38F5E60f628329B16EED343A3293BBe',
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766'
   },
   bsc: {

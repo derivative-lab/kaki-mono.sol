@@ -31,10 +31,24 @@ describe('claim', async () => {
         let a = await captainClaim.getList();
         console.log(a);
 
-        mysteryBox.setApprovalForAll(captainClaim.address, true);
-        kakiCaptain.setupAdmin(captainClaim.address);
-        mysteryBox.mint(users[0].address);
+        await mysteryBox.setApprovalForAll(captainClaim.address, true);
+        await kakiCaptain.setupAdmin(captainClaim.address);
+        await mysteryBox.mint(users[0].address);
+        await mysteryBox.mint(users[0].address);
+        await mysteryBox.mint(users[0].address);
+        await mysteryBox.mint(users[0].address);
+
+        //let tokenId = await captainClaim.mint({value: BigNumber.from("500000000000000000")});
+        //console.log(tokenId);
+        let balance = await kakiCaptain.balanceOf(users[0].address);
+        //expect (balance).to.equal(1);
+        await mysteryBox.setApprovalForAll(captainClaim.address, true);
+        for (var i =0; i<4; i++) {
+            let boxId = await mysteryBox.tokenOfOwnerByIndex(users[0].address, i);
+            console.log("boxid", boxId);
+        }
         
+        //await captainClaim.switchByBox()
         });
     });
 });
