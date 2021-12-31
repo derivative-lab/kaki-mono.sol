@@ -50,7 +50,7 @@ export const mutiContractAddrs = {
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
     farm:'',
     kakiCaptain: '0x92F72Eb15EeE4D7A3E746FA921c46e236FcbDe9F',
-    captainClaim: '0xfAAC8D8A566bE83bB4675cF93deb5FAF250122f5',
+    captainClaim: '0x533cBe8AbB449fEfeF87D87eAbcd47996aC5673A',
     captainMintList: '',
     captainAllowList: '',
     mysteryBox: '0xE0c51a05C9ef982cA65b60123d286CE6f2c9261f',
