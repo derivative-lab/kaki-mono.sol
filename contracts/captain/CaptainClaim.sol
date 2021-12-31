@@ -71,12 +71,12 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     //     emit Claim(msg.sender, tokenId);
     // }
 
-    function mint() public override payable isAble onlyNoneContract {
+    function mint() public override payable isAble onlyNoneContract returns(uint256 tokenId) {
         //require(_mintList.isInAddressList(msg.sender), "Not allow.");
         require(msg.value == _mintPrice, "BNB not enough");
-        require(_count < _limit, "Mint over.");
+        require(_count < _limit, "Mint over."); 
         require(_mintTimeLimit[msg.sender] < _mintLimit, "Claim too much.");
-        uint256 tokenId = getRandId();
+        tokenId = getRandId();
         uint256 rad = random(1, 3);
         _captain.mint(msg.sender, tokenId, rad);
         _count++;
@@ -84,9 +84,9 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         emit Mint(msg.sender, tokenId);
     }
 
-    function switchByBox(uint256 boxId) public override isSwitchAble onlyNoneContract {
+    function switchByBox(uint256 boxId) public override isSwitchAble onlyNoneContract returns(uint256 tokenId) {
         _mysBox.safeTransferFrom(msg.sender, address(0xdead), boxId);
-        uint256 tokenId = getRandId();
+        tokenId = getRandId();
         uint256 rad = random(1, 3);
         _captain.mint(msg.sender, tokenId, rad);
         _count++;
@@ -162,6 +162,6 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 5;
+        return 4;
     }
 }
