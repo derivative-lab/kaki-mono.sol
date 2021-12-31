@@ -2,11 +2,12 @@ pragma solidity ^0.8.0;
 
 import "../base/WithAdminRole.sol";
 import "../interfaces/IERC20.sol";
-import "../interfaces/IKakiGarden.sol";
+import {IKakiGarden, IBank} from "../interfaces/IKakiGarden.sol";
 import "../interfaces/IClaimLock.sol";
 import {DebtToken} from "./DebtToken.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import {IVault} from "../interfaces/IVault.sol";
 
 contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, PausableUpgradeable {
     // start mine block number
@@ -14,6 +15,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     // total allocation point
     uint256 public _totalAllocPoint;
     uint256 public _rewardPerBlock;
+    uint256 public _rewardTokenPrice;
     IERC20 public _rewardToken;
     IClaimLock public _rewardLocker;
     mapping(address => uint256) public _poolId1; // poolId1 starting from 1,subtract 1 before using with poolInfo
@@ -42,6 +44,10 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     function addPool(
         uint256 allocPoint,
         IERC20 token,
+        IVault vault,
+        IERC20 ibToken,
+        IVault ibVault,
+        bool isNative,
         string memory name
     ) public restricted {
         require(_poolId1[address(token)] == 0, "addPool: token is already in pool");
@@ -59,13 +65,22 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
                     string(abi.encodePacked("k-", token.name())),
                     string(abi.encodePacked("k-", token.symbol()))
                 ),
+                vault: vault,
+                ibToken: ibToken,
+                ibVault: ibVault,
+                isNative: isNative,
                 name: name
             })
         );
         _totalAllocPoint += allocPoint;
+
+        token.approve(address(vault), type(uint256).max);
+        if (address(ibToken) != address(0)) {
+            ibToken.approve(address(ibVault), type(uint256).max);
+        }
     }
 
-    function deposit(uint256 pid, uint256 amount) public override whenNotPaused nonReentrant {
+    function deposit(uint256 pid, uint256 amount) public payable override whenNotPaused nonReentrant {
         uint256 currentBlock = block.number;
         require(currentBlock >= _startBlockNumber, "not begin yet");
         UserInfo storage user = _userInfo[pid][msg.sender];
@@ -74,7 +89,27 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         }
         user.rewardAtBlock = currentBlock;
         PoolInfo storage poolInfo = _poolInfo[pid];
-        poolInfo.token.transferFrom(msg.sender, address(this), amount);
+        if (poolInfo.isNative) {
+            require(amount == msg.value, "deposit amount must be equal to msg.value");
+        } else {
+            poolInfo.token.transferFrom(msg.sender, address(this), amount);
+        }
+
+        IVault vault = poolInfo.vault;
+        if (address(vault) != address(0)) {
+            vault.deposit{value: amount}(amount);
+            if (poolInfo.isNative) {
+                vault.deposit{value: amount}(amount);
+            } else {
+                vault.deposit(amount);
+            }
+
+            IVault ibVault = poolInfo.ibVault;
+            if (address(ibVault) != address(0)) {
+                ibVault.deposit(poolInfo.ibToken.balanceOf(address(this)));
+            }
+        }
+
         user.amount += amount;
         poolInfo.stakingAmount += amount;
         poolInfo.debtToken.mint(msg.sender, amount);
@@ -85,17 +120,17 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         _withdraw(pid, amount);
     }
 
-    function withdrawAll(uint256 pid) public override whenNotPaused nonReentrant {
-        _harvest(pid);
-        UserInfo storage user = _userInfo[pid][msg.sender];
-        PoolInfo storage poolInfo = _poolInfo[pid];
-        uint256 amount = user.amount;
-        poolInfo.token.transfer(msg.sender, amount);
-        poolInfo.debtToken.burn(msg.sender, amount);
-        user.amount = 0;
-        poolInfo.stakingAmount -= amount;
-        emit Withdraw(msg.sender, pid, amount);
-    }
+    // function withdrawAll(uint256 pid) public override whenNotPaused nonReentrant {
+    //     _harvest(pid);
+    //     UserInfo storage user = _userInfo[pid][msg.sender];
+    //     PoolInfo storage poolInfo = _poolInfo[pid];
+    //     uint256 amount = user.amount;
+    //     poolInfo.token.transfer(msg.sender, amount);
+    //     poolInfo.debtToken.burn(msg.sender, amount);
+    //     user.amount = 0;
+    //     poolInfo.stakingAmount -= amount;
+    //     emit Withdraw(msg.sender, pid, amount);
+    // }
 
     function _withdraw(uint256 pid, uint256 amount) internal {
         require(amount > 0, "amount cannot be zero");
@@ -103,7 +138,22 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         require(user.amount >= amount, "out of balance");
         _harvest(pid);
         PoolInfo storage poolInfo = _poolInfo[pid];
-        poolInfo.token.transfer(msg.sender, amount);
+        if (address(poolInfo.vault) != address(0)) {
+            IVault vault = poolInfo.vault;
+            uint256 tokenAmount = (amount * vault.totalSupply()) / vault.totalToken();
+            IVault ibVault = poolInfo.ibVault;
+            if (address(ibVault) != address(0)) {
+                ibVault.withdraw(tokenAmount);
+            }
+            poolInfo.vault.withdraw(tokenAmount);
+        }
+
+        if (poolInfo.isNative) {
+            (bool success, bytes memory data) = msg.sender.call{value: amount}("");
+            require(success, "withdraw coin failed");
+        } else {
+            poolInfo.token.transfer(msg.sender, amount);
+        }
         poolInfo.debtToken.burn(msg.sender, amount);
         user.amount -= amount;
         poolInfo.stakingAmount -= amount;
