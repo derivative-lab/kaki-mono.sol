@@ -1,3 +1,4 @@
+import { MysteryBox } from '~/typechain';
 import { deployments, ethers, getUnnamedAccounts, network, upgrades } from 'hardhat';
 import { expect } from './chai-setup';
 import { deployAll, deployCaptainClaim } from '~/utils/deployer';
@@ -24,12 +25,19 @@ return {
 describe('claim', async () => {
     context("should success", async() => {
       it('setList', async () => {
-        const { users, captainClaim} = await setup();
-        for(var i = 0; i < 5; i++) {
-            await captainClaim.setTokenIdList(1 + 404 * i, 404 * (i+1));
-        }
+        const { users, captainClaim, mysteryBox, kakiCaptain} = await setup();
+        // for(var i = 0; i < 5; i++) {
+        //     await captainClaim.setTokenIdList(1 + 404 * i, 404 * (i+1));
+        // }
+        await captainClaim.setTokenIdList(1, 100);
+
         let a = await captainClaim.getList();
         console.log(a);
+
+        mysteryBox.setApprovalForAll(captainClaim.address, true);
+        kakiCaptain.setupAdmin(captainClaim.address);
+        mysteryBox.mint(users[0].address);
+        
         });
     });
 });

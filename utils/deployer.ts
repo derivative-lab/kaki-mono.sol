@@ -99,18 +99,18 @@ export async function deployMysteryBox() {
   return instance as MysteryBox;
 }
 
-// export async function deployCaptainClaim(kakiCaptain: KakiCaptain, mysteryBox: MysteryBox) {
-//   const signer = await getSigner(0);
-//   const args: Parameters<CaptainClaim["initialize"]> = [
-//     kakiCaptain.address,
-//     mysteryBox.address,
-
-//   ]; 
-//   const factory = new CaptainClaim__factory(signer);
-//   const instance = await upgrades.deployProxy(factory, args);
-//   console.log(`CaptainClaim deployed to: ${instance.address}`);
-//   return instance as CaptainClaim;
-// }
+export async function deployCaptainClaim(kakiCaptain: KakiCaptain, mysteryBox: MysteryBox, mockChainlink: MockChainLink) {
+  const signer = await getSigner(0);
+  const args: Parameters<CaptainClaim["initialize"]> = [
+    kakiCaptain.address,
+    mysteryBox.address,
+    mockChainlink.address
+  ]; 
+  const factory = new CaptainClaim__factory(signer);
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`CaptainClaim deployed to: ${instance.address}`);
+  return instance as CaptainClaim;
+}
 
 export async function deployKakiGarden(kakiToken: string) {
   const signer = await getSigner(0);
@@ -243,7 +243,7 @@ export async function deployAll() {
   const noLoss = await deployNoLoss(kakiCaptain,kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
   const garden = await deployKakiGarden(kakiToken.address);
   const mysteryBox = await deployMysteryBox();
-  //const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox);
+  const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox, chainlink);
   //captainClaim
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox};
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim};
 }
