@@ -32,14 +32,13 @@ contract ClaimLock is IClaimLock, WithAdminRole {
         _;
     }
 
-    function initialize(address farmAdd, address tradingAdd, IKaki kTokenAdd, address poolAdd) public initializer {
+    function initialize(address farmAdd, address tradingAdd, IKaki kTokenAdd) public initializer {
         __WithAdminRole_init();
         _farmPeriod = 7776000;
         _tradingPeriod = 31104000;
         _tradingStartTime = 31104000; //trading start time !!!!
         _addFarm = farmAdd;
         _addTrading = tradingAdd;
-        _addPool = poolAdd;
         _kaki = kTokenAdd;
         _farmRate = 500;
     }
