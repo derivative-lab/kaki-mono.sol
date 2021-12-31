@@ -30,6 +30,8 @@ export const webToolsContractNames = [
   'OpenBox',
   'Ticket',
   'AddressList',
+  'CaptainClaim',
+  'KakiGarden',
 ]
 
 export const mutiContractAddrs = {
