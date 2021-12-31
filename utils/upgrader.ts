@@ -116,16 +116,21 @@ export async function deploy(
   const rst = await repo.init();
   // }
   const r = await repo.remote(["-v"]);
-  console.log({remote:r, branchName});
+  console.log({ remote: r, branchName });
   if (!(r && r.includes(origin))) {
     await repo.addRemote(origin, manifestRepo);
   }
   if (check) {
     if (await (await repo.status()).isClean()) {
       try {
-        // await repo.fetch(origin, branchName);
-        await repo.pull(origin, branchName);
-        const ck = await repo.checkout(branchName);
+
+        console.log(`git fetch ${origin} ${branchName}`)
+        await repo.fetch(origin, branchName);
+        // await repo.pull(origin, branchName);
+        console.log(`git checkout ${branchName}`)
+        await repo.checkout(branchName);
+        console.log(`git merge ${origin}/${branchName} ${branchName}`);
+        await repo.mergeFromTo(`${origin}/${branchName}`, branchName);
       } catch (e) {
         console.log(
           `branch: ${chalk.cyan(branchName)} not exists ${chalk.green(
