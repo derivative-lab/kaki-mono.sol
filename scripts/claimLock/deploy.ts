@@ -1,15 +1,17 @@
-import { kakiCaptainContract, mysteryBoxContract } from '~/utils/contract'
+import { farmContract, kakiContract } from '~/utils/contract'
 import { ClaimLock } from '~/typechain';
 import {deploy} from '~/utils/upgrader';
 (async () => {
-  const captain = await kakiCaptainContract();
-  const mysteryBox = await mysteryBoxContract();
+  const farm = await farmContract();
+  const kakiToken = await kakiContract();
 
   const args : Parameters<ClaimLock["initialize"]> = [
-    "0xaE4364642f7Ed86971ea4a974a165C79c2F32766",
-    "0xC09886236326c4596D7823B3E730BE8Cc83bB245"
+    farm.address,
+    kakiToken.address
   ]
 
   console.log({args})
-  await deploy(`claimLock/claimLock.sol`,args)
+  await deploy(`claimLock/ClaimLock.sol`,args)
 })()
+
+
