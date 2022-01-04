@@ -1,3 +1,4 @@
+import { ClaimLock__factory } from './../typechain/factories/ClaimLock__factory';
 import { ChainlinkRandoms } from './../typechain/ChainlinkRandoms.d';
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
 import { BlindBox ,KakiCaptain__factory,KakiGarden__factory,KakiTicket, MysteryBox__factory} from './../typechain';
@@ -56,7 +57,8 @@ export const mutiContractAddrs = {
     captainMintList: '',
     captainAllowList: '',
     mysteryBox: '0x3e10c9a4F38F5E60f628329B16EED343A3293BBe',
-    chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766'
+    chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
+    claimLock: '',
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
@@ -120,6 +122,9 @@ export const contractAddress = {
   },
   get chainlinkRandoms() {
     return getItem('chainlinkRandoms');
+  },
+  get claimLock() {
+    return getItem("claimLock");
   },
 };
 
@@ -193,5 +198,9 @@ export async function mysteryBoxContract(signerIndex = 0) {
 
 export async function farmContract(signerIndex = 0) {
   return KakiGarden__factory.connect(contractAddress.farm, await getSigner(signerIndex));
+}
+
+export async function claimLockContract(signerIndex = 0) {
+  return ClaimLock__factory.connect(contractAddress.claimLock, await getSigner(signerIndex));
 }
 

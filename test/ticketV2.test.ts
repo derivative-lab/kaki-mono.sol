@@ -1,4 +1,3 @@
-// import { BlindBox } from './../typechain/BlindBox.d';
 // import { squidAllowListContract } from '~/utils/contract';
 // import {
 //   KakiSquidGame,
