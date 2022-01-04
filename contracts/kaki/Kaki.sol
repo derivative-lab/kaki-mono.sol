@@ -4,8 +4,9 @@ import {IKaki} from "../interfaces/IKaki.sol";
 
 contract Kaki is ERC20PermitUpgradeable, IKaki, AccessControlUpgradeable {
     bytes32 public constant MINTER = keccak256("MINTER");
-    event Mint(address indexed mintTo, address minter, uint256 amount);
     uint256 public constant MAX_SUPPLY = 210000000 ether;
+
+    event Mint(address indexed mintTo, address minter, uint256 amount);
 
     function initialize()
         public
