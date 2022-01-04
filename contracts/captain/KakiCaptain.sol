@@ -60,6 +60,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
                     basicMiningRate * miningK * 9, basicMiningRate * miningK * 9, basicMiningRate * miningK * 9,
                     basicMiningRate * miningK * 10, basicMiningRate * miningK * 10, basicMiningRate * miningK * 10];
 
+        //!!!!!!!!!!!!!!!!!!!  member = [highMember, lowMember, mediumMember];
         member = [lowMember, mediumMember, highMember];
         combineRate = [lowCombineRate, mediumCombineRate, highCombineRate];
         capName = ["Mate", "Pilot", "Enginner"];
