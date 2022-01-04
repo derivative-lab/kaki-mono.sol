@@ -3,7 +3,7 @@ import "../interfaces/IClaimLock.sol";
 import "../interfaces/IKaki.sol";
 import "../base/WithRandom.sol";
 import "../base/WithAdminRole.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../interfaces/IERC20.sol";
 
 contract ClaimLock is IClaimLock, WithAdminRole {
     IKaki  _kaki;
@@ -15,20 +15,12 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     uint256 public _farmRate;
     address public _addFarm;
     address public _addTrading;
-    
-    bool internal locked;
+    address public _addPool;
 
     mapping(address => LockedFarmReward[]) public _userLockedFarmRewards;
     mapping(address => LockedTradingReward) public _userLockedTradeRewards;
     mapping(address => uint256) public _userFarmUnlockedAmount;
     mapping(address => uint256) public _userFarmLockedAmount;
-
-    modifier noReentrant() {
-        require(!locked, "No re-entrancy");
-        locked = true;
-        _;
-        locked = false;
-    }
 
     modifier isFarm() {
         require(msg.sender == _addFarm, "Invalid address.");
@@ -40,12 +32,13 @@ contract ClaimLock is IClaimLock, WithAdminRole {
         _;
     }
 
-    function initialize(address farmAdd, IKaki kTokenAdd) public initializer {
+    function initialize(address farmAdd, address tradingAdd, IKaki kTokenAdd) public initializer {
         __WithAdminRole_init();
         _farmPeriod = 7776000;
         _tradingPeriod = 31104000;
         _tradingStartTime = 31104000; //trading start time !!!!
         _addFarm = farmAdd;
+        _addTrading = tradingAdd;
         _kaki = kTokenAdd;
         _farmRate = 500;
     }
@@ -72,7 +65,7 @@ contract ClaimLock is IClaimLock, WithAdminRole {
         _userLockedTradeRewards[account]._locked += amount;
     }
 
-    function claimFarmRewardAll() public override noReentrant{
+    function claimFarmRewardAll() public override {
         uint256 bonus = getClaimableFarmReward(msg.sender);
         _kaki.mint(msg.sender, bonus);
         _kaki.mint(_addTrading, (_userFarmLockedAmount[msg.sender] - bonus));
@@ -81,12 +74,23 @@ contract ClaimLock is IClaimLock, WithAdminRole {
         delete _userLockedFarmRewards[msg.sender];
     }
 
-    function claimTradingReward(address account) public override noReentrant{
+    function claimTradingReward(address account) public override {
         require(_userLockedTradeRewards[account]._locked != 0, "You do not have bounus to claim.");
-        uint256 bonus = getTradingUnlockedReward(account);
+        uint256 bonus;
+        uint256 currentTime = block.timestamp;
+        if (_userLockedTradeRewards[account]._lastClaimTime == 0) {
+            _userLockedTradeRewards[account]._lastClaimTime = _tradingStartTime;
+        }
+        if (currentTime - _userLockedTradeRewards[account]._lastClaimTime < _tradingPeriod) {
+            bonus = _userLockedTradeRewards[account]._locked
+                            * (currentTime - _userLockedTradeRewards[account]._lastClaimTime)
+                            / (_tradingPeriod + _tradingStartTime - _userLockedTradeRewards[account]._lastClaimTime);
+        } else {
+            bonus = _userLockedTradeRewards[account]._locked;
+        }
         _kaki.mint(account, bonus);
         _userLockedTradeRewards[account]._locked -= bonus;
-        _userLockedTradeRewards[account]._lastClaimTime = block.timestamp;
+        _userLockedTradeRewards[account]._lastClaimTime = currentTime;
     }
 
     //********************************  view **********************************/
@@ -114,24 +118,10 @@ contract ClaimLock is IClaimLock, WithAdminRole {
             }
         }
         return unlockedAmount;
-    } 
-
-    function getTradingLockedReward(address account) public override view returns (uint256) {
-        return _userLockedTradeRewards[account]._locked;
     }
 
-    function getTradingUnlockedReward(address account) public override view returns (uint256 bonus) {
-        uint256 currentTime = block.timestamp;
-        if (_userLockedTradeRewards[account]._lastClaimTime == 0) {
-            _userLockedTradeRewards[account]._lastClaimTime = _tradingStartTime;
-        }
-        if (currentTime - _userLockedTradeRewards[account]._lastClaimTime < _tradingPeriod) {
-            bonus = _userLockedTradeRewards[account]._locked 
-                            * (currentTime - _userLockedTradeRewards[account]._lastClaimTime) 
-                            / (_tradingPeriod + _tradingStartTime - _userLockedTradeRewards[account]._lastClaimTime);
-        } else {
-            bonus = _userLockedTradeRewards[account]._locked;
-        }
+    function getTradingUnlockReward(address account) public override view returns (uint256) {
+        return _userLockedTradeRewards[account]._locked;
     }
 
     //**************************** admin function ****************************/
@@ -145,4 +135,8 @@ contract ClaimLock is IClaimLock, WithAdminRole {
         _addFarm = newFarmAdd;
     }
 
+    function setPoolAdd(address newPoolAdd) public onlyOwner {
+        require(newPoolAdd != address(0), "Invalid address.");
+        _addPool = newPoolAdd;
+    }
 }
