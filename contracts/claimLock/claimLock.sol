@@ -3,7 +3,7 @@ import "../interfaces/IClaimLock.sol";
 import "../interfaces/IKaki.sol";
 import "../base/WithRandom.sol";
 import "../base/WithAdminRole.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../interfaces/IERC20.sol";
 
 contract ClaimLock is IClaimLock, WithAdminRole {
     IKaki  _kaki;
@@ -16,7 +16,7 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     address public _addFarm;
     address public _addTrading;
     address public _addPool;
-    
+
     mapping(address => LockedFarmReward[]) public _userLockedFarmRewards;
     mapping(address => LockedTradingReward) public _userLockedTradeRewards;
     mapping(address => uint256) public _userFarmUnlockedAmount;
@@ -82,8 +82,8 @@ contract ClaimLock is IClaimLock, WithAdminRole {
             _userLockedTradeRewards[account]._lastClaimTime = _tradingStartTime;
         }
         if (currentTime - _userLockedTradeRewards[account]._lastClaimTime < _tradingPeriod) {
-            bonus = _userLockedTradeRewards[account]._locked 
-                            * (currentTime - _userLockedTradeRewards[account]._lastClaimTime) 
+            bonus = _userLockedTradeRewards[account]._locked
+                            * (currentTime - _userLockedTradeRewards[account]._lastClaimTime)
                             / (_tradingPeriod + _tradingStartTime - _userLockedTradeRewards[account]._lastClaimTime);
         } else {
             bonus = _userLockedTradeRewards[account]._locked;
