@@ -2,7 +2,7 @@ import { ChainlinkRandoms } from './../typechain/ChainlinkRandoms.d';
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
 import { BlindBox, KakiCaptain__factory, KakiGarden__factory, KakiTicket, MysteryBox__factory } from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
-import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory , Kaki__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory , Kaki__factory, ClaimLock__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -57,6 +57,7 @@ export const mutiContractAddrs = {
     captainAllowList: '',
     mysteryBox: '0x3e10c9a4F38F5E60f628329B16EED343A3293BBe',
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
+    claimLock: '0x4d11e9c416b3C26BF9f7EC13fD2621Fd0c1C88aA',
     kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
   },
   bsc: {
@@ -121,6 +122,9 @@ export const contractAddress = {
   },
   get chainlinkRandoms() {
     return getItem('chainlinkRandoms');
+  },
+  get claimLock() {
+    return getItem("claimLock");
   },
   get kaki() {
     return getItem('kaki');
@@ -199,6 +203,9 @@ export async function farmContract(signerIndex = 0) {
   return KakiGarden__factory.connect(contractAddress.farm, await getSigner(signerIndex));
 }
 
+export async function claimLockContract(signerIndex = 0) {
+  return ClaimLock__factory.connect(contractAddress.claimLock, await getSigner(signerIndex));
+}
 
 export async function kakiContract(signerIndex = 0) {
   return Kaki__factory.connect(contractAddress.kaki, await getSigner(signerIndex));
