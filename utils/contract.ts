@@ -2,7 +2,7 @@ import { ChainlinkRandoms } from './../typechain/ChainlinkRandoms.d';
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
 import { BlindBox, KakiCaptain__factory, KakiGarden__factory, KakiTicket, MysteryBox__factory } from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
-import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory , Kaki__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -57,7 +57,7 @@ export const mutiContractAddrs = {
     captainAllowList: '',
     mysteryBox: '0x3e10c9a4F38F5E60f628329B16EED343A3293BBe',
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
-    kaki: '0x0cf9bec037fe89d138716fe0762d9dabc71dee85',
+    kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
@@ -201,5 +201,5 @@ export async function farmContract(signerIndex = 0) {
 
 
 export async function kakiContract(signerIndex = 0) {
-  return ERC20__factory.connect(contractAddress.kaki, await getSigner(signerIndex));
+  return Kaki__factory.connect(contractAddress.kaki, await getSigner(signerIndex));
 }
