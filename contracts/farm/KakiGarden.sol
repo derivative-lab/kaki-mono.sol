@@ -16,7 +16,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     uint256 public _totalAllocPoint;
     uint256 public _rewardPerBlock;
     uint256 public _rewardTokenPrice;
-    IERC20 public _rewardToken;
+    // IERC20 public _rewardToken;
     IClaimLock public _rewardLocker;
     mapping(address => uint256) public _poolId1; // poolId1 starting from 1,subtract 1 before using with poolInfo
     // Info of each user that stakes LP tokens. pid => user address => info
@@ -25,14 +25,14 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     PoolInfo[] public _poolInfo;
 
     function initialize(
-        IERC20 rewardToken,
+        // IERC20 rewardToken,
         uint256 rewardPerBlock,
         uint256 startBlock
     ) public initializer {
         __WithAdminRole_init();
         __ReentrancyGuard_init();
         __Pausable_init();
-        _rewardToken = rewardToken;
+        // _rewardToken = rewardToken;
         _rewardPerBlock = rewardPerBlock;
         _startBlockNumber = startBlock;
     }
@@ -212,6 +212,6 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     }
 
     function version() public pure returns (uint256) {
-        return 1;
+        return 2;
     }
 }
