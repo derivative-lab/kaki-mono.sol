@@ -7,7 +7,7 @@ import {deploy} from '~/utils/upgrader';
 
   const args : Parameters<ClaimLock["initialize"]> = [
     "0xaE4364642f7Ed86971ea4a974a165C79c2F32766",
-
+    "0xC09886236326c4596D7823B3E730BE8Cc83bB245"
   ]
 
   console.log({args})

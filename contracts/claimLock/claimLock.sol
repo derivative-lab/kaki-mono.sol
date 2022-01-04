@@ -3,7 +3,7 @@ import "../interfaces/IClaimLock.sol";
 import "../interfaces/IKaki.sol";
 import "../base/WithRandom.sol";
 import "../base/WithAdminRole.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../interfaces/IERC20.sol";
 
 contract ClaimLock is IClaimLock, WithAdminRole {
     IKaki  _kaki;
@@ -66,6 +66,9 @@ contract ClaimLock is IClaimLock, WithAdminRole {
 
     function lockTradingReward(address account, uint256 amount) public override isTrading {
         require(amount > 0, "Invalid amount");
+        if (_userLockedTradeRewards[account]._lastClaimTime == 0) {
+            _userLockedTradeRewards[account]._lastClaimTime = _tradingStartTime;
+        }
         if(_userLockedTradeRewards[account]._locked != 0) {
             claimTradingReward(account);
         }
@@ -122,9 +125,6 @@ contract ClaimLock is IClaimLock, WithAdminRole {
 
     function getTradingUnlockedReward(address account) public override view returns (uint256 bonus) {
         uint256 currentTime = block.timestamp;
-        if (_userLockedTradeRewards[account]._lastClaimTime == 0) {
-            _userLockedTradeRewards[account]._lastClaimTime = _tradingStartTime;
-        }
         if (currentTime - _userLockedTradeRewards[account]._lastClaimTime < _tradingPeriod) {
             bonus = _userLockedTradeRewards[account]._locked 
                             * (currentTime - _userLockedTradeRewards[account]._lastClaimTime) 
