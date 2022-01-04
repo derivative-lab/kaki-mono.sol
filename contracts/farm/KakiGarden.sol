@@ -8,8 +8,11 @@ import {DebtToken} from "./DebtToken.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {IVault} from "../interfaces/IVault.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, PausableUpgradeable {
+    using SafeERC20Upgradeable for IERC20;
     // start mine block number
     uint256 public _startBlockNumber;
     // total allocation point
@@ -148,16 +151,20 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
             poolInfo.vault.withdraw(tokenAmount);
         }
 
+        uint256 realWithdraw;
         if (poolInfo.isNative) {
-            (bool success, bytes memory data) = msg.sender.call{value: amount}("");
+            realWithdraw = MathUpgradeable.min(address(this).balance, amount);
+            (bool success, bytes memory data) = msg.sender.call{value: realWithdraw}("");
             require(success, "withdraw coin failed");
         } else {
-            poolInfo.token.transfer(msg.sender, amount);
+            IERC20 token = poolInfo.token;
+            realWithdraw = MathUpgradeable.min(token.balanceOf(address(this)), amount);
+            token.safeTransfer(msg.sender, realWithdraw);
         }
-        poolInfo.debtToken.burn(msg.sender, amount);
-        user.amount -= amount;
-        poolInfo.stakingAmount -= amount;
-        emit Withdraw(msg.sender, pid, amount);
+        poolInfo.debtToken.burn(msg.sender, realWithdraw);
+        user.amount -= realWithdraw;
+        poolInfo.stakingAmount -= realWithdraw;
+        emit Withdraw(msg.sender, pid, realWithdraw);
     }
 
     function harvest(uint256 pid) public override nonReentrant whenNotPaused {
