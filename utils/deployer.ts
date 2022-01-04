@@ -1,3 +1,4 @@
+import { IKakiCaptain } from './../typechain/IKakiCaptain.d';
 import { BigNumber } from '@ethersproject/bignumber';
 import { ethers, upgrades, deployments } from 'hardhat';
 import {
@@ -198,17 +199,18 @@ export async function deployKakiTicket() {
   return instance as KakiTicket;
 }
 
-// export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20) {
-//   const signer0 = await getSigner(0);
-//   const args: Parameters<BlindBox['initialize']> = [
-//     kakiTicket.address,
-//     busd.address
-//   ];
-//   const factory = new BlindBox__factory(signer0);
-//   const instance = await upgrades.deployProxy(factory, args);
-//   console.log(`blindBox deployed to : ${instance.address}`);
-//   return instance as BlindBox;
-// }
+export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiCap: KakiCaptain) {
+  const signer0 = await getSigner(0);
+  const args: Parameters<BlindBox['initialize']> = [
+    kakiTicket.address,
+    busd.address,
+    kakiCap.address
+  ];
+  const factory = new BlindBox__factory(signer0);
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`blindBox deployed to : ${instance.address}`);
+  return instance as BlindBox;
+}
 
 // export async function deployClaimLock(farm: , trading: , kaki: IKaki, pool) {
 //   const signer0 = await getSigner(0);
@@ -239,11 +241,11 @@ export async function deployAll() {
   const openBox = await deployOpenBox(ticket, usdt, Math.ceil(Date.now() / 1000 + 24 * 3600), allowList);
   const game = await deploySquidGame(ticket, usdt, chainlink, signer0.address);
   const kakiCaptain = await deployKakiCaptain();
-  // const blindBox = await deployBlindBox(kakiTicket, usdt);
   const noLoss = await deployNoLoss(kakiCaptain,kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
   const garden = await deployKakiGarden(kakiToken.address);
   const mysteryBox = await deployMysteryBox();
   const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox, chainlink);
-  //captainClaim
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim};
+  const blindBox = await deployBlindBox(kakiTicket, usdt, kakiCaptain);
+
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox};
 }
