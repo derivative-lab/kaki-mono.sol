@@ -1,9 +1,8 @@
-import { ClaimLock__factory } from './../typechain/factories/ClaimLock__factory';
 import { ChainlinkRandoms } from './../typechain/ChainlinkRandoms.d';
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
-import { BlindBox ,KakiCaptain__factory,KakiGarden__factory,KakiTicket, MysteryBox__factory} from './../typechain';
+import { BlindBox, KakiCaptain__factory, KakiGarden__factory, KakiTicket, MysteryBox__factory } from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
-import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -51,14 +50,14 @@ export const mutiContractAddrs = {
     squidTicket: '0x7dc99344aA0053BC2DC16aE111e83C1315409a07',
     squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
-    farm:'',
+    farm: '0x2342fB746F194EB0254574314B08c6e0Be4840F9',
     kakiCaptain: '0x92F72Eb15EeE4D7A3E746FA921c46e236FcbDe9F',
     captainClaim: '0xbf24a4781DB2C353C45e328804FeAAc47d05f372',
     captainMintList: '',
     captainAllowList: '',
     mysteryBox: '0x3e10c9a4F38F5E60f628329B16EED343A3293BBe',
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
-    claimLock: '',
+    kaki: '0x0cf9bec037fe89d138716fe0762d9dabc71dee85',
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
@@ -123,8 +122,8 @@ export const contractAddress = {
   get chainlinkRandoms() {
     return getItem('chainlinkRandoms');
   },
-  get claimLock() {
-    return getItem("claimLock");
+  get kaki() {
+    return getItem('kaki');
   },
 };
 
@@ -200,7 +199,7 @@ export async function farmContract(signerIndex = 0) {
   return KakiGarden__factory.connect(contractAddress.farm, await getSigner(signerIndex));
 }
 
-export async function claimLockContract(signerIndex = 0) {
-  return ClaimLock__factory.connect(contractAddress.claimLock, await getSigner(signerIndex));
-}
 
+export async function kakiContract(signerIndex = 0) {
+  return ERC20__factory.connect(contractAddress.kaki, await getSigner(signerIndex));
+}
