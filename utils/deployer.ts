@@ -106,7 +106,7 @@ export async function deployCaptainClaim(kakiCaptain: KakiCaptain, mysteryBox: M
     kakiCaptain.address,
     mysteryBox.address,
     mockChainlink.address
-  ]; 
+  ];
   const factory = new CaptainClaim__factory(signer);
   const instance = await upgrades.deployProxy(factory, args);
   console.log(`CaptainClaim deployed to: ${instance.address}`);
@@ -117,7 +117,6 @@ export async function deployKakiGarden(kakiToken: string) {
   const signer = await getSigner(0);
   const currentBlock = await signer.provider?.getBlockNumber() as number;
   const args: Parameters<KakiGarden["initialize"]> = [
-    kakiToken,
     parseEther('10'),
     currentBlock + 10
   ];
