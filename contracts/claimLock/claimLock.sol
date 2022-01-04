@@ -18,9 +18,8 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     
     bool internal locked;
 
-    mapping(address => LockedFarmReward[]) public _userLockedFarmRewards;
     mapping(address => LockedTradingReward) public _userLockedTradeRewards;
-    mapping(address => uint256) public _userFarmUnlockedAmount;
+    mapping(address => LockedFarmReward[]) public _userLockedFarmRewards;
     mapping(address => uint256) public _userFarmLockedAmount;
 
     modifier noReentrant() {
@@ -52,14 +51,11 @@ contract ClaimLock is IClaimLock, WithAdminRole {
 
     function lockFarmReward(address account, uint256 amount) public override isFarm {
         uint256 currentTimestamp = block.timestamp;
-        uint256 claimableAmount = amount * _farmRate / THOUSAND;
-        _userFarmUnlockedAmount[account] += claimableAmount;
-        _userFarmLockedAmount[account] += amount - claimableAmount;
+        _userFarmLockedAmount[account] += amount;
         _userLockedFarmRewards[account].push(
             LockedFarmReward({
-                    _locked: amount - claimableAmount,
-                    _timestamp: currentTimestamp,
-                    _claim: true
+                    _locked: amount,
+                    _timestamp: currentTimestamp
                 })
         );
     }
@@ -75,16 +71,18 @@ contract ClaimLock is IClaimLock, WithAdminRole {
         _userLockedTradeRewards[account]._locked += amount;
     }
 
-    function claimFarmRewardAll() public override noReentrant{
-        uint256 bonus = getClaimableFarmReward(msg.sender);
-        _kaki.mint(msg.sender, bonus);
-        _kaki.mint(_addTrading, (_userFarmLockedAmount[msg.sender] - bonus));
-        _userFarmLockedAmount[msg.sender] = 0;
-        _userFarmUnlockedAmount[msg.sender] = 0;
-        delete _userLockedFarmRewards[msg.sender];
+    function claimFarmReward(uint256[] memory index) public override noReentrant {
+        require(index.length <= _userLockedFarmRewards[msg.sender].length, "Invalid index.");
+        for (uint256 i; i < index.length; i++) {
+            uint256 bonus = getClaimableFarmReward(msg.sender, index[i]);
+            _kaki.mint(msg.sender, bonus);
+            _kaki.mint(_addTrading, (_userLockedFarmRewards[msg.sender][index[i]]._locked - bonus));
+            _userLockedFarmRewards[msg.sender][index[i]] = _userLockedFarmRewards[msg.sender][_userLockedFarmRewards[msg.sender].length - 1];
+            _userLockedFarmRewards[msg.sender].pop();
+        }
     }
 
-    function claimTradingReward(address account) public override noReentrant{
+    function claimTradingReward(address account) public override noReentrant {
         require(_userLockedTradeRewards[account]._locked != 0, "You do not have bounus to claim.");
         uint256 bonus = getTradingUnlockedReward(account);
         _kaki.mint(account, bonus);
@@ -93,28 +91,20 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     }
 
     //********************************  view **********************************/
-    function getClaimableFarmReward(address account) public override view returns (uint256) {
-        uint256 unlockedAmount = _userFarmUnlockedAmount[account];
-        LockedFarmReward[] memory user = _userLockedFarmRewards[account];
-        if(user.length != 0) {
-            for(uint256 i; i < user.length; i++) {
-                unlockedAmount += getClaimableFarmRewardSingle(account, i);
-            }
-        }
-        return unlockedAmount;
+    function getFarmAccInfo(address account) public override view returns (LockedFarmReward[] memory lockedReward) {
+        lockedReward = _userLockedFarmRewards[account];
     }
-
-    function getClaimableFarmRewardSingle(address account, uint256 index) public override view returns (uint256) {
+    
+    function getClaimableFarmReward(address account, uint256 index) public override view returns (uint256) {
         uint256 currentTime = block.timestamp;
-        uint256 unlockedAmount = _userFarmUnlockedAmount[account];
+        uint256 unlockedAmount;
         LockedFarmReward[] memory user = _userLockedFarmRewards[account];
         if(index < user.length) {
-            if(user[index]._claim) {
-                if(currentTime - user[index]._timestamp < _farmPeriod){
-                    unlockedAmount = user[index]._locked * (currentTime - user[index]._timestamp) / _farmPeriod;
-                }
-                else unlockedAmount = user[index]._locked;
+            if(currentTime - user[index]._timestamp < _farmPeriod){
+                uint256 claimableAmount = user[index]._locked * _farmRate / THOUSAND;
+                unlockedAmount = claimableAmount + (user[index]._locked - claimableAmount) * (currentTime - user[index]._timestamp) / _farmPeriod;
             }
+            else unlockedAmount = user[index]._locked;
         }
         return unlockedAmount;
     } 
@@ -146,7 +136,7 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 1;
+        return 2;
     }
 
 }
