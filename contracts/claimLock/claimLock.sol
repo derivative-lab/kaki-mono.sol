@@ -145,4 +145,8 @@ contract ClaimLock is IClaimLock, WithAdminRole {
         _addFarm = newFarmAdd;
     }
 
+    function version() public pure returns (uint256) {
+        return 0;
+    }
+
 }
