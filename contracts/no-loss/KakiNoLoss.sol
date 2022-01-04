@@ -31,26 +31,30 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     uint256 _captionKC;
     uint256 _captionKAKI;
 
+    uint256 public _nextFactionId;
     uint256 public _captainRateLimit;
     uint256 public _kakiFoundationRate;
-    address public _kakiFoundationAddress;
-
     uint256 public _chapter;
     uint256 public _lastRound;
-    mapping(uint256 => uint256) public _chapterStartTime;
-    mapping(uint256 => mapping(uint256 => uint256)) public _roundStartTime;
-    mapping(uint256 => bool) public _isChapterEnd;
-    mapping(uint256 => uint256) public _interest;
-    mapping(uint256 => uint256) public _nftFactionInterest;
+    address public _kakiFoundationAddress;
 
-    uint256 public _nextFactionId;
     mapping(uint256 => Faction) public _factionStatus;
+    mapping(uint256 => ChapterStru) public _chapterStatus;
+    mapping(uint256 => mapping(uint256 => Pool)) public _poolState;
+
     mapping(address => Account) public _accountGlobalInfo;
     mapping(address => mapping(uint256 => AccountFaction)) public _accountFactionStatus;
 
-    mapping(uint256 => mapping(uint256 => Pool)) public _poolState;
-    mapping(uint256 => mapping(uint256 => Pool)) public _nftFactionPoolState;
-    mapping(uint256 => uint256) public _winnerKC;
+    struct ChapterStru {
+        bool _isEnd;
+        uint256 _startTime;
+        uint256 _interest;
+        uint256 _nftFactionInterest;
+        uint256 _winnerKC;
+        uint256 _nftFactionWKC;
+        mapping(uint256 => uint256) _roundStartTime;
+    }
+
     struct Faction {
         address _captain;
         uint256 _kcAddRatio;
@@ -94,6 +98,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     struct Pool {
         uint256 _call;
         uint256 _put;
+        uint256 _nftFactionCall;
+        uint256 _nftFactionPut;
         uint256 _answer;
     }
 
@@ -127,7 +133,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         _nextFactionId = 1;
         _chapter = 1;
-        _chapterStartTime[_chapter] = getTimestamp();
+        _chapterStatus[_chapter]._startTime = getTimestamp();
 
         _captainRateLimit = 80; // 8%
         _kakiFoundationRate = 50; // 5%
@@ -136,7 +142,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function createFaction(uint256 nftId) public {
         uint256 time = getTimestamp();
-        require(_chapterStartTime[_chapter] + _weekTime > time, "please wait new _chapter!");
+        require(_chapterStatus[_chapter]._startTime + _weekTime > time, "please wait new _chapter!");
 
         if (nftId > 0) {
             require(_captainNFT.ownerOf(nftId) == msg.sender, "not owner");
@@ -183,7 +189,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     ) public {
         uint256 time = getTimestamp();
         require(factionId != 0, "Cannot join faction 0.");
-        require(_chapterStartTime[_chapter] + _weekTime > time, "please wait new _chapter!");
+        require(_chapterStatus[_chapter]._startTime + _weekTime > time, "please wait new _chapter!");
         require(factionId < _nextFactionId, "Cannot join uncreated factions.");
         require(
             _accountGlobalInfo[msg.sender]._factionArr.length == 0,
@@ -193,7 +199,10 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         if (_factionStatus[factionId]._nftId > 0) {
             //IKakiCaptain.CapPara memory captaionInfo = _captainNFT.getCapInfo(_factionStatus[factionId]._nftId);
-            require(_factionStatus[factionId]._accountArr.length < _factionStatus[_nextFactionId]._memberNum, "member limit");
+            require(
+                _factionStatus[factionId]._accountArr.length < _factionStatus[_nextFactionId]._memberNum,
+                "member limit"
+            );
             if (_factionStatus[factionId]._enableWhiteList == 1)
                 require(_factionStatus[factionId]._whiteList[msg.sender] > 1, "need in white list");
         }
@@ -221,7 +230,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
             _factionStatus[factionId]._lastCheckChapter = _chapter;
         } else {
-            if (_isChapterEnd[_chapter] && _factionStatus[factionId]._lastIndexChapter < _chapter)
+            if (_chapterStatus[_chapter]._isEnd && _factionStatus[factionId]._lastIndexChapter < _chapter)
                 updateFactionIndex(factionId, _chapter);
         }
         console.log("initFactionChapterKC", factionId, _chapter, lastCheckChapter);
@@ -231,8 +240,14 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         Faction storage fa = _factionStatus[factionId];
         uint256 factionWinnerKC = fa._factionWinnerKC[chapter];
         uint256 totalChapterKC = fa._totalChapterKC[chapter - 1];
-        if (_winnerKC[chapter] > 0) {
-            uint256 teamBonus = (_interest[chapter] * factionWinnerKC) / _winnerKC[chapter];
+        if (_chapterStatus[chapter]._winnerKC > 0) {
+            uint256 teamBonus = (_chapterStatus[chapter]._interest * factionWinnerKC) /
+                _chapterStatus[chapter]._winnerKC;
+            if (_factionStatus[factionId]._nftId > 0 && factionWinnerKC > 0) {
+                teamBonus +=
+                    (_chapterStatus[chapter]._nftFactionInterest * factionWinnerKC) /
+                    _chapterStatus[chapter]._nftFactionWKC;
+            }
             if (_captainRateLimit != 0 || _kakiFoundationRate != 0) {
                 uint256 captainBonus = (teamBonus * _captainRateLimit) / _BASE;
                 uint256 kakiFoundationBonus = (teamBonus * _kakiFoundationRate) / _BASE;
@@ -292,7 +307,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         initFactionChapterKC(factionId);
         initAccountChapterKC(factionId);
 
-        uint256 addKc = calKc(_factionStatus[factionId]._kcAddRatio, amount * _tokenFactor[id] / _BASE);
+        uint256 addKc = calKc(_factionStatus[factionId]._kcAddRatio, (amount * _tokenFactor[id]) / _BASE);
         _factionStatus[factionId]._chapterKC[_chapter] += addKc;
         _factionStatus[factionId]._stakeAmount[id] += amount;
 
@@ -347,8 +362,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         if (_factionStatus[factionId]._captain == msg.sender) {
             _kakiToken.transfer(msg.sender, _getCaptionLeaveKAKIReturn(factionId));
-            if (_factionStatus[factionId]._nftId > 0)
-                _captainNFT.setCapCreate(_factionStatus[factionId]._nftId);
+            if (_factionStatus[factionId]._nftId > 0) _captainNFT.setCapCreate(_factionStatus[factionId]._nftId);
         }
 
         if (_accountFactionStatus[msg.sender][factionId]._lastCheckChapter != _chapter) {
@@ -419,7 +433,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 _time = getTimestamp();
         uint256 lastCheckChpater = _factionStatus[factionId]._lastCheckChapter;
         require(amount > 0, "The amount cannot be 0.");
-        require(_chapterStartTime[_chapter] + _dayTime >= _time, "The trading day has ended.");
+        require(_chapterStatus[_chapter]._startTime + _dayTime >= _time, "The trading day has ended.");
         require(_factionStatus[factionId]._captain == msg.sender, "The function caller must be the captain.");
         if (_factionStatus[factionId]._lastCheckChapter != _chapter) {
             /**下单用前一周期的队伍kc，如果前一周期队伍没有更新过，这两周期kc 相等 */
@@ -444,13 +458,11 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (binary) {
             _factionStatus[factionId]._fire[_chapter][_lastRound]._call += amount;
             _poolState[_chapter][_lastRound]._call += amount;
-            if (_factionStatus[factionId]._nftId > 0)
-                _nftFactionPoolState[_chapter][_lastRound]._call += amount;
+            if (_factionStatus[factionId]._nftId > 0) _poolState[_chapter][_lastRound]._nftFactionCall += amount;
         } else {
             _factionStatus[factionId]._fire[_chapter][_lastRound]._put += amount;
             _poolState[_chapter][_lastRound]._put += amount;
-            if (_factionStatus[factionId]._nftId > 0)
-                _nftFactionPoolState[_chapter][_lastRound]._put += amount;
+            if (_factionStatus[factionId]._nftId > 0) _poolState[_chapter][_lastRound]._nftFactionPut += amount;
         }
 
         uint256 len = _factionStatus[factionId]._lastFireRound[_chapter].length;
@@ -466,47 +478,53 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function addLoot() public {
         uint256 _time = getTimestamp();
-        require(_chapterStartTime[_chapter] + _weekTime <= _time, "The _chapter is not over.");
+        require(_chapterStatus[_chapter]._startTime + _weekTime <= _time, "The _chapter is not over.");
 
         /** _lastRound初始2 在一回下单要结算前面2回合的wkc*/
         _lastRound = 1;
         _chapter++;
-        _chapterStartTime[_chapter] = _time;
-        _roundStartTime[_chapter][0] = _time;
+        _chapterStatus[_chapter]._startTime = _time;
+        _chapterStatus[_chapter]._roundStartTime[0] = _time;
     }
 
     function battleDamage() public {
         uint256 time = getTimestamp();
         require(_chapter != 0, "invalid operate.");
-        require(!_isChapterEnd[_chapter], "The trading day is over.");
+        require(!_chapterStatus[_chapter]._isEnd, "The trading day is over.");
         require(
-            _roundStartTime[_chapter][_lastRound] + _roundTime <= uint256(time),
+            _chapterStatus[_chapter]._roundStartTime[_lastRound] + _roundTime <= uint256(time),
             "This round of trading is not over."
         );
 
         _poolState[_chapter][_lastRound + 1]._answer = _aggregator.latestAnswer();
         uint256 winner;
-        if (_poolState[_chapter][_lastRound]._answer < _poolState[_chapter][_lastRound + 1]._answer)
+        uint256 nftFactionWinner;
+        if (_poolState[_chapter][_lastRound]._answer < _poolState[_chapter][_lastRound + 1]._answer) {
             winner = _poolState[_chapter][_lastRound - 1]._call;
-        else winner = _poolState[_chapter][_lastRound - 1]._put;
+            nftFactionWinner = _poolState[_chapter][_lastRound - 1]._nftFactionCall;
+        } else {
+            winner = _poolState[_chapter][_lastRound - 1]._put;
+            nftFactionWinner = _poolState[_chapter][_lastRound - 1]._nftFactionPut;
+        }
 
-        _winnerKC[_chapter] = (_winnerKC[_chapter]) + winner;
-        console.log("battleDamage", _chapter, _lastRound, _winnerKC[_chapter]);
+        _chapterStatus[_chapter]._winnerKC += winner;
+        _chapterStatus[_chapter]._nftFactionWKC += nftFactionWinner;
+        console.log("battleDamage", _chapter, _lastRound, _chapterStatus[_chapter]._winnerKC);
 
         if (
-            (_chapterStartTime[_chapter]) + _dayTime <= uint256(time) &&
+            (_chapterStatus[_chapter]._startTime) + _dayTime <= uint256(time) &&
             _poolState[_chapter][_lastRound]._call == 0 &&
             _poolState[_chapter][_lastRound]._put == 0
         ) {
-            _isChapterEnd[_chapter] = true;
-            if (_winnerKC[_chapter] == 0) {
-                uint256 currentInterest = _interest[_chapter];
-                _interest[_chapter + 1] = currentInterest;
+            _chapterStatus[_chapter]._isEnd = true;
+            if (_chapterStatus[_chapter]._winnerKC == 0) {
+                uint256 currentInterest = _chapterStatus[_chapter]._interest;
+                _chapterStatus[_chapter + 1]._interest = currentInterest;
             }
         }
 
         _lastRound++;
-        _roundStartTime[_chapter][_lastRound] = time;
+        _chapterStatus[_chapter]._roundStartTime[_lastRound] = time;
     }
 
     function getRoundWinnerKc(
@@ -592,7 +610,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 chapter = _accountGlobalInfo[msg.sender]._bonusChapter;
         uint256 endChapter;
         //判断当前chapter没有结束
-        if (_isChapterEnd[_chapter]) endChapter = _chapter;
+        if (_chapterStatus[_chapter]._isEnd) endChapter = _chapter;
         else if (_chapter > 0) endChapter = _chapter - 1;
 
         if (endChapter > chapter) {
@@ -636,7 +654,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function calKc(uint256 kcRation, uint256 v) internal view returns (uint256) {
         uint256 time = getTimestamp();
-        uint256 deltaTime = _weekTime - (time - _chapterStartTime[_chapter]);
+        uint256 deltaTime = _weekTime - (time - _chapterStatus[_chapter]._startTime);
         uint256 kc = (kcRation * v * deltaTime) / _weekTime / _BASE;
         return kc;
     }
@@ -658,7 +676,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 kc;
         uint256 len = stakeAmount.length;
         for (uint256 i; i < len; i++) {
-            if (stakeAmount[i] > 0) kc += (kcRation * stakeAmount[i] * _tokenFactor[i] / _BASE) / _BASE;
+            if (stakeAmount[i] > 0) kc += ((kcRation * stakeAmount[i] * _tokenFactor[i]) / _BASE) / _BASE;
         }
         return kc;
     }
@@ -669,19 +687,19 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 len = stakeAmount.length;
         for (uint256 i; i < len; i++) {
             if (stakeAmount[i] > 0)
-                kc += calKc(_factionStatus[factionId]._kcAddRatio, stakeAmount[i] * _tokenFactor[i] / _BASE);
+                kc += calKc(_factionStatus[factionId]._kcAddRatio, (stakeAmount[i] * _tokenFactor[i]) / _BASE);
         }
         return kc;
     }
 
     function addBonus(uint256 amount) public {
         require(amount > 0, "The amount cannot be 0.");
-        _interest[_chapter + 1] += amount;
+        _chapterStatus[_chapter + 1]._interest += amount;
     }
 
     function addNFTFactionBonus(uint256 amount) public {
         require(amount > 0, "The amount cannot be 0.");
-        _nftFactionInterest[_chapter + 1] += amount;
+        _chapterStatus[_chapter + 1]._nftFactionInterest += amount;
     }
 
     /*
