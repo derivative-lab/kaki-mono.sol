@@ -8,7 +8,7 @@ import { printEtherResult } from '../utils/logutil';
 import { getSigner } from '~/utils/contract';
 import { toBuffer, fromUtf8, bufferToHex } from 'ethereumjs-util'
 import { BigNumber } from '@ethersproject/bignumber';
-
+import _ from 'lodash';
 
 const setup = deployments.createFixture(async () => {
 const contracts = await deployAll();
@@ -43,12 +43,11 @@ describe('claim', async () => {
         let balance = await kakiCaptain.balanceOf(users[0].address);
         //expect (balance).to.equal(1);
         await mysteryBox.setApprovalForAll(captainClaim.address, true);
-        for (var i =0; i<4; i++) {
+        for (var i = 0; i < 4; i ++) {
             let boxId = await mysteryBox.tokenOfOwnerByIndex(users[0].address, i);
             console.log("boxid", boxId);
         }
-        
-        //await captainClaim.switchByBox()
+        await captainClaim.switchByBox(0);
         });
     });
 });

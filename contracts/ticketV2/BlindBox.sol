@@ -29,8 +29,9 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
     address constant BlackHole = 0x0000000000000000000000000000000000000000;
     mapping(uint256 => uint256) _sTicketCount;
 
-    function initialize(IKakiTicket ercAdd, IERC20 kTokenAdd, IKakiCaptain capAdd) public initializer {
+    function initialize(IKakiTicket ercAdd, IERC20 kTokenAdd, IKakiCaptain capAdd, IRandoms radomAdd) public initializer {
         __WithAdminRole_init();
+        __WithRandom_init(radomAdd);
         _kaki = kTokenAdd;
         _kakiTicket = ercAdd;
         _startTime = 7776000;   //start time set before deploy!
