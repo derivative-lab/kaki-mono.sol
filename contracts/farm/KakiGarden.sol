@@ -2,12 +2,14 @@ pragma solidity ^0.8.0;
 
 import "../base/WithAdminRole.sol";
 import "../interfaces/IERC20.sol";
-import {IKakiGarden, IBank} from "../interfaces/IKakiGarden.sol";
+import {IKakiGarden} from "../interfaces/IKakiGarden.sol";
 import "../interfaces/IClaimLock.sol";
 import {DebtToken} from "./DebtToken.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {IVault} from "../interfaces/IVault.sol";
+import {IFairLaunch} from "../interfaces/IFairLaunch.sol";
+
 import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
@@ -15,6 +17,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     using SafeERC20Upgradeable for IERC20;
     // start mine block number
     uint256 public _startBlockNumber;
+    uint256 public _oneDayBlocks;
     // total allocation point
     uint256 public _totalAllocPoint;
     uint256 public _rewardPerBlock;
@@ -38,18 +41,25 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         // _rewardToken = rewardToken;
         _rewardPerBlock = rewardPerBlock;
         _startBlockNumber = startBlock;
+        _oneDayBlocks = 22656;
     }
 
     function setRewardLocker(IClaimLock rewardLocker) public restricted {
         _rewardLocker = rewardLocker;
     }
 
+    function setOneDayBlocks(uint256 oneDayBlocks) public restricted {
+        _oneDayBlocks = oneDayBlocks;
+    }
+
     function addPool(
         uint256 allocPoint,
         IERC20 token,
+        uint256 price,
         IVault vault,
         IERC20 ibToken,
-        IVault ibVault,
+        IFairLaunch fairLaunch,
+        uint256 flPid,
         bool isNative,
         string memory name
     ) public restricted {
@@ -64,13 +74,15 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
                 pid: pl,
                 stakingAmount: 0,
                 token: token,
+                price: price,
                 debtToken: new DebtToken(
-                    string(abi.encodePacked("k-", token.name())),
-                    string(abi.encodePacked("k-", token.symbol()))
+                    string(abi.encodePacked("k", token.name())),
+                    string(abi.encodePacked("k", token.symbol()))
                 ),
                 vault: vault,
                 ibToken: ibToken,
-                ibVault: ibVault,
+                fairLaunch: fairLaunch,
+                flPid: flPid,
                 isNative: isNative,
                 name: name
             })
@@ -79,7 +91,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
 
         token.approve(address(vault), type(uint256).max);
         if (address(ibToken) != address(0)) {
-            ibToken.approve(address(ibVault), type(uint256).max);
+            ibToken.approve(address(fairLaunch), type(uint256).max);
         }
     }
 
@@ -107,9 +119,9 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
                 vault.deposit(amount);
             }
 
-            IVault ibVault = poolInfo.ibVault;
-            if (address(ibVault) != address(0)) {
-                ibVault.deposit(poolInfo.ibToken.balanceOf(address(this)));
+            IFairLaunch fairLaunch = poolInfo.fairLaunch;
+            if (address(fairLaunch) != address(0)) {
+                fairLaunch.deposit(address(this), poolInfo.flPid, poolInfo.ibToken.balanceOf(address(this)));
             }
         }
 
@@ -144,9 +156,9 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         if (address(poolInfo.vault) != address(0)) {
             IVault vault = poolInfo.vault;
             uint256 tokenAmount = (amount * vault.totalSupply()) / vault.totalToken();
-            IVault ibVault = poolInfo.ibVault;
-            if (address(ibVault) != address(0)) {
-                ibVault.withdraw(tokenAmount);
+            IFairLaunch fairLaunch = poolInfo.fairLaunch;
+            if (address(fairLaunch) != address(0)) {
+                fairLaunch.withdraw(address(this), poolInfo.flPid, tokenAmount);
             }
             poolInfo.vault.withdraw(tokenAmount);
         }
@@ -218,7 +230,20 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         return _poolInfo.length;
     }
 
+    function poolInfo() public view override returns (PoolInfo[] memory) {
+        return _poolInfo;
+    }
+
+    function poolApr(uint256 pid) public view override returns (uint256) {
+        PoolInfo memory pool = _poolInfo[pid];
+        return
+            (((_rewardPerBlock * _oneDayBlocks * pool.allocPoint) / _totalAllocPoint) *
+                _rewardTokenPrice *
+                365 *
+                10000) / (pool.stakingAmount * pool.price);
+    }
+
     function version() public pure returns (uint256) {
-        return 3;
+        return 7;
     }
 }
