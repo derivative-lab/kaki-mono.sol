@@ -2,7 +2,7 @@ import { ChainlinkRandoms } from './../typechain/ChainlinkRandoms.d';
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
 import { BlindBox, KakiCaptain__factory, KakiGarden__factory, KakiTicket, MysteryBox__factory } from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
-import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory , Kaki__factory, ClaimLock__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory, Kaki__factory, ClaimLock__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -50,7 +50,7 @@ export const mutiContractAddrs = {
     squidTicket: '0x7dc99344aA0053BC2DC16aE111e83C1315409a07',
     squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
-    farm: '0x2342fB746F194EB0254574314B08c6e0Be4840F9',
+    farm: '0xe7bB42d17D1C816Acd7406e66F06ACE029F3F3e3',
     kakiCaptain: '0x92F72Eb15EeE4D7A3E746FA921c46e236FcbDe9F',
     captainClaim: '0xbf24a4781DB2C353C45e328804FeAAc47d05f372',
     captainMintList: '',
