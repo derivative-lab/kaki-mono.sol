@@ -17,8 +17,8 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     IERC20 _busd;
     IKakiCaptain public _captain;
     IMysteryBox public _mysBox;
-    // IAddressList _addressList;
-    // IAddressList _mintList;
+    IAddressList _addressList;
+    IAddressList _mintList;
 
     bool _able;
     bool _switchAble;
@@ -46,7 +46,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         _mysBox = mysBoxAdd;
         _mintPrice = 0.5 ether;
         _claimLimit = 1;
-        _mintLimit = 1;
+        _mintLimit = 2;
         _limit = 200;
         _kakiFoundation = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d; // kaki foundation address
     }
@@ -101,7 +101,6 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     }
 
     //****************************** view ***************************************** */
-
     function getList() public view override returns(uint256[] memory idList) {
         idList = tokenIdList;
     }

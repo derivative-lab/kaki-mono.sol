@@ -33,7 +33,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
     }
 
     function initialize() public initializer{
-        __BaseERC721_init("", "");
+        __BaseERC721_init("KAKIER NFT", "KKR");
         lowMember = 2;
         mediumMember = 5;
         highMember = 10;
