@@ -2,8 +2,10 @@ pragma solidity ^0.8.0;
 
 import "./IERC20.sol";
 import {IDebtToken} from "./IDebtToken.sol";
-import {IVault} from "../interfaces/IVault.sol";
-interface IBank {
+import {IVault} from "./IVault.sol";
+import {IFairLaunch} from "./IFairLaunch.sol";
+
+// interface IBank {
     /****
 
   deposit bnb  https://bscscan.com/tx/0xed9eb236e93ef2cae6fa3ad055020ab29a9e41ceb8c88c225d409d4b98f6975a
@@ -14,10 +16,10 @@ interface IBank {
    deposit ibBUSD  https://bscscan.com/tx/0x68dbd2ff58efc4eb90b55800900e4cfb80e9d74ba6c1e846901a3bd98015de9e
     Alpaca Finance: Fairlaunch 0xa625ab01b08ce023b2a342dbb12a16f2c8489a8f
      */
-    function deposit(uint256 amount) payable external;
+    // function deposit(uint256 amount) external payable;
 
-    function withdraw(uint256 amount) external;
-}
+//     function withdraw(uint256 amount) external;
+// }
 
 interface IKakiGarden {
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
@@ -29,7 +31,6 @@ interface IKakiGarden {
         uint256 amount; // How many tokens the user has provided.
         // uint256 rewardTotal;
         uint256 rewardAtBlock; // the last block reward.
-
     }
 
     // Info of each pool.
@@ -37,11 +38,13 @@ interface IKakiGarden {
         uint256 allocPoint; // pool allocation point
         uint256 pid; // pool index
         uint256 stakingAmount; // poll total stakingAmount
+        uint256 price; // token price
         IERC20 token; // pool staking token
         IDebtToken debtToken; //  pool debt token
         IVault vault; // pool bank
         IERC20 ibToken; // pool bank staking token eg ibBUSD  ibBNB
-        IVault ibVault; // Interest Bearing Bank
+        IFairLaunch fairLaunch; // Interest Bearing Bank
+        uint256 flPid; // FairLaunch pool id
         bool isNative; //  is native token
         string name;
     }
@@ -56,5 +59,8 @@ interface IKakiGarden {
 
     function pendingReward(uint256 pid) external view returns (uint256);
 
+    function poolInfo() external view returns (PoolInfo[] memory);
+
+    function poolApr(uint256 pid) external view returns (uint256);
     // function withdrawAll(uint256 pid) external;
 }
