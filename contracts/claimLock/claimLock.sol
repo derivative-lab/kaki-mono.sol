@@ -107,7 +107,13 @@ contract ClaimLock is IClaimLock, WithAdminRole {
             else unlockedAmount = user[index]._locked;
         }
         return unlockedAmount;
-    } 
+    }
+
+    function getClaimableFarmRewardAll(address account) public override view returns (uint256[] memory claimableReward) {
+        for(uint256 i = 0; i < _userLockedFarmRewards[account].length; i++) {
+            getClaimableFarmReward(msg.sender, i);
+        }
+    }
 
     function getTradingLockedReward(address account) public override view returns (uint256) {
         return _userLockedTradeRewards[account]._locked;

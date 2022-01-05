@@ -10,15 +10,23 @@ contract MysteryBox is IMysteryBox, Ownable, ERC721Enumerable{
     uint256 public _maximum;
     string _baseTokenURI;
 
-    constructor(string memory baseURI) ERC721("Kakier Seed Box", "KSD") public {
+    constructor(string memory baseURI) ERC721("Kakier Seed Box", "KSB") public {
         setBaseURI(baseURI);
-        _maximum = 1010;
+        _maximum = 800;
     }
 
     function mint(address _to) public override onlyOwner {
-        require(_maximum - _tokenId != 0, "Reach the upper limit.");
+        require(_tokenId < _maximum, "Reach the upper limit.");
         _mint(_to, _tokenId);
         _tokenId ++;
+    }
+
+    function batchMint(address _to, uint256 num) public override onlyOwner {
+        require(_tokenId < _maximum, "Reach the upper limit.");
+        for(uint256 i; i < num; i++) {
+            _mint(_to, _tokenId);
+            _tokenId ++;
+        }
     }
 
     //*************************** admin ********************************** */

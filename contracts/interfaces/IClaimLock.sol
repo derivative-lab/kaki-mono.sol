@@ -20,5 +20,5 @@ interface IClaimLock {
     function getClaimableFarmReward(address account, uint256 index) external view returns(uint256);
     function getTradingUnlockedReward(address account) external view returns(uint256 bonus);
     function getTradingLockedReward(address account) external view returns(uint256);
-
+    function getClaimableFarmRewardAll(address account) external view returns (uint256[] memory claimableReward);
 }
