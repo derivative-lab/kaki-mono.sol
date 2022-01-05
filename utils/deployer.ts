@@ -198,12 +198,13 @@ export async function deployKakiTicket() {
   return instance as KakiTicket;
 }
 
-export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiCap: KakiCaptain) {
+export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiCap: KakiCaptain, chainlink: MockChainLink) {
   const signer0 = await getSigner(0);
   const args: Parameters<BlindBox['initialize']> = [
     kakiTicket.address,
     busd.address,
-    kakiCap.address
+    kakiCap.address,
+    chainlink.address
   ];
   const factory = new BlindBox__factory(signer0);
   const instance = await upgrades.deployProxy(factory, args);
@@ -244,7 +245,7 @@ export async function deployAll() {
   const garden = await deployKakiGarden(kakiToken.address);
   const mysteryBox = await deployMysteryBox();
   const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox, chainlink);
-  const blindBox = await deployBlindBox(kakiTicket, usdt, kakiCaptain);
+  const blindBox = await deployBlindBox(kakiTicket, usdt, kakiCaptain, chainlink);
 
   return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox};
 }
