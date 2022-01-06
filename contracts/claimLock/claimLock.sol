@@ -91,8 +91,12 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     }
 
     //********************************  view **********************************/
-    function getFarmAccInfo(address account) public override view returns (LockedFarmReward[] memory lockedReward) {
+    function getFarmAccInfo(address account) public override view returns (LockedFarmReward[] memory lockedReward, uint256[] memory claimableReward) {
         lockedReward = _userLockedFarmRewards[account];
+        claimableReward = new uint256[](lockedReward.length);
+        for(uint256 i = 0; i < _userLockedFarmRewards[account].length; i++) {
+            claimableReward[i] = getClaimableFarmReward(msg.sender, i);
+        }
     }
     
     function getClaimableFarmReward(address account, uint256 index) public override view returns (uint256) {
@@ -107,12 +111,6 @@ contract ClaimLock is IClaimLock, WithAdminRole {
             else unlockedAmount = user[index]._locked;
         }
         return unlockedAmount;
-    }
-
-    function getClaimableFarmRewardAll(address account) public override view returns (uint256[] memory claimableReward) {
-        for(uint256 i = 0; i < _userLockedFarmRewards[account].length; i++) {
-            getClaimableFarmReward(msg.sender, i);
-        }
     }
 
     function getTradingLockedReward(address account) public override view returns (uint256) {
