@@ -60,8 +60,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
                     basicMiningRate * miningK * 9, basicMiningRate * miningK * 9, basicMiningRate * miningK * 9,
                     basicMiningRate * miningK * 10, basicMiningRate * miningK * 10, basicMiningRate * miningK * 10];
 
-        //!!!!!!!!!!!!!!!!!!!  member = [highMember, lowMember, mediumMember];
-        member = [lowMember, mediumMember, highMember];
+        member = [highMember, lowMember, mediumMember];
         combineRate = [lowCombineRate, mediumCombineRate, highCombineRate];
         capName = ["Mate", "Pilot", "Enginner"];
 
@@ -79,7 +78,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
 
     function mint(address _to, uint256 _tokenId, uint256 _rad) external override restricted {
         uint256 tokenIdex = totalMinted();
-        require(tokenIdex < 2020, "Reach the upper limit.");
+        require(tokenIdex <= 2020, "Reach the upper limit.");
         _capComb[_tokenId] = _rad;
         _mint(_to, _tokenId);
     }
@@ -90,6 +89,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
 
     function setCapCreate(uint256 tokenId) public override isNLO {
         _capStatus[tokenId].noCreateTeam = !_capStatus[tokenId].noCreateTeam;
+        _capStatus[tokenId].noTransfer = !_capStatus[tokenId].noTransfer;
     }
 
     //*************************** admin *********************************** */
