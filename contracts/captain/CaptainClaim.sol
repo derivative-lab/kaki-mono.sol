@@ -159,6 +159,6 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 5;
+        return 6;
     }
 }
