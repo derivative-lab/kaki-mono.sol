@@ -3,8 +3,12 @@ pragma solidity ^0.8.0;
 import "../interfaces/IKakiCaptain.sol";
 import "../base/BaseERC721.sol";
 import "../base/AllowERC721.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 
 contract KakiCaptain is IKakiCaptain, AllowERC721 {
+    using Strings for uint256;
+
     address public nloAddress;
     uint256 public lowMember;
     uint256 public mediumMember;
@@ -146,5 +150,12 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
 
     function getCapStatus(uint256 tokenId) public override view returns (CapStatus memory capStatus) {
         capStatus = _capStatus[tokenId]; 
+    }
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory){
+        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+        string memory baseURI = _baseTokenURI;
+        string memory path = string(abi.encodePacked(tokenId.toString(), ".json"));
+        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, path)) : "";
     }
 }
