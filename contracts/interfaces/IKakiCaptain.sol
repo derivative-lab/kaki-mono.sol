@@ -15,7 +15,7 @@ interface IKakiCaptain is IBaseERC721 {
         bool noCreateTeam;
     }
 
-    function mint(address _to, uint256 _tokenId, uint256 _rad) external;
+    function mint(address _to, uint256 _tokenId) external;
     function setCapTransfer(uint256 tokenId) external;
     function setCapCreate(uint256 tokenId) external;
     function getCapType(uint256 tokenId) external view returns (uint256);

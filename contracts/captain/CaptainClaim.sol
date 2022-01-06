@@ -77,8 +77,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         require(_count < _limit, "over"); 
         require(_mintTimeLimit[msg.sender] < _mintLimit, "Mint too much.");
         tokenId = getRandId();
-        uint256 rad = random(1, 3);
-        _captain.mint(msg.sender, tokenId, rad);
+        _captain.mint(msg.sender, tokenId);
         _count++;
         _mintTimeLimit[msg.sender]++;
         emit Mint(msg.sender, tokenId);
@@ -87,8 +86,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     function switchByBox(uint256 boxId) public override isSwitchAble onlyNoneContract returns(uint256 tokenId) {
         _mysBox.safeTransferFrom(msg.sender, address(0xdead), boxId);
         tokenId = getRandId();
-        uint256 rad = random(1, 3);
-        _captain.mint(msg.sender, tokenId, rad);
+        _captain.mint(msg.sender, tokenId);
         _count++;
         emit Mint(msg.sender, tokenId);
     }
@@ -161,6 +159,6 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 4;
+        return 5;
     }
 }
