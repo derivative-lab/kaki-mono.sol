@@ -16,6 +16,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
     uint256 public lowCombineRate;
     uint256 public mediumCombineRate;
     uint256 public highCombineRate;
+    uint256 public constant MaxSupply = 2020;
     
     uint256[3] member;
     uint256[3] combineRate;
@@ -24,7 +25,6 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
     uint256[30] mineRate;
     string[3] capName;
     mapping(uint256 => CapPara) _capPara;
-    mapping(uint256 => uint256) _capComb;
     mapping(uint256 => CapStatus) _capStatus;
 
     modifier isNLO() {
@@ -61,7 +61,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
                     basicMiningRate * miningK * 10, basicMiningRate * miningK * 10, basicMiningRate * miningK * 10];
 
         member = [highMember, lowMember, mediumMember];
-        combineRate = [lowCombineRate, mediumCombineRate, highCombineRate];
+        combineRate = [highCombineRate, lowCombineRate, mediumCombineRate];
         capName = ["Mate", "Pilot", "Enginner"];
 
         nloAddress = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;
@@ -76,11 +76,11 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
         isAllow = !_capStatus[tokenId].noTransfer;
     }
 
-    function mint(address _to, uint256 _tokenId, uint256 _rad) external override restricted {
+    function mint(address _to, uint256 _tokenId) external override restricted {
         uint256 tokenIdex = totalMinted();
-        require(tokenIdex <= 2020, "Reach the upper limit.");
-        _capComb[_tokenId] = _rad;
+        require(tokenIdex < MaxSupply, "Reach the upper limit.");
         _mint(_to, _tokenId);
+        increaceTokenId();
     }
 
     function setCapTransfer(uint256 tokenId) public override isNLO {
@@ -124,18 +124,16 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
 
     function getCapComb(uint256 tokenId) public override view returns (uint256) {
         uint256 capComb;
-        capComb = combineRate[_capComb[tokenId] - 1];
+        capComb = combineRate[tokenId % 3];
         return capComb;
     }
 
     function getCapInfo(uint256 tokenId) public override view returns (CapPara memory capPara) {
         uint256 capType = getCapType(tokenId);
-        uint256 capComb = getCapComb(tokenId);
         capPara.captainType = capType;
-        capPara.combineRate = capComb;
         capPara.miningRate = mineRate[capType - 1];
-        capType = capType % 3;
-        capPara.memberNum = member[capType];
+        capPara.memberNum = member[capType % 3];
+        capPara.combineRate = combineRate[tokenId % 3];
 
         if (capType <= 14) {
             capPara.capName = capName[0];

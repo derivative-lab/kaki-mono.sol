@@ -17,14 +17,14 @@ contract MysteryBox is IMysteryBox, Ownable, ERC721Enumerable{
 
     function mint(address _to) public override onlyOwner {
         require(_tokenId < _maximum, "Reach the upper limit.");
-        _mint(_to, _tokenId);
+        _safeMint(_to, _tokenId);
         _tokenId ++;
     }
 
     function batchMint(address _to, uint256 num) public override onlyOwner {
         require(_tokenId < _maximum, "Reach the upper limit.");
         for(uint256 i; i < num; i++) {
-            _mint(_to, _tokenId);
+            _safeMint(_to, _tokenId);
             _tokenId ++;
         }
     }
