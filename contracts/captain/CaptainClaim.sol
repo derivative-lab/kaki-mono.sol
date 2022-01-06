@@ -47,7 +47,7 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         _mintPrice = 0.5 ether;
         _claimLimit = 1;
         _mintLimit = 2;
-        _limit = 200;
+        _limit = 210;
         _kakiFoundation = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d; // kaki foundation address
     }
 
@@ -74,8 +74,8 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     function mint() public override payable isAble onlyNoneContract returns(uint256 tokenId) {
         //require(_mintList.isInAddressList(msg.sender), "Not allow.");
         require(msg.value == _mintPrice, "BNB not enough");
-        require(_count < _limit, "Mint over."); 
-        require(_mintTimeLimit[msg.sender] < _mintLimit, "Claim too much.");
+        require(_count < _limit, "over"); 
+        require(_mintTimeLimit[msg.sender] < _mintLimit, "Mint too much.");
         tokenId = getRandId();
         uint256 rad = random(1, 3);
         _captain.mint(msg.sender, tokenId, rad);
