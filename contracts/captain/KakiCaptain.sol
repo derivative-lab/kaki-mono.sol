@@ -152,7 +152,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
         capStatus = _capStatus[tokenId]; 
     }
 
-    function tokenURI(uint256 tokenId) public view override returns (string memory){
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
         string memory baseURI = _baseTokenURI;
         string memory path = string(abi.encodePacked(tokenId.toString(), ".json"));
