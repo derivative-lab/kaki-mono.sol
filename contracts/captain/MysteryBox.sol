@@ -4,14 +4,17 @@ import "../interfaces/IMysteryBox.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 
 contract MysteryBox is IMysteryBox, Ownable, ERC721Enumerable{
+    using Strings for uint256;
     uint256 public _tokenId;
     uint256 public _maximum;
-    string _baseTokenURI;
+    string _tokenURI;
 
     constructor(string memory baseURI) ERC721("Kakier Seed Box", "KSB") public {
-        setBaseURI(baseURI);
+        _tokenURI = baseURI;
         _maximum = 800;
     }
 
@@ -29,9 +32,15 @@ contract MysteryBox is IMysteryBox, Ownable, ERC721Enumerable{
         }
     }
 
-    //*************************** admin ********************************** */
-    function setBaseURI(string memory baseURI) public onlyOwner {
-        _baseTokenURI = baseURI;
+    function tokenURI(uint256 tokenId) public view override returns (string memory){
+        return _tokenURI;
     }
+
+    //*************************** admin ********************************** */
+    function setTokenURI(string memory baseURI) public onlyOwner {
+        _tokenURI = baseURI;
+    }
+
+    
 
 }
