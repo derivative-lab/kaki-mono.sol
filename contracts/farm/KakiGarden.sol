@@ -113,7 +113,6 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
 
         IVault vault = poolInfo.vault;
         if (address(vault) != address(0)) {
-            vault.deposit{value: amount}(amount);
             if (poolInfo.isNative) {
                 vault.deposit{value: amount}(amount);
             } else {
@@ -245,6 +244,6 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     }
 
     function version() public pure returns (uint256) {
-        return 9;
+        return 10;
     }
 }
