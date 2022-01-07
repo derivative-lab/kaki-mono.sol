@@ -1,5 +1,5 @@
 import { IKakiCaptain } from './../typechain/IKakiCaptain.d';
-import { BigNumber } from '@ethersproject/bignumber';
+import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { ethers, upgrades, deployments } from 'hardhat';
 import {
   MockChainLink,
@@ -113,12 +113,17 @@ export async function deployCaptainClaim(kakiCaptain: KakiCaptain, mysteryBox: M
   return instance as CaptainClaim;
 }
 
-export async function deployKakiGarden(kakiToken: string) {
+export async function deployKakiGarden(rewardPerBlock = parseEther('10'), startBlock?: BigNumberish) {
   const signer = await getSigner(0);
-  const currentBlock = await signer.provider?.getBlockNumber() as number;
+  if (!startBlock) {
+    const currentBlock = await signer.provider?.getBlockNumber() as number;
+    startBlock = currentBlock + 10
+
+  }
+
   const args: Parameters<KakiGarden["initialize"]> = [
-    parseEther('10'),
-    currentBlock + 10
+    rewardPerBlock,
+    startBlock
   ];
 
   const factory = new KakiGarden__factory(signer);
@@ -141,7 +146,7 @@ export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink
   await instance.deployed();
   return instance as KakiSquidGame;
 }
-export async function deployNoLoss(caption:KakiCaptain,kaki: MockToken, bnbToken: MockToken, busdToken: MockToken, kakiBNBToken: MockToken, kakiBUSDToken: MockToken, chainlink: MockChainLink) {
+export async function deployNoLoss(caption: KakiCaptain, kaki: MockToken, bnbToken: MockToken, busdToken: MockToken, kakiBNBToken: MockToken, kakiBUSDToken: MockToken, chainlink: MockChainLink) {
   const signer0 = await getSigner(0);
   const factory = new KakiNoLoss__factory(signer0);
   const args: Parameters<KakiNoLoss['initialize']> = [
@@ -241,11 +246,11 @@ export async function deployAll() {
   const openBox = await deployOpenBox(ticket, usdt, Math.ceil(Date.now() / 1000 + 24 * 3600), allowList);
   const game = await deploySquidGame(ticket, usdt, chainlink, signer0.address);
   const kakiCaptain = await deployKakiCaptain();
-  const noLoss = await deployNoLoss(kakiCaptain,kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
-  const garden = await deployKakiGarden(kakiToken.address);
+  const noLoss = await deployNoLoss(kakiCaptain, kakiToken, wbnbToken, usdt, kakiBnbLP, kakiUsdtLp, chainlink);
+  const garden = await deployKakiGarden();
   const mysteryBox = await deployMysteryBox();
   const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox, chainlink);
   const blindBox = await deployBlindBox(kakiTicket, usdt, kakiCaptain, chainlink);
 
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox};
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox };
 }
