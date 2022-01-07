@@ -10,7 +10,7 @@ import {formatEther} from 'ethers/lib/utils'
         // const tx1 = await mBox.mint("0x62b293CF6170C76ea908689f2eb93eB21e3f5084");
         // const tx2 = await mBox.mint("0x7430b734205366542B59541bC1201C46E666175c");
         // const tx3 = await mBox.mint("0xd7dFC7e4249c40f9915E64b3D343FEC00BA525eC");
-    const tx = await mBox.batchMint("0x5fB6F6F7A4D9a848Cd422F6ef399C9A1A128e894", 10);
+    const tx = await mBox.batchMint("0x8b52ab88df16f88c4ec885d89889c6decac7e221", 1);
 
     console.log(tx.hash);
     //console.log(i);
