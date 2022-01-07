@@ -10,4 +10,5 @@ interface ICaptainClaim {
     function switchByBox(uint256 boxId) external returns(uint256 tokenId);
     function getList() external view returns(uint256[] memory idList);
     function getTotalMint() external view returns(uint256 count);
+    function getMintTime() external view returns(uint256 mintTime);
 }
