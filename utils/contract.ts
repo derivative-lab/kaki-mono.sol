@@ -50,7 +50,7 @@ export const mutiContractAddrs = {
     squidTicket: '0x7dc99344aA0053BC2DC16aE111e83C1315409a07',
     squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
-    farm: '0xe7bB42d17D1C816Acd7406e66F06ACE029F3F3e3',
+    farm: '0x1bA1806e76054cE4CdFBe91f5E7ebBa9c5B23996',
     kakiCaptain: '0xC3F8e0fBfd9b08b23b590611A9ef86F29777c48B',
     captainClaim: '0x3839bDA320D33338d2e7adBf75bc149206cd01f8',
     captainMintList: '',
