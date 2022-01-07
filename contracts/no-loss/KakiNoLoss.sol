@@ -69,7 +69,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 _lastCheckChapter;
         uint256 _lastIndexChapter;
         uint256 _totalIndex;
-        uint256[_DEPOSIT_TOKEN_SORT] _stakeAmount;
+        uint256[] _stakeAmount;
         address[] _accountArr;
         mapping(uint256 => uint256) _index;
         mapping(uint256 => uint256[]) _lastFireRound;
@@ -88,7 +88,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     struct AccountFaction {
         uint256 _lastCheckChapter;
         uint256 _lastCheckKC;
-        uint256[_DEPOSIT_TOKEN_SORT] _stakeAmount;
+        uint256[] _stakeAmount;
         mapping(uint256 => uint256) _accountKC;
         uint256[] _accountKCIndex;
     }
@@ -682,15 +682,14 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         return accountKC;
     }
 
-    function calAllKcInWholeCycle(uint256 factionId, uint256[_DEPOSIT_TOKEN_SORT] memory stakeAmount)
+    function calAllKcInWholeCycle(uint256 factionId, uint256[] memory stakeAmount)
         internal
         view
         returns (uint256)
     {
         uint256 kcRation = _factionStatus[factionId]._kcAddRatio;
         uint256 kc;
-        uint256 len = stakeAmount.length;
-        for (uint256 i; i < len; i++) {
+        for (uint256 i; i < _DEPOSIT_TOKEN_SORT; i++) {
             if (stakeAmount[i] > 0) kc += ((kcRation * stakeAmount[i] * _tokenFactor[i]) / _BASE) / _BASE;
         }
         return kc;
@@ -698,9 +697,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function calFactionAllKc(uint256 factionId) internal view returns (uint256) {
         uint256 kc;
-        uint256[_DEPOSIT_TOKEN_SORT] memory stakeAmount = _factionStatus[factionId]._stakeAmount;
-        uint256 len = stakeAmount.length;
-        for (uint256 i; i < len; i++) {
+        uint256[] memory stakeAmount = _factionStatus[factionId]._stakeAmount;
+        for (uint256 i; i < _DEPOSIT_TOKEN_SORT; i++) {
             if (stakeAmount[i] > 0)
                 kc += calKc(_factionStatus[factionId]._kcAddRatio, (stakeAmount[i] * _tokenFactor[i]) / _BASE);
         }
@@ -776,7 +774,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         return _accountGlobalInfo[account]._factionArr;
     }
 
-    function getStakeAmountInFaction(address account, uint256 factionId) public view returns (uint256[4] memory) {
+    function getStakeAmountInFaction(address account, uint256 factionId) public view returns (uint256[] memory) {
         return _accountFactionStatus[account][factionId]._stakeAmount;
     }
 
@@ -786,5 +784,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
      */
     function getTimestamp() public view virtual returns (uint256) {
         return block.timestamp;
+    }
+
+    function version() public pure returns (uint256) {
+        return 1;
     }
 }
