@@ -56,7 +56,7 @@ interface IKakiNoLoss {
 
     function getFactionList() external view returns (FactionListVO[] memory listVo);
 
-    function getFactionData(uint256 factionId) external view returns(FactionListVO vo)
+    function getFactionData(uint256 factionId) external view returns(FactionListVO memory vo);
 
     function getRoundStartTime(uint256 chapter,uint256 round) external view returns(uint256);
 }
