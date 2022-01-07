@@ -143,7 +143,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _kakiFoundationAddress = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;
     }
 
-    function createFaction(uint256 nftId)  public override {
+    function createFaction(uint256 nftId) public override {
         uint256 time = getTimestamp();
         require(_chapterStatus[_chapter]._startTime + _weekTime > time, "please wait new _chapter!");
 
@@ -189,7 +189,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 factionId,
         uint256 tokenIndex,
         uint256 amount
-    )   public override {
+    ) public override {
         uint256 time = getTimestamp();
         require(factionId != 0, "Cannot join faction 0.");
         require(_chapterStatus[_chapter]._startTime + _weekTime > time, "please wait new _chapter!");
@@ -333,7 +333,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 time = getTimestamp();
         updateFactioinAndAccount(factionId, id, amount);
         updateBonus();
-        emit AddStake(msg.sender, factionId, id, amount,time);
+        emit AddStake(msg.sender, factionId, id, amount, time);
     }
 
     function _getCaptionLeaveKAKIReturn(uint256 factionId) internal returns (uint256) {
@@ -613,14 +613,14 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         return 0;
     }
 
-    function claimBonus()  public  override returns (uint256) {
+    function claimBonus() public override returns (uint256) {
         uint256 time = getTimestamp();
         uint256 bonus = updateBonus();
         emit ClaimBonus(msg.sender, bonus, time);
         return bonus;
     }
 
-    function updateBonus()  public override returns (uint256) {
+    function updateBonus() public override returns (uint256) {
         uint256 bonus;
         uint256 chapter = _accountGlobalInfo[msg.sender]._bonusChapter;
         uint256 endChapter;
@@ -717,48 +717,67 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _chapterStatus[_chapter + 1]._nftFactionInterest += amount;
     }
 
-    function getFactionList() public override view returns(FactionListVO[] memory listVo){
+    function getFactionList() public view override returns (FactionListVO[] memory listVo) {
         uint256 time = getTimestamp();
-        bool isFireDay=false;
-        if(_chapterStatus[_chapter]._startTime + _dayTime >= time)
-            isFireDay=true;
+        bool isFireDay = false;
+        if (_chapterStatus[_chapter]._startTime + _dayTime >= time) isFireDay = true;
 
-        FactionListVO[] memory listVo = new FactionListVO[](_nextFactionId-1);
-        for (uint256 i = 1; i < _nextFactionId; i ++){ 
-            listVo[i-1]=generateFactionData(i,isFireDay);   
+        FactionListVO[] memory listVo = new FactionListVO[](_nextFactionId - 1);
+        for (uint256 i = 1; i < _nextFactionId; i++) {
+            listVo[i - 1] = generateFactionData(i, isFireDay);
         }
-
     }
 
-    function generateFactionData(uint256 factionId,bool isFireDay) internal view returns(FactionListVO vo){
-        FactionListVO memory vo = new FactionListVO();
-        vo._id=factionId;
-        vo._captain=_factionStatus[factionId]._captain;
-        vo._members=_factionStatus[factionId]._accountArr.length;
-        vo._winFireCnt=_factionStatus[factionId]._winFireCnt;
-        vo._totalFireCnt=_factionStatus[factionId]._totalFireCnt;
-        vo._totalBonus=_factionStatus[factionId]._totalBonus;
-        vo._nftId=_factionStatus[factionId]._nftId; 
-        if(isFireDay){
-            vo._usedkc=_factionStatus[i]._totalChapterKC[_chapter-1]-_factionStatus[i]._chapterKC[_chapter - 1]; 
-            vo._totalkc=_factionStatus[i]._totalChapterKC[_chapter-1]; 
-        }else{
-            vo._totalkc=_factionStatus[i]._totalChapterKC[_chapter]; 
+    function generateFactionData(uint256 factionId, bool isFireDay) internal view returns (FactionListVO memory) {
+        FactionListVO memory vo;
+        vo._id = factionId;
+        vo._captain = _factionStatus[factionId]._captain;
+        vo._members = _factionStatus[factionId]._accountArr.length;
+        vo._winFireCnt = _factionStatus[factionId]._winFireCnt;
+        vo._totalFireCnt = _factionStatus[factionId]._totalFireCnt;
+        vo._totalBonus = _factionStatus[factionId]._totalBonus;
+        vo._nftId = _factionStatus[factionId]._nftId;
+        if (isFireDay) {
+            vo._usedkc =
+                _factionStatus[factionId]._totalChapterKC[_chapter - 1] -
+                _factionStatus[factionId]._chapterKC[_chapter - 1];
+            vo._totalkc = _factionStatus[factionId]._totalChapterKC[_chapter - 1];
+        } else {
+            vo._totalkc = _factionStatus[factionId]._totalChapterKC[_chapter];
         }
-        vo._stakeAmount=_factionStatus[i]._stakeAmount;         
+        vo._stakeAmount = _factionStatus[factionId]._stakeAmount;
         return vo;
     }
 
-    function getFactionData(uint256 factionId) public override view returns(FactionListVO vo){
+    function getFactionData(uint256 factionId) public view override returns (FactionListVO memory) {
         uint256 time = getTimestamp();
-        bool isFireDay=false;
-        if(_chapterStatus[_chapter]._startTime + _dayTime >= time)
-            isFireDay=true;
-        return generateFactionData(factionId,isFireDay);
+        bool isFireDay = false;
+        if (_chapterStatus[_chapter]._startTime + _dayTime >= time) isFireDay = true;
+        return generateFactionData(factionId, isFireDay);
     }
 
-    function getRoundStartTime(uint256 chapter,uint256 round) public override view returns(uint256){
+    function getRoundStartTime(uint256 chapter, uint256 round) public view override returns (uint256) {
         return _chapterStatus[chapter]._roundStartTime[round];
+    }
+
+    function getFactionFireData(
+        uint256 factionId,
+        uint256 chapter,
+        uint256 round
+    ) public view returns (FirePool memory) {
+        return _factionStatus[factionId]._fire[chapter][round];
+    }
+
+    function getFactionWinKC(uint256 factionId, uint256 chapter) public view returns (uint256) {
+        return _factionStatus[factionId]._factionWinnerKC[chapter];
+    }
+
+    function getAccountFactionIds(address account) public view returns (uint256[] memory) {
+        return _accountGlobalInfo[account]._factionArr;
+    }
+
+    function getStakeAmountInFaction(address account, uint256 factionId) public view returns (uint256[4] memory) {
+        return _accountFactionStatus[account][factionId]._stakeAmount;
     }
 
     /*
