@@ -107,6 +107,10 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         count = _count;
     }
 
+    function getMintTime() public view override returns(uint256 mintTime) { 
+        mintTime = _mintTimeLimit[msg.sender];
+    }
+
     //****************************** admin function ***************************************** */
     function setTokenIdList(uint256 start, uint256 end) public onlyOwner {
         for(uint256 i = start; i <= end; i++) {
@@ -159,6 +163,6 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 6;
+        return 7;
     }
 }
