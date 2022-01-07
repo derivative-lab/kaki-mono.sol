@@ -59,6 +59,7 @@ export const mutiContractAddrs = {
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
     claimLock: '0x504DC2CcA9B3BBa98295840D2185ae062939c093',
     kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
+    noLoss:'0xab8E03808F8FFACcF7454867ffF7da0445170A7E',
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
@@ -128,6 +129,9 @@ export const contractAddress = {
   },
   get kaki() {
     return getItem('kaki');
+  },
+  get noLoss() {
+    return getItem('noLoss');
   },
 };
 

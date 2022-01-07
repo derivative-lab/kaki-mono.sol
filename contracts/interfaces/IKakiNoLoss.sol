@@ -11,7 +11,7 @@ interface IKakiNoLoss {
         uint256 _nftId;
         uint256 _usedkc;
         uint256 _totalkc;
-        uint256[4] _stakeAmount;
+        uint256[] _stakeAmount;
     }
     event CreateFaction(address indexed account, uint256 factionId, uint256 time);
     event JoinFaction(address indexed account, uint256 factionId, uint256 tokenIndex, uint256 amount, uint256 time);
