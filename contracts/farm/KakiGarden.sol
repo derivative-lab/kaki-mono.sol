@@ -216,6 +216,10 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         return (_rewardPerBlock * (block.number - user.rewardAtBlock) * pool.allocPoint) / _totalAllocPoint;
     }
 
+    function dailyReward(uint256 pid) public view override returns (uint256) {
+        return (_rewardPerBlock * _oneDayBlocks * _poolInfo[pid].allocPoint) / _totalAllocPoint;
+    }
+
     function onlyHarvest(uint256 pid) internal returns (uint256 rAmount) {
         PoolInfo storage pool = _poolInfo[pid];
         UserInfo storage user = _userInfo[pid][msg.sender];
@@ -244,6 +248,6 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     }
 
     function version() public pure returns (uint256) {
-        return 10;
+        return 11;
     }
 }
