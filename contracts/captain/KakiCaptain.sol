@@ -66,7 +66,7 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
 
         member = [highMember, lowMember, mediumMember];
         combineRate = [highCombineRate, lowCombineRate, mediumCombineRate];
-        capName = ["Mate", "Pilot", "Enginner"];
+        capName = ["Mate", "Pilot", "Engineer"];
 
         nloAddress = 0x958f0991D0e847C06dDCFe1ecAd50ACADE6D461d;
     }
