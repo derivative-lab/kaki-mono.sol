@@ -1,4 +1,4 @@
-import { kakiCaptainContract, mysteryBoxContract } from '~/utils/contract'
+import { contractAddress, kakiCaptainContract, mysteryBoxContract } from '~/utils/contract'
 import { CaptainClaim } from '~/typechain';
 import {deploy} from '~/utils/upgrader';
 (async () => {
@@ -8,7 +8,7 @@ import {deploy} from '~/utils/upgrader';
   const args : Parameters<CaptainClaim["initialize"]> = [
     captain.address,
     mysteryBox.address,
-    "0xaE4364642f7Ed86971ea4a974a165C79c2F32766"
+    contractAddress.chainlinkRandoms
   ]
   // await deployOpenBox(ticket, busd, 1639649100, allowList);
 

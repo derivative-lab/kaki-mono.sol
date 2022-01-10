@@ -5,5 +5,6 @@ import { getSigner } from "~/utils/contract";
 
 (async () => {
   const signer = await getSigner(0);
-  await deployKakiCaptain();
+  // await deployKakiCaptain();
+  await deploy('captain/KakiCaptain.sol')
 })()
