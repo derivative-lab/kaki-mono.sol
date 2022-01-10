@@ -6,7 +6,7 @@ import { parseEther } from 'ethers/lib/utils';
 
   const farm = await farmContract();
   const v = parseEther('0.001');
-  const ov = { value: v, gasLimit: 1000000 }
+  const ov = { value: v }
   const tx = await farm.deposit(0, v, ov);
   console.log(tx.hash)
 

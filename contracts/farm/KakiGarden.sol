@@ -108,7 +108,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         if (poolInfo.isNative) {
             require(amount == msg.value, "deposit amount must be equal to msg.value");
         } else {
-            poolInfo.token.transferFrom(msg.sender, address(this), amount);
+            poolInfo.token.safeTransferFrom(msg.sender, address(this), amount);
         }
 
         IVault vault = poolInfo.vault;
@@ -155,12 +155,12 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         PoolInfo storage poolInfo = _poolInfo[pid];
         if (address(poolInfo.vault) != address(0)) {
             IVault vault = poolInfo.vault;
-            uint256 tokenAmount = (amount * vault.totalSupply()) / vault.totalToken();
+            uint256 tokenAmount = (amount * vault.totalToken()) / vault.totalSupply();
             IFairLaunch fairLaunch = poolInfo.fairLaunch;
             if (address(fairLaunch) != address(0)) {
                 fairLaunch.withdraw(address(this), poolInfo.flPid, tokenAmount);
             }
-            poolInfo.vault.withdraw(tokenAmount);
+            poolInfo.vault.withdraw(amount);
         }
 
         uint256 realWithdraw;
@@ -173,10 +173,10 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
             realWithdraw = MathUpgradeable.min(token.balanceOf(address(this)), amount);
             token.safeTransfer(msg.sender, realWithdraw);
         }
-        poolInfo.debtToken.burn(msg.sender, realWithdraw);
-        user.amount -= realWithdraw;
-        poolInfo.stakingAmount -= realWithdraw;
-        emit Withdraw(msg.sender, pid, realWithdraw);
+        poolInfo.debtToken.burn(msg.sender, amount);
+        user.amount -= amount;
+        poolInfo.stakingAmount -= amount;
+        emit Withdraw(msg.sender, pid, amount);
     }
 
     function harvest(uint256 pid) public override nonReentrant whenNotPaused {
@@ -248,6 +248,6 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     }
 
     function version() public pure returns (uint256) {
-        return 11;
+        return 13;
     }
 }

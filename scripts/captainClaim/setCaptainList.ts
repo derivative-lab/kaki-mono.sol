@@ -12,11 +12,8 @@ import {formatEther} from 'ethers/lib/utils'
     // const group = _.chunk(tokenIds,500);
     for (var i =0;i<10; i++){
         const tx = await captain.setTokenIdList(1+200*i, 200*(1+i),{gasLimit: 5000000});
-        console.log(tx.hash);
+        console.log('i:',i,tx.hash);
     }
-    // for(var i = 0; i < 10; i++) {
-    //     const tx = await captain.setTokenIdList(1 + 202*i, 202 * (i+1));
-    //     console.log(tx.hash);
-    // }
-    
+    const tx = await captain.setTokenIdList(2001, 2020);
+    console.log(tx.hash);
 })();
