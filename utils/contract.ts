@@ -22,7 +22,8 @@ export const frontendUsedContracts = [
   "IBaseERC721",
   "AddressList",
   "IKakiTicket",
-  "IBlindBox"
+  "IBlindBox",
+  "KakiNoLoss"
 ];
 
 export const webToolsContractNames = [
