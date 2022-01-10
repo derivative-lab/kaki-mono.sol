@@ -1,3 +1,5 @@
+import { IClaimLock } from './../typechain/IClaimLock.d';
+import { IKakiGarden } from './../typechain/IKakiGarden.d';
 import { IKakiCaptain } from './../typechain/IKakiCaptain.d';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { ethers, upgrades, deployments } from 'hardhat';
@@ -31,6 +33,8 @@ import {
   CaptainClaim__factory,
   MysteryBox,
   MysteryBox__factory,
+  MockFarm,
+  MockFarm__factory,
   ChainlinkRandoms__factory,
 
 } from '~/typechain';
@@ -218,16 +222,26 @@ export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiC
   return instance as BlindBox;
 }
 
-// export async function deployClaimLock(farm: , trading: , kaki: IKaki, pool) {
-//   const signer0 = await getSigner(0);
-//   const args: Parameters<ClaimLock['initialize']> = [
+export async function deployMockFarm() {
+  const signer = await getSigner(0);
+  const factory = new MockFarm__factory(signer);
+  const instance = await factory.deploy(); 
+  await instance.deployed();
+  console.log(`mockFarm deployed to: ${instance.address}`);
+  return instance as MockFarm;
+}
 
-//   ];
-//   const factory = new ClaimLock__factory(signer0);
-//   const instance = await upgrades.deployProxy(factory, args);
-//   console.log(`blindBox deployed to : ${instance.address}`);
-//   return instance as ClaimLock;
-// }
+export async function deployClaimLock(farm: MockFarm, kaki: IERC20) {
+  const signer0 = await getSigner(0);
+  const args: Parameters<ClaimLock['initialize']> = [
+    farm.address,
+    kaki.address
+  ];
+  const factory = new ClaimLock__factory(signer0);
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`blindBox deployed to : ${instance.address}`);
+  return instance as ClaimLock;
+}
 
 export async function deployAll() {
   // const usdt = await deployMockUsdt();
@@ -252,8 +266,12 @@ export async function deployAll() {
   const mysteryBox = await deployMysteryBox();
   const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox, chainlink);
   const blindBox = await deployBlindBox(kakiTicket, usdt, kakiCaptain, chainlink);
+  const mockFarm = await deployMockFarm();
+  const claimLock = await deployClaimLock(mockFarm, usdt);
 
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox };
+  
+
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox, mockFarm, claimLock};
 }
 
 
