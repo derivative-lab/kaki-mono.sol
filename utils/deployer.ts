@@ -30,11 +30,12 @@ import {
   CaptainClaim,
   CaptainClaim__factory,
   MysteryBox,
-  MysteryBox__factory
+  MysteryBox__factory,
+  ChainlinkRandoms__factory,
 
 } from '~/typechain';
-
-import { getSigner } from '~/utils/contract';
+import chalk from 'chalk';
+import { getSigner, getSigner } from '~/utils/contract';
 import { parseEther } from 'ethers/lib/utils';
 
 export async function deployMockChainLink() {
@@ -253,4 +254,25 @@ export async function deployAll() {
   const blindBox = await deployBlindBox(kakiTicket, usdt, kakiCaptain, chainlink);
 
   return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox };
+}
+
+
+export async function deployChainlinkRandoms() {
+  const linkToken = "0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06";
+  const vrfCoordinator = "0xa555fC018435bef5A13C6c6870a9d4C11DEC329C";
+  const keyHash =
+    "0xcaf3c3727e033261d383b315559476f48034c13b18f8cafed4d871abe5049186";
+  const fee = ethers.utils.parseEther("0.1");
+
+  const singer = await getSigner(0);
+  const factory = new ChainlinkRandoms__factory(singer);
+  const instance = await factory.deploy(
+    linkToken,
+    vrfCoordinator,
+    keyHash,
+    fee
+  );
+  console.log(`ChainlinkRandoms deployed to ${chalk.green(instance.address)}`);
+  await instance.deployed();
+  return instance;
 }
