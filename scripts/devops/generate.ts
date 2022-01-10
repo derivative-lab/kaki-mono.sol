@@ -25,8 +25,8 @@ async function copyAbiToWebTools() {
 
 
   const repo = gitP(repoBase);
-  await repo.checkout('kaki');
   if ((await repo.status()).isClean()) {
+    await repo.checkout('kaki');
     for (const name of webToolsContractNames) {
       const abi = JSON.stringify((<any>typechain)[`${name}__factory`].abi);
       await fs.writeFile(`${repoBase}/contracts/${name}.json`, abi);
