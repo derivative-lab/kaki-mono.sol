@@ -12,7 +12,6 @@ import "hardhat/console.sol";
 
 contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     uint256 internal constant _BASE = 1000;
-    uint256 internal constant _DEPOSIT_TOKEN_SORT = 4;
 
     IAggregatorInterface _aggregator;
     IKakiCaptain internal _captainNFT;
@@ -24,6 +23,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     IERC20[] internal _tokenAssemble;
     uint256[] _tokenFactor;
 
+    uint256 _depositTokenSort;
     uint256 _weekTime;
     uint256 _dayTime;
     uint256 _roundTime;
@@ -69,15 +69,15 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 _lastCheckChapter;
         uint256 _lastIndexChapter;
         uint256 _totalIndex;
-        uint256[] _stakeAmount;
         address[] _accountArr;
         mapping(uint256 => uint256) _index;
-        mapping(uint256 => uint256[]) _lastFireRound;
+        mapping(address => uint256) _whiteList;
         mapping(uint256 => uint256) _chapterKC;
         mapping(uint256 => uint256) _totalChapterKC;
         mapping(uint256 => uint256) _factionWinnerKC;
+        mapping(uint256 => uint256) _stakeAmount;
+        mapping(uint256 => uint256[]) _lastFireRound;
         mapping(uint256 => mapping(uint256 => FirePool)) _fire;
-        mapping(address => uint256) _whiteList;
     }
 
     struct Account {
@@ -88,7 +88,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     struct AccountFaction {
         uint256 _lastCheckChapter;
         uint256 _lastCheckKC;
-        uint256[] _stakeAmount;
+        mapping(uint256 => uint256) _stakeAmount;
         mapping(uint256 => uint256) _accountKC;
         uint256[] _accountKCIndex;
     }
@@ -123,6 +123,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _tradingTime = 3 minutes; // 1.5min = 6 3min = 12 15s/Block 3min = 180
         _captionKAKI = 2020 ether;
         _captionKC = 100 ether;
+        _depositTokenSort = 4;
 
         _captainNFT = captionNft;
         _aggregator = aggregator_;
@@ -176,7 +177,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         initAccountChapterKcInner(_nextFactionId, _chapter, captionKc);
         _accountFactionStatus[msg.sender][_nextFactionId]._lastCheckChapter = _chapter;
-
         if (_accountGlobalInfo[msg.sender]._bonusChapter == 0) _accountGlobalInfo[msg.sender]._bonusChapter = _chapter;
         _accountGlobalInfo[msg.sender]._factionArr.push(_nextFactionId);
         emit CreateFaction(msg.sender, _nextFactionId, time);
@@ -312,7 +312,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 addKc = calKc(_factionStatus[factionId]._kcAddRatio, (amount * _tokenFactor[id]) / _BASE);
         _factionStatus[factionId]._chapterKC[_chapter] += addKc;
         _factionStatus[factionId]._stakeAmount[id] += amount;
-
         _accountFactionStatus[msg.sender][factionId]._lastCheckKC += addKc;
         initAccountChapterKcInner(
             factionId,
@@ -598,7 +597,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         );
     }
 
-    function getAccountKC(uint256 factionId, uint256 chapter) internal view returns (uint256) {
+    function getAccountKC(uint256 factionId, uint256 chapter) internal returns (uint256) {
         uint256 len = _accountFactionStatus[msg.sender][factionId]._accountKCIndex.length;
         /**如果chapter 大于有记录的chapter值 ，通过计算全周期的质押量得到kc
            否则遍历_accountKCIndex ，从大到小获取存储的周期值(c)，当chapter 大于c，返回值
@@ -682,14 +681,13 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         return accountKC;
     }
 
-    function calAllKcInWholeCycle(uint256 factionId, uint256[] memory stakeAmount)
-        internal
-        view
+    function calAllKcInWholeCycle(uint256 factionId, mapping(uint256 => uint256) storage stakeAmount)
+        internal view
         returns (uint256)
     {
         uint256 kcRation = _factionStatus[factionId]._kcAddRatio;
         uint256 kc;
-        for (uint256 i; i < _DEPOSIT_TOKEN_SORT; i++) {
+        for (uint256 i; i < _depositTokenSort; i++) {
             if (stakeAmount[i] > 0) kc += ((kcRation * stakeAmount[i] * _tokenFactor[i]) / _BASE) / _BASE;
         }
         return kc;
@@ -697,10 +695,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function calFactionAllKc(uint256 factionId) internal view returns (uint256) {
         uint256 kc;
-        uint256[] memory stakeAmount = _factionStatus[factionId]._stakeAmount;
-        for (uint256 i; i < _DEPOSIT_TOKEN_SORT; i++) {
-            if (stakeAmount[i] > 0)
-                kc += calKc(_factionStatus[factionId]._kcAddRatio, (stakeAmount[i] * _tokenFactor[i]) / _BASE);
+        for (uint256 i; i < _depositTokenSort; i++) {
+            if (_factionStatus[factionId]._stakeAmount[i] > 0)
+                kc += calKc(_factionStatus[factionId]._kcAddRatio, (_factionStatus[factionId]._stakeAmount[i] * _tokenFactor[i]) / _BASE);
         }
         return kc;
     }
@@ -715,15 +712,18 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _chapterStatus[_chapter + 1]._nftFactionInterest += amount;
     }
 
-    function getFactionList() public view override returns (FactionListVO[] memory listVo) {
+    function getFactionList() public view override returns (FactionListVO[] memory) {
         uint256 time = getTimestamp();
         bool isFireDay = false;
         if (_chapterStatus[_chapter]._startTime + _dayTime >= time) isFireDay = true;
 
+        
         FactionListVO[] memory listVo = new FactionListVO[](_nextFactionId - 1);
         for (uint256 i = 1; i < _nextFactionId; i++) {
             listVo[i - 1] = generateFactionData(i, isFireDay);
         }
+        
+        return listVo;
     }
 
     function generateFactionData(uint256 factionId, bool isFireDay) internal view returns (FactionListVO memory) {
@@ -741,9 +741,11 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 _factionStatus[factionId]._chapterKC[_chapter - 1];
             vo._totalkc = _factionStatus[factionId]._totalChapterKC[_chapter - 1];
         } else {
-            vo._totalkc = _factionStatus[factionId]._totalChapterKC[_chapter];
+            vo._totalkc = _factionStatus[factionId]._chapterKC[_chapter];
         }
-        vo._stakeAmount = _factionStatus[factionId]._stakeAmount;
+        for (uint256 i; i < _depositTokenSort; i++) {
+            vo._stakeAmount[i] = _factionStatus[factionId]._stakeAmount[i];
+        }
         return vo;
     }
 
@@ -774,8 +776,15 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         return _accountGlobalInfo[account]._factionArr;
     }
 
-    function getStakeAmountInFaction(address account, uint256 factionId) public view returns (uint256[] memory) {
-        return _accountFactionStatus[account][factionId]._stakeAmount;
+    function getStakeAmountInFaction(address account, uint256 factionId)
+        public
+        view
+        returns (uint256[] memory stakeArr)
+    {
+        stakeArr = new uint256[](_depositTokenSort);
+        for (uint256 i; i < _depositTokenSort; i++) {
+            stakeArr[i] = (_factionStatus[factionId]._stakeAmount[i]);
+        }
     }
 
     /*
@@ -787,6 +796,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function version() public pure returns (uint256) {
-        return 1;
+        return 2;
     }
 }

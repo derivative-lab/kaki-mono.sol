@@ -35,9 +35,11 @@ import {
   MysteryBox__factory,
   MockFarm,
   MockFarm__factory,
-} from '~/typechain';
+  ChainlinkRandoms__factory,
 
-import { getSigner } from '~/utils/contract';
+} from '~/typechain';
+import chalk from 'chalk';
+import { getSigner} from '~/utils/contract';
 import { parseEther } from 'ethers/lib/utils';
 
 export async function deployMockChainLink() {
@@ -97,7 +99,7 @@ export async function deployKakiCaptain() {
 export async function deployMysteryBox() {
   const signer = await getSigner(0);
   const factory = new MysteryBox__factory(signer);
-  const instance = await factory.deploy("https://ipfs.io/ipfs/QmbgMfXVThUP2s8vFeUD7AXQmqASSBG5bkqosf7XCFrMP1?filename=KakiSeedBox.json");
+  const instance = await factory.deploy("https://ipfs.fleek.co/ipfs/QmUYZRw647x7zKqtAzKjeyfQt24v9sasuEeJVYrioxaD4t/KakiSeedBox.json");
   await instance.deployed();
   console.log(`MysteryBox deployed to: ${instance.address}`);
   return instance as MysteryBox;
@@ -270,4 +272,25 @@ export async function deployAll() {
   
 
   return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox, mockFarm, claimLock};
+}
+
+
+export async function deployChainlinkRandoms() {
+  const linkToken = "0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06";
+  const vrfCoordinator = "0xa555fC018435bef5A13C6c6870a9d4C11DEC329C";
+  const keyHash =
+    "0xcaf3c3727e033261d383b315559476f48034c13b18f8cafed4d871abe5049186";
+  const fee = ethers.utils.parseEther("0.1");
+
+  const singer = await getSigner(0);
+  const factory = new ChainlinkRandoms__factory(singer);
+  const instance = await factory.deploy(
+    linkToken,
+    vrfCoordinator,
+    keyHash,
+    fee
+  );
+  console.log(`ChainlinkRandoms deployed to ${chalk.green(instance.address)}`);
+  await instance.deployed();
+  return instance;
 }

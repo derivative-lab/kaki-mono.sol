@@ -2,7 +2,7 @@ import { ChainlinkRandoms } from './../typechain/ChainlinkRandoms.d';
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
 import { BlindBox, KakiCaptain__factory, KakiGarden__factory, KakiTicket, MysteryBox__factory } from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
-import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory, Kaki__factory, ClaimLock__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory, Kaki__factory, ClaimLock__factory,KakiNoLoss__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -59,7 +59,7 @@ export const mutiContractAddrs = {
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
     claimLock: '0x504DC2CcA9B3BBa98295840D2185ae062939c093',
     kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
-    noLoss:'0xab8E03808F8FFACcF7454867ffF7da0445170A7E',
+    noLoss:'0xa9bBaC9653517b827a632B518E64ead4FbFACf1b',
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
@@ -69,6 +69,10 @@ export const mutiContractAddrs = {
     squidAllowList: '0x390B7384dc96a5728BB08D2e864549b2dee64549',
     // squidAllowList: '0x43bd49e5ad1173874ca5eb714858ec2af08d6e87',
     squidOpenBox: '0x67bab7f7dcde65738ef3db51e4148df1e5108354',
+    chainlinkRandoms: '0xDfd77b646ea6480eea4dA7abca6C74053d8D9753',
+    mysteryBox: '0x5B771c6114825b3D8EFCa66956E37aC34d812a66',
+    kakiCaptain: '0xFE99a9e79959475d85af2BD11277B9061d457fa2',
+    captainClaim: '0x6d476bc0dA5a017853545fee3939624F7fBFa0A7',
   }
 };
 
@@ -213,4 +217,9 @@ export async function claimLockContract(signerIndex = 0) {
 
 export async function kakiContract(signerIndex = 0) {
   return Kaki__factory.connect(contractAddress.kaki, await getSigner(signerIndex));
+}
+
+
+export async function noLossContract(signerIndex = 0) {
+  return KakiNoLoss__factory.connect(contractAddress.noLoss, await getSigner(signerIndex));
 }
