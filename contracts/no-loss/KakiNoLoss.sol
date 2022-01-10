@@ -673,7 +673,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         return kc;
     }
 
-    function calAccountKCInWholeCycle(uint256 factionId) internal returns (uint256) {
+    function calAccountKCInWholeCycle(uint256 factionId) internal view returns (uint256) {
         uint256 accountKC = calAllKcInWholeCycle(factionId, _accountFactionStatus[msg.sender][factionId]._stakeAmount);
         if (_factionStatus[factionId]._captain == msg.sender) {
             accountKC = accountKC + _captionKC;
@@ -682,8 +682,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function calAllKcInWholeCycle(uint256 factionId, mapping(uint256 => uint256) storage stakeAmount)
-        internal
-        view
+        internal view
         returns (uint256)
     {
         uint256 kcRation = _factionStatus[factionId]._kcAddRatio;
@@ -696,10 +695,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function calFactionAllKc(uint256 factionId) internal view returns (uint256) {
         uint256 kc;
-        mapping(uint256 => uint256) storage stakeAmount = _factionStatus[factionId]._stakeAmount;
         for (uint256 i; i < _depositTokenSort; i++) {
-            if (stakeAmount[i] > 0)
-                kc += calKc(_factionStatus[factionId]._kcAddRatio, (stakeAmount[i] * _tokenFactor[i]) / _BASE);
+            if (_factionStatus[factionId]._stakeAmount[i] > 0)
+                kc += calKc(_factionStatus[factionId]._kcAddRatio, (_factionStatus[factionId]._stakeAmount[i] * _tokenFactor[i]) / _BASE);
         }
         return kc;
     }
@@ -714,15 +712,18 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _chapterStatus[_chapter + 1]._nftFactionInterest += amount;
     }
 
-    function getFactionList() public view override returns (FactionListVO[] memory listVo) {
+    function getFactionList() public view override returns (FactionListVO[] memory) {
         uint256 time = getTimestamp();
         bool isFireDay = false;
         if (_chapterStatus[_chapter]._startTime + _dayTime >= time) isFireDay = true;
 
+        
         FactionListVO[] memory listVo = new FactionListVO[](_nextFactionId - 1);
         for (uint256 i = 1; i < _nextFactionId; i++) {
             listVo[i - 1] = generateFactionData(i, isFireDay);
         }
+        
+        return listVo;
     }
 
     function generateFactionData(uint256 factionId, bool isFireDay) internal view returns (FactionListVO memory) {
@@ -795,6 +796,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function version() public pure returns (uint256) {
-        return 1;
+        return 2;
     }
 }
