@@ -12,14 +12,14 @@ import { farmContract } from '~/utils/contract';
 
   const tx = await farm.addPool(
     100, // allocation point
-    '0xDfb1211E2694193df5765d54350e1145FD2404A1', //zeroAddress(), // tokenAddress
-    330 * 10000,  // price
-    '0xf9d32C5E10Dd51511894b360e6bD39D7573450F9', // vault
-    '0xf9d32c5e10dd51511894b360e6bd39d7573450f9', // ibBNB
+    '0x0266693F9Df932aD7dA8a9b44C2129Ce8a87E81f', // tokenAddress
+    1 * 10000,  // price
+    '0xe5ed8148fE4915cE857FC648b9BdEF8Bb9491Fa5', // vault
+    '0xe5ed8148fE4915cE857FC648b9BdEF8Bb9491Fa5', // ibBUSD
     '0xac2fefDaF83285EA016BE3f5f1fb039eb800F43D', // fairLaunch
-    1,  // fairLaunch pid
-    true, // native
-    "BNB-pool" // name
+    3,  // fairLaunch pid
+    false, // native
+    "BUSD-pool" // name
   );
 
   console.log(tx.hash);
