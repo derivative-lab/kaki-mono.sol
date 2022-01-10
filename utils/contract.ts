@@ -69,6 +69,10 @@ export const mutiContractAddrs = {
     squidAllowList: '0x390B7384dc96a5728BB08D2e864549b2dee64549',
     // squidAllowList: '0x43bd49e5ad1173874ca5eb714858ec2af08d6e87',
     squidOpenBox: '0x67bab7f7dcde65738ef3db51e4148df1e5108354',
+    chainlinkRandoms: '0xDfd77b646ea6480eea4dA7abca6C74053d8D9753',
+    mysteryBox: '0x2C41Da303DE2B3c97ECc9CE2698888D9f4DdFa82',
+    kakiCaptain: '0x435bF64d558fA9f17d789b50762463e982B35A81',
+    captainClaim: '0xE2DE8f197E4745d48befB0f4cEc6986bF67D30c5',
   }
 };
 

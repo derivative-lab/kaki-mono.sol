@@ -741,7 +741,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 _factionStatus[factionId]._chapterKC[_chapter - 1];
             vo._totalkc = _factionStatus[factionId]._totalChapterKC[_chapter - 1];
         } else {
-            vo._totalkc = _factionStatus[factionId]._totalChapterKC[_chapter];
+            vo._totalkc = _factionStatus[factionId]._chapterKC[_chapter];
         }
         for (uint256 i; i < _depositTokenSort; i++) {
             vo._stakeAmount[i] = _factionStatus[factionId]._stakeAmount[i];
