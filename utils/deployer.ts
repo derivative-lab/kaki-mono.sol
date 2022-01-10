@@ -1,5 +1,3 @@
-import { IClaimLock } from './../typechain/IClaimLock.d';
-import { IKakiGarden } from './../typechain/IKakiGarden.d';
 import { IKakiCaptain } from './../typechain/IKakiCaptain.d';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { ethers, upgrades, deployments } from 'hardhat';
@@ -33,11 +31,11 @@ import {
   CaptainClaim__factory,
   MysteryBox,
   MysteryBox__factory,
-  MockFarm,
-  MockFarm__factory,
-} from '~/typechain';
+  ChainlinkRandoms__factory,
 
-import { getSigner } from '~/utils/contract';
+} from '~/typechain';
+import chalk from 'chalk';
+import { getSigner, getSigner } from '~/utils/contract';
 import { parseEther } from 'ethers/lib/utils';
 
 export async function deployMockChainLink() {
@@ -220,26 +218,16 @@ export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiC
   return instance as BlindBox;
 }
 
-export async function deployMockFarm() {
-  const signer = await getSigner(0);
-  const factory = new MockFarm__factory(signer);
-  const instance = await factory.deploy(); 
-  await instance.deployed();
-  console.log(`mockFarm deployed to: ${instance.address}`);
-  return instance as MockFarm;
-}
+// export async function deployClaimLock(farm: , trading: , kaki: IKaki, pool) {
+//   const signer0 = await getSigner(0);
+//   const args: Parameters<ClaimLock['initialize']> = [
 
-export async function deployClaimLock(farm: MockFarm, kaki: IERC20) {
-  const signer0 = await getSigner(0);
-  const args: Parameters<ClaimLock['initialize']> = [
-    farm.address,
-    kaki.address
-  ];
-  const factory = new ClaimLock__factory(signer0);
-  const instance = await upgrades.deployProxy(factory, args);
-  console.log(`blindBox deployed to : ${instance.address}`);
-  return instance as ClaimLock;
-}
+//   ];
+//   const factory = new ClaimLock__factory(signer0);
+//   const instance = await upgrades.deployProxy(factory, args);
+//   console.log(`blindBox deployed to : ${instance.address}`);
+//   return instance as ClaimLock;
+// }
 
 export async function deployAll() {
   // const usdt = await deployMockUsdt();
@@ -264,10 +252,27 @@ export async function deployAll() {
   const mysteryBox = await deployMysteryBox();
   const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox, chainlink);
   const blindBox = await deployBlindBox(kakiTicket, usdt, kakiCaptain, chainlink);
-  const mockFarm = await deployMockFarm();
-  const claimLock = await deployClaimLock(mockFarm, usdt);
 
-  
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox };
+}
 
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox, mockFarm, claimLock};
+
+export async function deployChainlinkRandoms() {
+  const linkToken = "0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06";
+  const vrfCoordinator = "0xa555fC018435bef5A13C6c6870a9d4C11DEC329C";
+  const keyHash =
+    "0xcaf3c3727e033261d383b315559476f48034c13b18f8cafed4d871abe5049186";
+  const fee = ethers.utils.parseEther("0.1");
+
+  const singer = await getSigner(0);
+  const factory = new ChainlinkRandoms__factory(singer);
+  const instance = await factory.deploy(
+    linkToken,
+    vrfCoordinator,
+    keyHash,
+    fee
+  );
+  console.log(`ChainlinkRandoms deployed to ${chalk.green(instance.address)}`);
+  await instance.deployed();
+  return instance;
 }
