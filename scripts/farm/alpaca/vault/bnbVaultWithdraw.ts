@@ -18,12 +18,9 @@ import { parseEther } from 'ethers/lib/utils';
   console.log(await ibBnb.totalSupply());
   console.log(await ibBnb.decimals());
 
-  const token = await vault.token();
-  console.log('valt token', token);
-
 
   const v = parseEther('0.001');
-  const tx2 = await vault.deposit(v, { value: v, });
+  const tx2 = await vault.withdraw(v);
 
   console.log(tx2.hash)
 }
