@@ -162,6 +162,10 @@ contract CaptainClaim is ICaptainClaim, WithRandom, WithAdminRole {
         require(success, "! safe transfer bnb");
     }
 
+    function setMysteryAdd(IMysteryBox newMybox) public onlyOwner {
+        _mysBox = newMybox;
+    }
+
     function version() public pure returns (uint256) {
         return 9;
     }
