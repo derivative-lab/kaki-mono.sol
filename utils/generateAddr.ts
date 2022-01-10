@@ -9,6 +9,7 @@ import {
   keccak256,
   generateAddress2,
   Address,
+  privateToPublic,
 } from "ethereumjs-util";
 import { BigNumber, BigNumberish } from "ethers";
 import BN from "bn.js";
@@ -41,8 +42,9 @@ export function deriveKeyFromMnemonicAndPath(
 
 export function deriveAccount(mnemonic: string, index: BigNumberish) {
   const pk = <Buffer>deriveKeyFromMnemonicAndIndex(mnemonic, Number(index));
+  const publicKey = privateToPublic(pk);
   const address = bufferToHex(privateToAddress(pk)).toLowerCase();
-  return { address, index };
+  return { address, index, privateKey: bufferToHex(pk), publicKey: bufferToHex(publicKey) };
 }
 
 export function choseContractAddress(mnemonic: string) {
