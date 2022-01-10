@@ -35,7 +35,7 @@ import {
 
 } from '~/typechain';
 import chalk from 'chalk';
-import { getSigner, getSigner } from '~/utils/contract';
+import { getSigner} from '~/utils/contract';
 import { parseEther } from 'ethers/lib/utils';
 
 export async function deployMockChainLink() {
@@ -95,7 +95,7 @@ export async function deployKakiCaptain() {
 export async function deployMysteryBox() {
   const signer = await getSigner(0);
   const factory = new MysteryBox__factory(signer);
-  const instance = await factory.deploy("https://ipfs.io/ipfs/QmbgMfXVThUP2s8vFeUD7AXQmqASSBG5bkqosf7XCFrMP1?filename=KakiSeedBox.json");
+  const instance = await factory.deploy("https://ipfs.fleek.co/ipfs/QmUYZRw647x7zKqtAzKjeyfQt24v9sasuEeJVYrioxaD4t/KakiSeedBox.json");
   await instance.deployed();
   console.log(`MysteryBox deployed to: ${instance.address}`);
   return instance as MysteryBox;
