@@ -12,6 +12,7 @@ import {IFairLaunch} from "../interfaces/IFairLaunch.sol";
 
 import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "../libraries/SafeToken.sol";
 
 contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, PausableUpgradeable {
     using SafeERC20Upgradeable for IERC20;
@@ -166,8 +167,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         uint256 realWithdraw;
         if (poolInfo.isNative) {
             realWithdraw = MathUpgradeable.min(address(this).balance, amount);
-            (bool success, bytes memory data) = msg.sender.call{value: realWithdraw}("");
-            require(success, "withdraw coin failed");
+            SafeToken.safeTransferETH(msg.sender, realWithdraw);
         } else {
             IERC20 token = poolInfo.token;
             realWithdraw = MathUpgradeable.min(token.balanceOf(address(this)), amount);
@@ -240,6 +240,10 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
 
     function poolApr(uint256 pid) public view override returns (uint256) {
         PoolInfo memory pool = _poolInfo[pid];
+        if (pool.stakingAmount == 0) {
+            return 0;
+        }
+
         return
             (((_rewardPerBlock * _oneDayBlocks * pool.allocPoint) / _totalAllocPoint) *
                 _rewardTokenPrice *
@@ -248,6 +252,6 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     }
 
     function version() public pure returns (uint256) {
-        return 13;
+        return 14;
     }
 }

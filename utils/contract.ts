@@ -60,6 +60,7 @@ export const mutiContractAddrs = {
     claimLock: '0x504DC2CcA9B3BBa98295840D2185ae062939c093',
     kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
     noLoss:'0xAf51552EcF7F26428679195c66F5da4c914886e7',
+    kakiBusdLP: '0x2638708361adb219c9d4e8cee5e9753b2bb53f47',
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
