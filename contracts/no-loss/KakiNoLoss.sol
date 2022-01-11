@@ -517,8 +517,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             (_chapterStatus[_chapter]._startTime) + _dayTime <= uint256(time) &&
             _poolState[_chapter][_lastRound]._call == 0 &&
             _poolState[_chapter][_lastRound]._put == 0 &&
-            _poolState[_chapter][_lastRound-1]._call == 0 &&
-            _poolState[_chapter][_lastRound-1]._put == 0 
+            _poolState[_chapter][_lastRound - 1]._call == 0 &&
+            _poolState[_chapter][_lastRound - 1]._put == 0
         ) {
             _chapterStatus[_chapter]._isEnd = true;
             if (_chapterStatus[_chapter]._winnerKC == 0) {
@@ -806,7 +806,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             uint256
         )
     {
-        uint256 lastTotalFire = _poolState[_chapter][_lastRound-1]._call + _poolState[_chapter][_lastRound-1]._put;
+        uint256 lastTotalFire;
+        if (_lastRound > 0)
+            lastTotalFire = _poolState[_chapter][_lastRound - 1]._call + _poolState[_chapter][_lastRound - 1]._put;
         uint256 totalFire = _poolState[_chapter][_lastRound]._call + _poolState[_chapter][_lastRound]._put;
         return (
             block.timestamp,
