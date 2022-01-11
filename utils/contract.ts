@@ -140,6 +140,9 @@ export const contractAddress = {
   get noLoss() {
     return getItem('noLoss');
   },
+  get kakiBusdLP(){
+    return getItem('kakiBusdLP');
+  },
 };
 
 function getItem(key: string) {
