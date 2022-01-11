@@ -117,7 +117,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     ) public initializer {
         __WithAdminRole_init();
 
-        _weekTime = 30 minutes; // 1 weeks; // oneweek = 40320 15min = 60 1day1h = 6000 30min = 120 15s/block 1week = 604800 30min = 1800
+        _weekTime = 40 minutes; // 1 weeks; // oneweek = 40320 15min = 60 1day1h = 6000 30min = 120 15s/block 1week = 604800 30min = 1800
         _dayTime = 25 minutes; //1 days; // oneday = 5760 10min = 40 25min = 100 15s/block 1day = 86400 25min = 1500
         _roundTime = 5 minutes; // 2min = 8 5min = 20 15s/Block 5min = 300
         _tradingTime = 3 minutes; // 1.5min = 6 3min = 12 15s/Block 3min = 180
@@ -516,7 +516,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (
             (_chapterStatus[_chapter]._startTime) + _dayTime <= uint256(time) &&
             _poolState[_chapter][_lastRound]._call == 0 &&
-            _poolState[_chapter][_lastRound]._put == 0
+            _poolState[_chapter][_lastRound]._put == 0 &&
+            _poolState[_chapter][_lastRound-1]._call == 0 &&
+            _poolState[_chapter][_lastRound-1]._put == 0 
         ) {
             _chapterStatus[_chapter]._isEnd = true;
             if (_chapterStatus[_chapter]._winnerKC == 0) {
@@ -800,9 +802,11 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             uint256,
             bool,
             uint256,
+            uint256,
             uint256
         )
     {
+        uint256 lastTotalFire = _poolState[_chapter][_lastRound-1]._call + _poolState[_chapter][_lastRound-1]._put;
         uint256 totalFire = _poolState[_chapter][_lastRound]._call + _poolState[_chapter][_lastRound]._put;
         return (
             block.timestamp,
@@ -811,6 +815,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             _chapterStatus[_chapter]._startTime,
             _chapterStatus[_chapter]._isEnd,
             _chapterStatus[_chapter]._roundStartTime[_lastRound],
+            lastTotalFire,
             totalFire
         );
     }
@@ -824,6 +829,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function version() public pure returns (uint256) {
-        return 4;
+        return 5;
     }
 }
