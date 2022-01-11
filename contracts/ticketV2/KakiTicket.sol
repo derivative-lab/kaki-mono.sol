@@ -8,6 +8,7 @@ contract KakiTicket is IKakiTicket, BaseERC721 {
 
     function initialize() public initializer{
         __BaseERC721_init("KAKI Squid Ticket", "KST");
+        increaceTokenId();
     }
 
     function mint(
