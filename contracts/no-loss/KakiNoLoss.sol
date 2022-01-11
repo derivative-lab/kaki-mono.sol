@@ -790,9 +790,30 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         }
     }
 
-    function getDataForRobot() public view returns (uint256,uint256,uint256,uint256,bool,uint256) {
-        return (block.timestamp,_chapter,_lastRound,_chapterStatus[_chapter]._startTime,_chapterStatus[_chapter]._isEnd,_chapterStatus[_chapter]._roundStartTime[_lastRound]);
-    } 
+    function getDataForRobot()
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            bool,
+            uint256,
+            uint256
+        )
+    {
+        uint256 totalFire = _poolState[_chapter][_lastRound]._call + _poolState[_chapter][_lastRound]._put;
+        return (
+            block.timestamp,
+            _chapter,
+            _lastRound,
+            _chapterStatus[_chapter]._startTime,
+            _chapterStatus[_chapter]._isEnd,
+            _chapterStatus[_chapter]._roundStartTime[_lastRound],
+            totalFire
+        );
+    }
 
     /*
      * Get current time
@@ -803,6 +824,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function version() public pure returns (uint256) {
-        return 3;
+        return 4;
     }
 }
