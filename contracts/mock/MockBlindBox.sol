@@ -7,7 +7,7 @@ import "../interfaces/IKakiTicket.sol";
 import "../interfaces/IKakiCaptain.sol";
 import "../interfaces/IBlindBox.sol";
 
-contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
+contract BlindBox is WithAdminRole, WithRandom {
 
     IERC20 _kaki;
     IKakiTicket _kakiTicket;
@@ -70,10 +70,9 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
         _kaki.transferFrom(msg.sender, _squidCoinBase, _aPrice);
         uint256 rand = random(5, 15);
         _kakiTicket.mint(msg.sender, _commonChip, rand, _aPrice, 0);
-        emit BuyABox(msg.sender);
     }
 
-    function bBoxOpen() public override isAble {
+    function bBoxOpen(uint256 _randTicket, uint256) public isAble {
         _kaki.transferFrom(msg.sender, _squidCoinBase, _bPrice);
         uint256 randTicket = random(1, 100);
         uint256 rand = random(0, 10);
