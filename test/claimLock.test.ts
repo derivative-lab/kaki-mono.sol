@@ -34,10 +34,10 @@ describe('lock', async () => {
             await claimLock.setTradingAdd(users[0].address);
             let a = await claimLock.getFarmAccInfo(users[0].address);
             console.log("aaaaaaaaa",a)
-            let b = await claimLock.getClaimableFarmReward(users[0].address, 0);
-            console.log("bbbbbbbbbb", b);
-            await claimLock.claimFarmReward([0]);
-            console.log("ccccccccccccccc");
+            // let b = await claimLock.getClaimableFarmReward(users[0].address, 0);
+            // console.log("bbbbbbbbbb", b);
+            // await claimLock.claimFarmReward([0]);
+            // console.log("ccccccccccccccc");
         });
     });
 });
