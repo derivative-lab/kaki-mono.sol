@@ -29,6 +29,15 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
     address constant BlackHole = 0x0000000000000000000000000000000000000000;
     mapping(uint256 => uint256) _sTicketCount;
 
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes memory
+    ) public virtual returns (bytes4) {
+        return this.onERC721Received.selector;
+    }
+
     function initialize(IKakiTicket ercAdd, IERC20 kTokenAdd, IKakiCaptain capAdd, IRandoms radomAdd) public initializer {
         __WithAdminRole_init();
         __WithRandom_init(radomAdd);
@@ -117,6 +126,7 @@ contract BlindBox is WithAdminRole, IBlindBox, WithRandom {
     function setSTicketProb(uint256 newProb) public onlyOwner {
         _sTicketProb = newProb;
     }
+    
     function setABoxPrice(uint256 aPrice) public onlyOwner {
         _aPrice = aPrice;
     }
