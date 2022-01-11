@@ -95,7 +95,7 @@ contract ClaimLock is IClaimLock, WithAdminRole {
         lockedReward = _userLockedFarmRewards[account];
         claimableReward = new uint256[](lockedReward.length);
         for(uint256 i = 0; i < _userLockedFarmRewards[account].length; i++) {
-            claimableReward[i] = getClaimableFarmReward(msg.sender, i);
+            claimableReward[i] = getClaimableFarmReward(account, i);
         }
     }
     
@@ -140,7 +140,7 @@ contract ClaimLock is IClaimLock, WithAdminRole {
     }
 
     function version() public pure returns (uint256) {
-        return 2;
+        return 3;
     }
 
 }
