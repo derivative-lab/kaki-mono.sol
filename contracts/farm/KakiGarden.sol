@@ -150,7 +150,8 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
 
     function _withdraw(uint256 pid, uint256 amount) internal {
         require(amount > 0, "amount cannot be zero");
-        UserInfo storage user = _userInfo[pid][msg.sender];
+        address userAddr = msg.sender;
+        UserInfo storage user = _userInfo[pid][userAddr];
         require(user.amount >= amount, "out of balance");
         _harvest(pid);
         PoolInfo storage poolInfo = _poolInfo[pid];
@@ -167,16 +168,16 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         uint256 realWithdraw;
         if (poolInfo.isNative) {
             realWithdraw = MathUpgradeable.min(address(this).balance, amount);
-            SafeToken.safeTransferETH(msg.sender, realWithdraw);
+            SafeToken.safeTransferETH(userAddr, realWithdraw);
         } else {
             IERC20 token = poolInfo.token;
             realWithdraw = MathUpgradeable.min(token.balanceOf(address(this)), amount);
-            token.safeTransfer(msg.sender, realWithdraw);
+            token.safeTransfer(userAddr, realWithdraw);
         }
-        poolInfo.debtToken.burn(msg.sender, amount);
+        poolInfo.debtToken.burn(userAddr, amount);
         user.amount -= amount;
         poolInfo.stakingAmount -= amount;
-        emit Withdraw(msg.sender, pid, amount);
+        emit Withdraw(userAddr, pid, amount);
     }
 
     function harvest(uint256 pid) public override nonReentrant whenNotPaused {
@@ -185,7 +186,6 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
 
     function _harvest(uint256 pid) internal {
         uint256 rAmount = onlyHarvest(pid);
-
         if (rAmount > 0) {
             _rewardLocker.lockFarmReward(msg.sender, rAmount);
         }
