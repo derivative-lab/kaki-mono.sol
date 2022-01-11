@@ -34,7 +34,9 @@ describe('noloss game', async () => {
     }
 
     await noLoss.createFaction(0);
-    await network.provider.send("evm_increaseTime", [24 * 60 * 60]);
+    let list=await noLoss.getFactionList();
+  
+    /*await network.provider.send("evm_increaseTime", [24 * 60 * 60]);
     await noLoss.addStake(1,1,parseEther('150'));
     await network.provider.send("evm_increaseTime", [6 * 24 * 60 * 60]);
     await noLoss.addBonus(parseEther('100'));
