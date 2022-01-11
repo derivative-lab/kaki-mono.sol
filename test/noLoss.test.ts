@@ -33,13 +33,17 @@
 //       }
 //     }
 
-//     await noLoss.createFaction(0);
-//     await network.provider.send("evm_increaseTime", [24 * 60 * 60]);
-//     await noLoss.addStake(1,1,parseEther('150'));
-//     await network.provider.send("evm_increaseTime", [6 * 24 * 60 * 60]);
-//     await noLoss.addBonus(parseEther('100'));
-//     await noLoss.addLoot();
-//     console.log('addLoot1');
+
+/*    await noLoss.createFaction(0);
+    let list=await noLoss.getFactionList();
+  
+    /*await network.provider.send("evm_increaseTime", [24 * 60 * 60]);
+    await noLoss.addStake(1,1,parseEther('150'));
+    await network.provider.send("evm_increaseTime", [6 * 24 * 60 * 60]);
+    await noLoss.addBonus(parseEther('100'));
+    await noLoss.addLoot();
+    console.log('addLoot1');
+
 
 //     const kc0 = await noLoss.getChapterKC(1); 
 //     console.log('kc:*********2', kc0.toString());
