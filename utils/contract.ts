@@ -61,7 +61,7 @@ export const mutiContractAddrs = {
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
     claimLock: '0x504DC2CcA9B3BBa98295840D2185ae062939c093',
     kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
-    noLoss:'0x7FC5Ea51Efcc150b3acb81AC1909D268507ef92E',
+    noLoss:'0xbeaEcc3C5B5CA7f856Fb43256f991977699674ef',
     kakiBusdLP: '0x2638708361adb219c9d4e8cee5e9753b2bb53f47',
   },
   bsc: {
