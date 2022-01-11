@@ -2,7 +2,7 @@ import { ChainlinkRandoms } from './../typechain/ChainlinkRandoms.d';
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
 import { BlindBox, KakiCaptain__factory, KakiGarden__factory, KakiTicket, MysteryBox__factory } from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
-import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory, Kaki__factory, ClaimLock__factory,KakiNoLoss__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory, Kaki__factory, ClaimLock__factory,KakiNoLoss,KakiNoLoss__factory } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -22,7 +22,8 @@ export const frontendUsedContracts = [
   "IBaseERC721",
   "AddressList",
   "IKakiTicket",
-  "IBlindBox"
+  "IBlindBox",
+  "KakiNoLoss",
 ];
 
 export const webToolsContractNames = [
@@ -32,6 +33,7 @@ export const webToolsContractNames = [
   'AddressList',
   'CaptainClaim',
   'KakiGarden',
+  "KakiNoLoss",
 ]
 
 export const mutiContractAddrs = {
@@ -59,7 +61,7 @@ export const mutiContractAddrs = {
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
     claimLock: '0x504DC2CcA9B3BBa98295840D2185ae062939c093',
     kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
-    noLoss:'0xAf51552EcF7F26428679195c66F5da4c914886e7',
+    noLoss:'0xbeaEcc3C5B5CA7f856Fb43256f991977699674ef',
     kakiBusdLP: '0x2638708361adb219c9d4e8cee5e9753b2bb53f47',
   },
   bsc: {
@@ -137,6 +139,9 @@ export const contractAddress = {
   },
   get noLoss() {
     return getItem('noLoss');
+  },
+  get kakiBusdLP(){
+    return getItem('kakiBusdLP');
   },
 };
 
