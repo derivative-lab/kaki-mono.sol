@@ -4,6 +4,6 @@ import { formatEther } from 'ethers/lib/utils'
 
 (async () => {
   const claimlock = await claimLockContract();
-  let a = await claimlock.getClaimableFarmReward("0xebb594b4e7afc089a061434e21ce3a6e4edbc5d1",3);
+  let a = await claimlock.getFarmAccInfo("0x0536FeBA0B99E770943B600746d6271a9D792702");
   console.log(a);
 })();
