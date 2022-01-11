@@ -117,8 +117,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     ) public initializer {
         __WithAdminRole_init();
 
-        _weekTime =30 minutes;// 1 weeks; // oneweek = 40320 15min = 60 1day1h = 6000 30min = 120 15s/block 1week = 604800 30min = 1800
-        _dayTime = 25 minutes;//1 days; // oneday = 5760 10min = 40 25min = 100 15s/block 1day = 86400 25min = 1500
+        _weekTime = 30 minutes; // 1 weeks; // oneweek = 40320 15min = 60 1day1h = 6000 30min = 120 15s/block 1week = 604800 30min = 1800
+        _dayTime = 25 minutes; //1 days; // oneday = 5760 10min = 40 25min = 100 15s/block 1day = 86400 25min = 1500
         _roundTime = 5 minutes; // 2min = 8 5min = 20 15s/Block 5min = 300
         _tradingTime = 3 minutes; // 1.5min = 6 3min = 12 15s/Block 3min = 180
         _captionKAKI = 2020 ether;
@@ -682,7 +682,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function calAllKcInWholeCycle(uint256 factionId, mapping(uint256 => uint256) storage stakeAmount)
-        internal view
+        internal
+        view
         returns (uint256)
     {
         uint256 kcRation = _factionStatus[factionId]._kcAddRatio;
@@ -697,7 +698,10 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 kc;
         for (uint256 i; i < _depositTokenSort; i++) {
             if (_factionStatus[factionId]._stakeAmount[i] > 0)
-                kc += calKc(_factionStatus[factionId]._kcAddRatio, (_factionStatus[factionId]._stakeAmount[i] * _tokenFactor[i]) / _BASE);
+                kc += calKc(
+                    _factionStatus[factionId]._kcAddRatio,
+                    (_factionStatus[factionId]._stakeAmount[i] * _tokenFactor[i]) / _BASE
+                );
         }
         return kc;
     }
@@ -717,12 +721,11 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         bool isFireDay = false;
         if (_chapterStatus[_chapter]._startTime + _dayTime >= time) isFireDay = true;
 
-        
         FactionListVO[] memory listVo = new FactionListVO[](_nextFactionId - 1);
         for (uint256 i = 1; i < _nextFactionId; i++) {
             listVo[i - 1] = generateFactionData(i, isFireDay);
         }
-        
+
         return listVo;
     }
 
@@ -786,6 +789,10 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             stakeArr[i] = (_factionStatus[factionId]._stakeAmount[i]);
         }
     }
+
+    function getDataForRobot() public view returns (uint256,uint256,uint256,uint256,bool,uint256) {
+        return (block.timestamp,_chapter,_lastRound,_chapterStatus[_chapter]._startTime,_chapterStatus[_chapter]._isEnd,_chapterStatus[_chapter]._roundStartTime[_lastRound]);
+    } 
 
     /*
      * Get current time
