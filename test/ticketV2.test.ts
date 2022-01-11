@@ -33,9 +33,9 @@ describe('blindBox', async () => {
             await kakiTicket.setupAdmin(blindBox.address);
             await usdt.transfer(users[0].address, parseEther('10000'));
             await usdt.approve(blindBox.address, parseEther(`1${'0'.repeat(20)}`))
-            // await blindBox.aBoxOpen();
-            // let balanceOfUser = (await kakiTicket.balanceOf(users[0].address));
-            // expect(balanceOfUser).to.equal(1);
+            await blindBox.aBoxOpen();
+            let balanceOfUser = (await kakiTicket.balanceOf(users[0].address));
+            expect(balanceOfUser).to.equal(1);
         })
 
         it('buy bbox', async () => {
@@ -43,9 +43,19 @@ describe('blindBox', async () => {
             await kakiTicket.setupAdmin(blindBox.address);
             await usdt.transfer(users[0].address, parseEther('10000'));
             await usdt.approve(blindBox.address, parseEther(`1${'0'.repeat(20)}`))
-            // await blindBox.bBoxOpen();
-            // let balanceOfUser = (await kakiTicket.balanceOf(users[0].address));
-            // expect(balanceOfUser).to.equal(1);
+            await blindBox.bBoxOpen();
+            let balanceOfUser = (await kakiTicket.balanceOf(users[0].address));
+            expect(balanceOfUser).to.equal(1);
+        })
+
+        it('combine success', async () => {
+            const { users, blindBox, usdt, kakiTicket} = await setup();
+            await kakiTicket.setupAdmin(blindBox.address);
+            await usdt.transfer(users[0].address, parseEther('10000'));
+            await usdt.approve(blindBox.address, parseEther(`1${'0'.repeat(20)}`))
+            await blindBox.bBoxOpen();
+            let balanceOfUser = (await kakiTicket.balanceOf(users[0].address));
+            expect(balanceOfUser).to.equal(1);
         })
     })
 
@@ -60,25 +70,18 @@ describe('blindBox', async () => {
             await expect(users[0].blindBox.bBoxOpen(), 'bBox open is not able.').revertedWith("Lock is enabled.");
         })
 
-        it('aBoxOpen do not have enough kaki', async () => {
-            const { users, blindBox, usdt ,ticket, allowClaimTicket} = await setup();
-            await ticket.setupAdmin(blindBox.address);
-            await users[1].usdt.approve(blindBox.address, parseEther(`1${'0'.repeat(20)}`));
-            await expect(users[1].blindBox.aBoxOpen(), 'aBoxOpen do not have enough kaki').revertedWith("Do not have enough kaki token.");
-        })
-
-        it('bBoxOpen do not have enough kaki', async () => {
-            const { users, blindBox, usdt ,ticket, allowClaimTicket} = await setup();
-            await ticket.setupAdmin(blindBox.address);
-            await users[1].usdt.approve(blindBox.address, parseEther(`1${'0'.repeat(20)}`));
-            await expect(users[1].blindBox.bBoxOpen(), 'aBoxOpen do not have enough kaki').revertedWith("Do not have enough kaki token.");
-        })
-
-        it('combine', async () => {
+        it('combine invalid number of cap', async () => {
             const { users, blindBox, usdt ,ticket, allowClaimTicket} = await setup();
             await ticket.setupAdmin(blindBox.address);
             await users[1].usdt.approve(blindBox.address, parseEther(`1${'0'.repeat(20)}`));
             await expect(users[1].blindBox.combine([1,2,3], [1,2,3,4]), 'invalid number of captain').revertedWith("Invalid number of captain.");
+        })
+
+        it('combine not nft owner', async () => {
+            const { users, blindBox, usdt ,ticket, allowClaimTicket} = await setup();
+            await ticket.setupAdmin(blindBox.address);
+            await users[1].usdt.approve(blindBox.address, parseEther(`1${'0'.repeat(20)}`));
+            await expect(users[1].blindBox.combine([1,2,3], []), 'Not NFT owner.').revertedWith("Not NFT owner.");
         })
     })
 })
