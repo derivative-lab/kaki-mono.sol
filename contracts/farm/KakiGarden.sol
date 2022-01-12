@@ -129,7 +129,6 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
                 fairLaunch.deposit(address(this), poolInfo.flPid, poolInfo.ibToken.balanceOf(address(this)));
             }
         }
-
         user.amount += amount;
         poolInfo.stakingAmount += amount;
         poolInfo.debtToken.mint(msg.sender, amount);
@@ -161,7 +160,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         PoolInfo storage poolInfo = _poolInfo[pid];
         if (address(poolInfo.vault) != address(0)) {
             IVault vault = poolInfo.vault;
-            uint256 tokenAmount = (amount * vault.totalToken()) / vault.totalSupply();
+            uint256 tokenAmount = (amount * vault.totalSupply()) / vault.totalToken();
             IFairLaunch fairLaunch = poolInfo.fairLaunch;
             if (address(fairLaunch) != address(0)) {
                 fairLaunch.withdraw(address(this), poolInfo.flPid, tokenAmount);
@@ -255,7 +254,13 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
                 10000) / (pool.stakingAmount * pool.price);
     }
 
+    function approve(IERC20 token, address spender) public restricted {
+        token.approve(spender, type(uint256).max);
+    }
+
+    receive() external payable {}
+
     function version() public pure returns (uint256) {
-        return 14;
+        return 24;
     }
 }
