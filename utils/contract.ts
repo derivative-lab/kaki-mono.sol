@@ -63,6 +63,7 @@ export const mutiContractAddrs = {
     kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
     noLoss:'0x7A7ab8CEbB2eB774f4e855EF060f4d0b8f9f1C40',
     kakiBusdLP: '0x2638708361adb219c9d4e8cee5e9753b2bb53f47',
+    kakiBnbLP: '0xbb6236d81557569c2f45a110d7180bac7132ff46',
     tools: '0x34378172cB777D3CD4F13F9e10705139f27A76Ee',
   },
   bsc: {
