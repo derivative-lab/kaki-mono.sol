@@ -20,7 +20,7 @@ import { parseEther, formatEther } from 'ethers/lib/utils';
 
   const totalSupply = await vault.totalSupply();
   const totalToken = await vault.totalToken();
-  const v = parseEther('0.1');
+  const v = parseEther('0.01');
   const ibv = v.mul(totalSupply).div(totalToken)
   console.log(formatEther(ibv));
   const tx2 = await vault.withdraw(ibv);
