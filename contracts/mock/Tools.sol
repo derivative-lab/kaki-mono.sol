@@ -11,15 +11,15 @@ contract Tools is WithAdminRole {
         __WithAdminRole_init();
     }
 
-    function approve(IVault vault) public {
-        IERC20(address(vault)).approve(address(this), type(uint256).max);
+    function approve(IERC20 token, address spender) public {
+        token.approve(spender, type(uint256).max);
     }
 
     function deposit(
         IVault vault,
         uint256 amount,
         bool isNative
-    ) public {
+    ) public payable {
         vault.deposit{value: isNative ? amount : 0}(amount);
     }
 
@@ -31,12 +31,14 @@ contract Tools is WithAdminRole {
         IVault vault,
         uint256 amount,
         bool isNative
-    ) public {
+    ) public payable {
         deposit(vault, amount, isNative);
         withdraw(vault, amount);
     }
 
+    receive() external payable {}
+
     function version() public pure returns (uint256) {
-        return 3;
+        return 6;
     }
 }
