@@ -76,7 +76,7 @@ contract KakiSquidGame is IKakiSquidGame, WithAdminRole, ReentrancyGuardUpgradea
         _nextGameTime = 1638442800; //2021-12-2 16:00:00
 
         _roundSum = 5; //5; //5round
-        _gameInterval = 3600; //8hour = 28800 35min =2100  13min=780 60分钟3600
+        _gameInterval = 3600; //8hour = 28800 35min =2100  13min=780 60min3600
         _roundTime = 5 * 60; //  5min = 300
         _tradingTime = 3 * 60; //  3min = 180
         _initChipNum = 16;
