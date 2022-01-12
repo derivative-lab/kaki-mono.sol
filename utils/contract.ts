@@ -53,7 +53,7 @@ export const mutiContractAddrs = {
     squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
     farm: '0x1bA1806e76054cE4CdFBe91f5E7ebBa9c5B23996',
-    kakiCaptain: '0xDD27E17476863bA2415023ACe2467A06406444f7',
+    kakiCaptain: '0x61E83D94f50b456b1d4e3E7Ccd39f402287CEb51',
     captainClaim: '0x3839bDA320D33338d2e7adBf75bc149206cd01f8',
     captainMintList: '',
     captainAllowList: '',
@@ -61,8 +61,9 @@ export const mutiContractAddrs = {
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
     claimLock: '0x504DC2CcA9B3BBa98295840D2185ae062939c093',
     kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
-    noLoss:'0x7A7ab8CEbB2eB774f4e855EF060f4d0b8f9f1C40',
+    noLoss:'0xc81CCa62FDF3C48EF483CE965CBe45673aF5C49b',
     kakiBusdLP: '0x2638708361adb219c9d4e8cee5e9753b2bb53f47',
+    kakiBnbLP: '0xbb6236d81557569c2f45a110d7180bac7132ff46',
     tools: '0x34378172cB777D3CD4F13F9e10705139f27A76Ee',
   },
   bsc: {
@@ -143,6 +144,9 @@ export const contractAddress = {
   },
   get kakiBusdLP(){
     return getItem('kakiBusdLP');
+  },
+  get kakiBnbLP(){
+    return getItem('kakiBnbLP');
   },
   get tools() {
     return getItem('tools');
