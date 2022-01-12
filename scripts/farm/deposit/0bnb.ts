@@ -16,7 +16,7 @@ import { IERC20__factory } from '~/typechain';
 
 
 
-  const v = parseEther('0.001');
+  const v = parseEther('0.1');
   const ov = { value: v }
   const tx = await farm.deposit(pid, v, ov);
   console.log(tx.hash)

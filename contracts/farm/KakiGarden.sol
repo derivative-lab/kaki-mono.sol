@@ -53,6 +53,10 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         _oneDayBlocks = oneDayBlocks;
     }
 
+    function setRewardTokenPrice(uint256 rewardTokenPrice) public restricted {
+        _rewardTokenPrice = rewardTokenPrice;
+    }
+
     function addPool(
         uint256 allocPoint,
         IERC20 token,

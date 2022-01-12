@@ -1,6 +1,6 @@
 import { farmContract, getSigner } from '~/utils/contract';
 import { printEtherResult } from '../../../utils/logutil';
-import { formatEther } from 'ethers/lib/utils';
+import { formatEther, parseEther } from 'ethers/lib/utils';
 import { IERC20__factory } from '~/typechain';
 
 (async () => {
@@ -9,7 +9,7 @@ import { IERC20__factory } from '~/typechain';
   const pid = 0;
   const user = await farm._userInfo(pid, signer.address);
   printEtherResult(user);
-  const tx = await farm.withdraw(pid, 1, { gasLimit: 1000000 });
+  const tx = await farm.withdraw(pid, parseEther('0.00001'), { gasLimit: 1000000 });
   console.log(tx.hash)
 
   const pool = await farm._poolInfo(pid);
