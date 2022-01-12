@@ -133,7 +133,6 @@ export async function deployKakiGarden(rewardPerBlock = parseEther('10'), startB
     startBlock = currentBlock + 10
 
   }
-
   const args: Parameters<KakiGarden["initialize"]> = [
     rewardPerBlock,
     startBlock
@@ -159,6 +158,7 @@ export async function deploySquidGame(ticket: Ticket, usdt: MockToken, chainlink
   await instance.deployed();
   return instance as KakiSquidGame;
 }
+
 export async function deployNoLoss(caption: KakiCaptain, kaki: MockToken, bnbToken: MockToken, busdToken: MockToken, kakiBNBToken: MockToken, kakiBUSDToken: MockToken, chainlink: MockChainLink) {
   const signer0 = await getSigner(0);
   const factory = new KakiNoLoss__factory(signer0);
@@ -239,7 +239,7 @@ export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiC
   return instance as BlindBox;
 }
 
-export async function deployMockBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiCap: KakiCaptain, chainlink: MockRandom) {
+export async function deployMockBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiCap: MockKakiCaptain, chainlink: MockRandom) {
   const signer0 = await getSigner(0);
   const args: Parameters<MockBlindBox['initialize']> = [
     kakiTicket.address,
@@ -299,13 +299,13 @@ export async function deployAll() {
   const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox, chainlink);
   const mockFarm = await deployMockFarm();
   const mockRand = await deployMockRandom();
-  const blindBox = await deployBlindBox(kakiTicket, usdt, mockKakiCaptain, mockRand);
-  const mockblindBox = await deployBlindBox(kakiTicket, usdt, mockKakiCaptain, mockRand);
-  const claimLock = await deployClaimLock(mockFarm, usdt);
+  const blindBox = await deployBlindBox(kakiTicket, usdt, kakiCaptain, mockRand);
+  const mockBlindBox = await deployMockBlindBox(kakiTicket, usdt, mockKakiCaptain, mockRand);
+  const claimLock = await deployClaimLock(mockFarm, usdt); 
 
   
 
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox, mockFarm, claimLock, mockKakiCaptain, mockRand};
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox, mockBlindBox, mockFarm, claimLock, mockKakiCaptain, mockRand};
 }
 
 
