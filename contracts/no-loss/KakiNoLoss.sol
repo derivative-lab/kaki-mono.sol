@@ -830,6 +830,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function version() public pure returns (uint256) {
-        return 6;
+        return 7;
     }
 }
