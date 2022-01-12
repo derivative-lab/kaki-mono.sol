@@ -740,9 +740,14 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         vo._totalBonus = _factionStatus[factionId]._totalBonus;
         vo._nftId = _factionStatus[factionId]._nftId;
         if (isFireDay) {
-            vo._usedkc =
-                _factionStatus[factionId]._totalChapterKC[_chapter - 1] -
-                _factionStatus[factionId]._chapterKC[_chapter - 1];
+            if (
+                _factionStatus[factionId]._totalChapterKC[_chapter - 1] >
+                _factionStatus[factionId]._chapterKC[_chapter - 1]
+            )
+                vo._usedkc =
+                    _factionStatus[factionId]._totalChapterKC[_chapter - 1] -
+                    _factionStatus[factionId]._chapterKC[_chapter - 1];
+
             vo._totalkc = _factionStatus[factionId]._totalChapterKC[_chapter - 1];
         } else {
             vo._totalkc = _factionStatus[factionId]._chapterKC[_chapter];
@@ -830,6 +835,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function version() public pure returns (uint256) {
-        return 7;
+        return 9;
     }
 }

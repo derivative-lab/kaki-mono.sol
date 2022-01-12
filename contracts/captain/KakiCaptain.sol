@@ -250,6 +250,6 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
     }
 
     function version() public pure returns (uint256) {
-        return 3;
+        return 4;
     }
 }
