@@ -53,7 +53,7 @@ export const mutiContractAddrs = {
     squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
     farm: '0x1bA1806e76054cE4CdFBe91f5E7ebBa9c5B23996',
-    kakiCaptain: '0xC3F8e0fBfd9b08b23b590611A9ef86F29777c48B',
+    kakiCaptain: '0xDD27E17476863bA2415023ACe2467A06406444f7',
     captainClaim: '0x3839bDA320D33338d2e7adBf75bc149206cd01f8',
     captainMintList: '',
     captainAllowList: '',
@@ -61,7 +61,7 @@ export const mutiContractAddrs = {
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
     claimLock: '0x504DC2CcA9B3BBa98295840D2185ae062939c093',
     kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
-    noLoss:'0xbeaEcc3C5B5CA7f856Fb43256f991977699674ef',
+    noLoss:'0x852667758D66e66A7E66474B18f70e48cCb8BA39',
     kakiBusdLP: '0x2638708361adb219c9d4e8cee5e9753b2bb53f47',
   },
   bsc: {
