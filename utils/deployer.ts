@@ -40,6 +40,8 @@ import {
   MockRandom__factory,
   MockKakiCaptain,
   MockKakiCaptain__factory,
+  MockBlindBox,
+  MockBlindBox__factory
 } from '~/typechain';
 
 import chalk from 'chalk';
@@ -237,6 +239,20 @@ export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiC
   return instance as BlindBox;
 }
 
+export async function deployMockBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiCap: KakiCaptain, chainlink: MockRandom) {
+  const signer0 = await getSigner(0);
+  const args: Parameters<MockBlindBox['initialize']> = [
+    kakiTicket.address,
+    busd.address,
+    kakiCap.address,
+    chainlink.address
+  ];
+  const factory = new MockBlindBox__factory(signer0);
+  const instance = await upgrades.deployProxy(factory, args);
+  console.log(`blindBox deployed to : ${instance.address}`);
+  return instance as MockBlindBox;
+}
+
 export async function deployMockFarm() {
   const signer = await getSigner(0);
   const factory = new MockFarm__factory(signer);
@@ -284,6 +300,7 @@ export async function deployAll() {
   const mockFarm = await deployMockFarm();
   const mockRand = await deployMockRandom();
   const blindBox = await deployBlindBox(kakiTicket, usdt, mockKakiCaptain, mockRand);
+  const mockblindBox = await deployBlindBox(kakiTicket, usdt, mockKakiCaptain, mockRand);
   const claimLock = await deployClaimLock(mockFarm, usdt);
 
   

@@ -5,9 +5,8 @@ import "../base/WithRandom.sol";
 import "../base/WithAdminRole.sol";
 import "../interfaces/IKakiTicket.sol";
 import "../interfaces/IKakiCaptain.sol";
-import "../interfaces/IBlindBox.sol";
 
-contract BlindBox is WithAdminRole, WithRandom {
+contract MockBlindBox is WithAdminRole, WithRandom {
 
     IERC20 _kaki;
     IKakiTicket _kakiTicket;
@@ -66,16 +65,16 @@ contract BlindBox is WithAdminRole, WithRandom {
         _;
     }
 
-    function aBoxOpen() public override isAble {
+    function aBoxOpen() public isAble {
         _kaki.transferFrom(msg.sender, _squidCoinBase, _aPrice);
         uint256 rand = random(5, 15);
         _kakiTicket.mint(msg.sender, _commonChip, rand, _aPrice, 0);
     }
 
-    function bBoxOpen(uint256 _randTicket, uint256) public isAble {
+    function bBoxOpen(uint256 _randTicket, uint256 _rand) public isAble {
         _kaki.transferFrom(msg.sender, _squidCoinBase, _bPrice);
-        uint256 randTicket = random(1, 100);
-        uint256 rand = random(0, 10);
+        uint256 randTicket = _randTicket;
+        uint256 rand = _rand;
 
         if (randTicket <= 80) {
             _kakiTicket.mint(msg.sender, _commonChip, rand + 5, _aPrice, 0);
@@ -87,7 +86,7 @@ contract BlindBox is WithAdminRole, WithRandom {
         }
     }
 
-    function combine(uint256[3] memory ticket, uint256[] memory extraCap) public override isAble onlyNoneContract {
+    function combine(uint256[3] memory ticket, uint256[] memory extraCap) public isAble onlyNoneContract {
         require(extraCap.length <= 3, "Invalid number of captain.");
 
         uint256 totalChip;
