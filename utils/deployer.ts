@@ -225,7 +225,7 @@ export async function deployMockRandom() {
   return instance as MockRandom;
 }
 
-export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiCap: KakiCaptain, chainlink: MockRandom) {
+export async function deployBlindBox(kakiTicket: KakiTicket, busd: IERC20, kakiCap: MockKakiCaptain, chainlink: MockRandom) {
   const signer0 = await getSigner(0);
   const args: Parameters<BlindBox['initialize']> = [
     kakiTicket.address,
@@ -299,7 +299,7 @@ export async function deployAll() {
   const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox, chainlink);
   const mockFarm = await deployMockFarm();
   const mockRand = await deployMockRandom();
-  const blindBox = await deployBlindBox(kakiTicket, usdt, kakiCaptain, mockRand);
+  const blindBox = await deployBlindBox(kakiTicket, usdt, mockKakiCaptain, mockRand);
   const mockBlindBox = await deployMockBlindBox(kakiTicket, usdt, mockKakiCaptain, mockRand);
   const claimLock = await deployClaimLock(mockFarm, usdt); 
 
