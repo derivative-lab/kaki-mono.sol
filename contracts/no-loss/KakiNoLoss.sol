@@ -60,10 +60,10 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 _kcAddRatio;
         uint256 _memberNum;
         uint256 _winFireCnt;
-        uint256 _totalFireCnt; //总下单数
-        uint256 _totalBonus; //总奖励
-        uint256 _nftId; //船队类型 0普通船队 nft船队>0
-        uint256 _enableWhiteList; //nft船队 0不开启白名单 1开启白名单
+        uint256 _totalFireCnt;
+        uint256 _totalBonus;
+        uint256 _nftId;
+        uint256 _enableWhiteList;
         uint256 _captainBonus;
         uint256 _createTime;
         uint256 _lastCheckChapter;
@@ -291,7 +291,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             uint256 accountKC = calAccountKCInWholeCycle(factionId);
             _accountFactionStatus[msg.sender][factionId]._lastCheckKC = accountKC;
             _accountFactionStatus[msg.sender][factionId]._accountKC[_chapter] = accountKC;
-            /** 更新lastCheckChpater后面chapter的_accountKC ,通过index计算bonus时使用 */
             if (_chapter > lastCheckChpater + 1) {
                 initAccountChapterKcInner(factionId, lastCheckChpater + 1, accountKC);
             }
@@ -337,11 +336,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     function _getCaptionLeaveKAKIReturn(uint256 factionId) internal returns (uint256) {
         uint256 time = getTimestamp();
         uint256 deduct;
-        /**		■ 24小时内：2%
-                ■ 72小时后：1%
-                ■ 96小时后：0.5%
-                ■ 168小时后：0%
-        */
         if (time - _factionStatus[_nextFactionId]._createTime <= 24 * 60 * 60) deduct = (_captionKAKI * 2) / 100;
         else if (time - _factionStatus[_nextFactionId]._createTime <= 72 * 60 * 60) deduct = _captionKAKI / 100;
         else if (time - _factionStatus[_nextFactionId]._createTime <= 96 * 60 * 60) deduct = (_captionKAKI * 5) / 1000;
@@ -436,7 +430,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         require(_chapterStatus[_chapter]._startTime + _dayTime >= time, "The trading day has ended.");
         require(_factionStatus[factionId]._captain == msg.sender, "The function caller must be the captain.");
         if (_factionStatus[factionId]._lastCheckChapter != _chapter) {
-            /**下单用前一周期的队伍kc，如果前一周期队伍没有更新过，这两周期kc 相等 */
             console.log("fire lastCheckChapter");
             initFactionChapterKC(factionId);
             if (_chapter > lastCheckChpater + 1)
@@ -481,7 +474,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 time = getTimestamp();
         require(_chapterStatus[_chapter]._startTime + _weekTime <= time, "The _chapter is not over.");
 
-        /** _lastRound初始2 在一回下单要结算前面2回合的wkc*/
         _lastRound = 1;
         _chapter++;
         _chapterStatus[_chapter]._startTime = time;
@@ -556,9 +548,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     function updateFactionWinnerAmount(uint256 factionId, uint256 factionChapter) internal {
         uint256 fireLen = _factionStatus[factionId]._lastFireRound[factionChapter].length;
         uint256 winner;
-        /**当前chapter，判断lastRound是否至少间隔一个回合，否则不需要结算
-            如果最近两个回合相邻，前面一个回合也需要结算
-         */
         if (fireLen > 0) {
             uint256 lastRound = _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 1];
             if (factionChapter == _chapter) {
@@ -579,8 +568,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             } else {
                 winner += checkRoundWinnerKc(factionId, factionChapter, lastRound);
                 console.log("updateFactionWinnerAmount2", winner);
-                /**如果最后一个回合和前一回合至少间隔一回合不需要结算
-                否则前一回合还没结算，需要进行结算*/
                 if (
                     fireLen > 1 &&
                     _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 2] == lastRound - 1 &&
@@ -600,9 +587,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
     function getAccountKC(uint256 factionId, uint256 chapter) internal returns (uint256) {
         uint256 len = _accountFactionStatus[msg.sender][factionId]._accountKCIndex.length;
-        /**如果chapter 大于有记录的chapter值 ，通过计算全周期的质押量得到kc
-           否则遍历_accountKCIndex ，从大到小获取存储的周期值(c)，当chapter 大于c，返回值
-         */
         if (chapter > _accountFactionStatus[msg.sender][factionId]._accountKCIndex[len - 1]) {
             return calAccountKCInWholeCycle(factionId);
         }
@@ -624,7 +608,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 bonus;
         uint256 chapter = _accountGlobalInfo[msg.sender]._bonusChapter;
         uint256 endChapter;
-        //判断当前chapter没有结束
         if (_chapterStatus[_chapter]._isEnd) endChapter = _chapter;
         else if (_chapter > 0) endChapter = _chapter - 1;
 
@@ -633,7 +616,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 uint256 factionId = _accountGlobalInfo[msg.sender]._factionArr[fi];
                 initFactionChapterKC(factionId);
                 Faction storage faction = _factionStatus[factionId];
-                /**_lastCheckChapter 当前chapter没有结束 */
 
                 uint256 endChapter2 = faction._lastCheckChapter < faction._lastIndexChapter
                     ? faction._lastCheckChapter
