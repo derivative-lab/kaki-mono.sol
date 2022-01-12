@@ -53,7 +53,7 @@ describe('blindBox', async () => {
             const { users, blindBox, usdt, kakiTicket, mockRand, mockKakiCaptain} = await setup();
             await kakiTicket.setupAdmin(blindBox.address);
             await mockKakiCaptain.mint(users[0].address, 1);
-            await mockKakiCaptain.mint(users[0].address, 1200);
+            await mockKakiCaptain.mint(users[0].address, 1350);
             await mockKakiCaptain.mint(users[0].address, 2020);
             
             await usdt.transfer(users[0].address, parseEther('10000'));
@@ -73,26 +73,24 @@ describe('blindBox', async () => {
             console.log("*********************************************************");
             await mockRand.setRandom(1);
             await kakiTicket.setApprovalForAll(blindBox.address, true);
-            await blindBox.combine([1,2,3], [1,1200,2020]);
+            console.log("*************333333333333333333333333333333**************");
+            await blindBox.combine([1,2,3], [1,1350,2020]);
             let balanceOfUser2 = (await kakiTicket.balanceOf(users[0].address));
             expect(balanceOfUser2).to.equal(1);
         })
 
         it('combine fail', async () => {
-            const { users, blindBox, usdt, kakiTicket, mockRand, mockKakiCaptain} = await setup();
-            await kakiTicket.setupAdmin(blindBox.address);
+            const { users, mockBlindBox, usdt, kakiTicket, mockRand, mockKakiCaptain} = await setup();
+            await kakiTicket.setupAdmin(mockBlindBox.address);
             await mockKakiCaptain.mint(users[0].address, 1);
-            await mockKakiCaptain.mint(users[0].address, 1200);
+            await mockKakiCaptain.mint(users[0].address, 1350);
             await mockKakiCaptain.mint(users[0].address, 2020);
             
             await usdt.transfer(users[0].address, parseEther('10000'));
-            await usdt.approve(blindBox.address, parseEther(`1${'0'.repeat(20)}`))
-            await mockRand.setRandom(100);
-            await blindBox.bBoxOpen();
-            await mockRand.setRandom(70);
-            await blindBox.bBoxOpen();
-            await mockRand.setRandom(85);
-            await blindBox.bBoxOpen();
+            await usdt.approve(mockBlindBox.address, parseEther(`1${'0'.repeat(20)}`))
+            await mockBlindBox.bBoxOpen(100, 5);
+            await mockBlindBox.bBoxOpen(70, 10);
+            await mockBlindBox.bBoxOpen(85, 10);
             let balanceOfUser = (await kakiTicket.balanceOf(users[0].address));
             expect(balanceOfUser).to.equal(3);
             let a = await kakiTicket.tokenOfOwnerByIndex(users[0].address, 0);
@@ -101,8 +99,14 @@ describe('blindBox', async () => {
             console.log("abc", a,b,c);
             console.log("*********************************************************");
             await mockRand.setRandom(99);
-            await kakiTicket.setApprovalForAll(blindBox.address, true);
-            await blindBox.combine([1,2,3], [1,1200,2020]);
+            await kakiTicket.setApprovalForAll(mockBlindBox.address, true);
+            await mockBlindBox.combine([1,2,3], [1,1350,2020]);
+            let a3 = await mockKakiCaptain.getCapInfo(1);
+            let b3 = await mockKakiCaptain.getCapInfo(1200);
+            let c3 = await mockKakiCaptain.getCapInfo(2020);
+            console.log("a3b33c3", a3,b3,c3);
+            let a2 = await kakiTicket.tokenOfOwnerByIndex(users[0].address, 0);
+            console.log("a2***********************", a2);
             let balanceOfUser2 = (await kakiTicket.balanceOf(users[0].address));
             expect(balanceOfUser2).to.equal(0);
         })
