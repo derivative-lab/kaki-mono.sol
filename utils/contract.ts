@@ -145,6 +145,9 @@ export const contractAddress = {
   get kakiBusdLP(){
     return getItem('kakiBusdLP');
   },
+  get kakiBnbLP(){
+    return getItem('kakiBnbLP');
+  },
   get tools() {
     return getItem('tools');
   },
