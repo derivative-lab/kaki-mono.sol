@@ -173,6 +173,12 @@ contract KakiCaptain is IKakiCaptain, AllowERC721 {
     }
 
     //*************************** admin *********************************** */
+
+    function setNLOAddress(address nloAdd) public onlyOwner {
+        require(nloAdd != address(0), "The address cannot be 0.");
+        nloAddress = nloAdd;
+    }
+
     function setMember(
         uint256 newLowMember,
         uint256 newMediumMember,

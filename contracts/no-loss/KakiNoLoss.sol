@@ -201,7 +201,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         require(amount > 0, "Amount must be greater than 0.");
 
         if (_factionStatus[factionId]._nftId > 0) {
-            //IKakiCaptain.CapPara memory captaionInfo = _captainNFT.getCapInfo(_factionStatus[factionId]._nftId);
             require(
                 _factionStatus[factionId]._accountArr.length < _factionStatus[_nextFactionId]._memberNum,
                 "member limit"
@@ -831,6 +830,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function version() public pure returns (uint256) {
-        return 5;
+        return 6;
     }
 }
