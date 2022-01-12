@@ -5,6 +5,6 @@ import { upgrades } from 'hardhat';
 
 
 (async () => {
-  await upgrade(`captain/KakiCaptain.sol`,contractAddress.captainCla)
+  await upgrade(`captain/KakiCaptain.sol`,contractAddress.kakiCaptain)
 
 })();
