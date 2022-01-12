@@ -15,7 +15,28 @@ contract Tools is WithAdminRole {
         IERC20(address(vault)).approve(address(this), type(uint256).max);
     }
 
+    function deposit(
+        IVault vault,
+        uint256 amount,
+        bool isNative
+    ) public {
+        vault.deposit{value: isNative ? amount : 0}(amount);
+    }
+
+    function withdraw(IVault vault, uint256 amount) public {
+        vault.withdraw(amount);
+    }
+
+    function depositAndWithdraw(
+        IVault vault,
+        uint256 amount,
+        bool isNative
+    ) public {
+        deposit(vault, amount, isNative);
+        withdraw(vault, amount);
+    }
+
     function version() public pure returns (uint256) {
-        return 1;
+        return 3;
     }
 }
