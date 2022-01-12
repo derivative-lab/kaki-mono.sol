@@ -22,7 +22,7 @@ import { parseEther } from 'ethers/lib/utils';
   console.log('valt token', token);
 
 
-  const v = parseEther('0.001');
+  const v = parseEther('0.1');
   const tx2 = await vault.deposit(v, { value: v, });
 
   console.log(tx2.hash)

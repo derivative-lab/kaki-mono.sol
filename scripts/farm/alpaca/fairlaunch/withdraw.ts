@@ -13,8 +13,8 @@ import { parseEther } from 'ethers/lib/utils';
   const ibBnb = IERC20__factory.connect(ibBnbAddr, signer);
 
   const fairLaunch = IFairLaunch__factory.connect(flAddr, signer);
-
-  const dt = await fairLaunch.withdraw(signer.address, 1, 1)
+  const amount = parseEther('0.1');
+  const dt = await fairLaunch.withdraw(signer.address, 1, amount);
 
   console.log(`deposit to fl ${dt.hash}`);
 

@@ -12,14 +12,14 @@ import { parseEther } from 'ethers/lib/utils';
 
   const ibBnb = IERC20__factory.connect(ibBnbAddr, signer);
 
-  const ap = await ibBnb.approve(flAddr, parseEther(`1${'0'.repeat(10)}`));
+  // const ap = await ibBnb.approve(flAddr, parseEther(`1${'0'.repeat(10)}`));
 
 
-  console.log(`approve  ${ap.hash}`);
+  // console.log(`approve  ${ap.hash}`);
 
   const fairLaunch = IFairLaunch__factory.connect(flAddr, signer);
-
-  const dt = await fairLaunch.deposit(signer.address, 1, 1)
+  const amount = parseEther('0.1');
+  const dt = await fairLaunch.deposit(signer.address, 1, amount);
 
   console.log(`deposit to fl ${dt.hash}`);
 

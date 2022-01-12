@@ -2,7 +2,7 @@ import { ChainlinkRandoms } from './../typechain/ChainlinkRandoms.d';
 import { CaptainClaim__factory } from './../typechain/factories/CaptainClaim__factory';
 import { BlindBox, KakiCaptain__factory, KakiGarden__factory, KakiTicket, MysteryBox__factory } from './../typechain';
 import { deployments, ethers, network } from 'hardhat';
-import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory, Kaki__factory, ClaimLock__factory,KakiNoLoss,KakiNoLoss__factory } from '~/typechain';
+import { AddressList__factory, MockChainLink__factory, MockToken__factory, Ticket__factory, OpenBox__factory, KakiSquidGame, KakiSquidGame__factory, BlindBox__factory, KakiTicket__factory, ERC20__factory, Kaki__factory, ClaimLock__factory,KakiNoLoss,KakiNoLoss__factory, Tools__factory, } from '~/typechain';
 
 
 export const frontendUsedContracts = [
@@ -53,7 +53,7 @@ export const mutiContractAddrs = {
     squidOpenBox: '0x7fc45201D0DBE2175c76995474D6394B8837C982',
     facet: '0xDDA65b6020d85bFA89683E366B4423Bb29233eD6',
     farm: '0x1bA1806e76054cE4CdFBe91f5E7ebBa9c5B23996',
-    kakiCaptain: '0xC3F8e0fBfd9b08b23b590611A9ef86F29777c48B',
+    kakiCaptain: '0xDD27E17476863bA2415023ACe2467A06406444f7',
     captainClaim: '0x3839bDA320D33338d2e7adBf75bc149206cd01f8',
     captainMintList: '',
     captainAllowList: '',
@@ -61,8 +61,9 @@ export const mutiContractAddrs = {
     chainlinkRandoms: '0xaE4364642f7Ed86971ea4a974a165C79c2F32766',
     claimLock: '0x504DC2CcA9B3BBa98295840D2185ae062939c093',
     kaki: '0xC09886236326c4596D7823B3E730BE8Cc83bB245',
-    noLoss:'0xbeaEcc3C5B5CA7f856Fb43256f991977699674ef',
+    noLoss:'0x7A7ab8CEbB2eB774f4e855EF060f4d0b8f9f1C40',
     kakiBusdLP: '0x2638708361adb219c9d4e8cee5e9753b2bb53f47',
+    tools: '0x34378172cB777D3CD4F13F9e10705139f27A76Ee',
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
@@ -142,6 +143,9 @@ export const contractAddress = {
   },
   get kakiBusdLP(){
     return getItem('kakiBusdLP');
+  },
+  get tools() {
+    return getItem('tools');
   },
 };
 
@@ -228,4 +232,8 @@ export async function kakiContract(signerIndex = 0) {
 
 export async function noLossContract(signerIndex = 0) {
   return KakiNoLoss__factory.connect(contractAddress.noLoss, await getSigner(signerIndex));
+}
+
+export async function toolsContract(signerIndex = 0) {
+  return Tools__factory.connect(contractAddress.tools, await getSigner(signerIndex));
 }
