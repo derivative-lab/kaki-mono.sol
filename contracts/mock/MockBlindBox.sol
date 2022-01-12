@@ -109,7 +109,7 @@ contract MockBlindBox is WithAdminRole, WithRandom {
 
         require(totalType == 3 && totalChip == 80, "Invalid NFT.");
         uint256 rand = random(1, 100);
-        totalProb = totalProb + extraProb;
+        totalProb = totalProb + extraProb / 10;
         
         for (uint256 i; i < 3; i++){
             _kakiTicket.transferFrom(msg.sender, address(0xdead), ticket[i]);
