@@ -5,12 +5,12 @@ import {formatEther} from 'ethers/lib/utils'
 (async () => {
     console.log('clear...');
     const noLoss = await noLossContract();
-    const tx=await noLoss.createFaction(662,{gasLimit:1000000});
-    console.log(tx.hash);
+    //const tx=await noLoss.createFaction(662,{gasLimit:1000000});
+    //console.log(tx.hash);
     const list=await noLoss.getFactionList();
     console.log(list.length);
 
-
+    //const list=await noLoss.getFactionData();
 
     //let faction =await noLoss.getDataForRobot();
     //console.log(faction);
