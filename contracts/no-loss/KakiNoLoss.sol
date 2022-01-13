@@ -179,7 +179,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _accountFactionStatus[msg.sender][_nextFactionId]._lastCheckChapter = _chapter;
         if (_accountGlobalInfo[msg.sender]._bonusChapter == 0) _accountGlobalInfo[msg.sender]._bonusChapter = _chapter;
         _accountGlobalInfo[msg.sender]._factionArr.push(_nextFactionId);
-        emit CreateFaction(msg.sender, _nextFactionId, time);
+        emit CreateFaction(msg.sender, _nextFactionId,nftId, time);
         _nextFactionId++;
     }
 
@@ -344,6 +344,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function leaveFaction(uint256 factionId) public override {
+        uint256 time = getTimestamp();
         require(_accountFactionStatus[msg.sender][factionId]._lastCheckChapter > 0, "join a faction first");
 
         for (uint256 id; id < _tokenAssemble.length; id++) {
@@ -375,7 +376,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         uint256 bonus = updateBonus();
 
-        emit LeaveFaction(msg.sender, factionId, bonus);
+        emit LeaveFaction(msg.sender, factionId, bonus,time);
     }
 
     function delFactionAccount(uint256 factionId) internal {
@@ -478,6 +479,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _chapter++;
         _chapterStatus[_chapter]._startTime = time;
         _chapterStatus[_chapter]._roundStartTime[_lastRound] = time;
+        emit AddLoot(_chapter,_chapterStatus[_chapter]._interest,_chapterStatus[_chapter]._nftFactionInterest,time);
+
     }
 
     function battleDamage() public {
@@ -520,6 +523,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         _lastRound++;
         _chapterStatus[_chapter]._roundStartTime[_lastRound] = time;
+
+        emit BattleDamage(_chapter,_lastRound,_poolState[_chapter][_lastRound-1]._answer,_poolState[_chapter][_lastRound]._answer,time);
     }
 
     function getRoundWinnerKc(
@@ -722,15 +727,14 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         vo._totalBonus = _factionStatus[factionId]._totalBonus;
         vo._nftId = _factionStatus[factionId]._nftId;
         if (isFireDay) {
-            if (
-                _factionStatus[factionId]._totalChapterKC[_chapter - 1] >
-                _factionStatus[factionId]._chapterKC[_chapter - 1]
-            )
+            if (_factionStatus[factionId]._totalChapterKC[_chapter - 1] == 0) {
+                vo._totalkc = _factionStatus[factionId]._chapterKC[_chapter - 1];
+            } else {
                 vo._usedkc =
                     _factionStatus[factionId]._totalChapterKC[_chapter - 1] -
                     _factionStatus[factionId]._chapterKC[_chapter - 1];
-
-            vo._totalkc = _factionStatus[factionId]._totalChapterKC[_chapter - 1];
+                vo._totalkc = _factionStatus[factionId]._totalChapterKC[_chapter - 1];
+            }
         } else {
             vo._totalkc = _factionStatus[factionId]._chapterKC[_chapter];
         }
@@ -817,6 +821,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function version() public pure returns (uint256) {
-        return 9;
+        return 10;
     }
 }
