@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../base/WithRandom.sol";
+import "../mock/MockWithRandom.sol";
 import "../base/WithAdminRole.sol";
 import "../interfaces/IKakiTicket.sol";
 import "../interfaces/IKakiCaptain.sol";
 import "hardhat/console.sol";
 
-contract MockBlindBox is WithAdminRole, WithRandom {
+contract MockBlindBox is WithAdminRole, MockWithRandom {
 
     IERC20 _kaki;
     IKakiTicket _kakiTicket;
@@ -28,15 +28,6 @@ contract MockBlindBox is WithAdminRole, WithRandom {
     address public _squidGameFound;
     address constant BlackHole = 0x0000000000000000000000000000000000000000;
     mapping(uint256 => uint256) _sTicketCount;
-
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes memory
-    ) public virtual returns (bytes4) {
-        return this.onERC721Received.selector;
-    }
 
     function initialize(IKakiTicket ercAdd, IERC20 kTokenAdd, IKakiCaptain capAdd, IRandoms radomAdd) public initializer {
         __WithAdminRole_init();
@@ -89,6 +80,7 @@ contract MockBlindBox is WithAdminRole, WithRandom {
 
     function combine(uint256[3] memory ticket, uint256[] memory extraCap) public isAble onlyNoneContract {
         require(extraCap.length <= 3, "Invalid number of captain.");
+        console.log("*********************************************************");
 
         uint256 totalChip;
         uint256 totalType;
@@ -116,7 +108,8 @@ contract MockBlindBox is WithAdminRole, WithRandom {
             _kakiTicket.transferFrom(msg.sender, address(0xdead), ticket[i]);
         }
 
-        console.log("totalProb***************", totalProb);
+        console.log("rand", rand);
+        console.log("totalProb", totalProb);
 
         if (rand <= totalProb) {
             _kakiTicket.mint(msg.sender, _commonChip, 0, 0, 3);
