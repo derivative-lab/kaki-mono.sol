@@ -74,12 +74,7 @@ export async function deployMockUsdt(signerIndex = 0) {
 export async function deployMockERC20(name: string, symbol: string, issue: BigNumber, signerIndex = 0) {
   const signer0 = await getSigner(signerIndex);
   const factory = new MockToken__factory(signer0);
-  const instance = await deployments.deploy('MockToken', {
-    from: signer0.address,
-    log: true,
-    autoMine: true,
-    args: [name, symbol, 18, issue],
-  });
+  const instance = await factory.deploy(name, symbol, 18, issue);
   // factory.deploy('USDT', "USDT", 18, ethers.utils.parseEther(`1${'0'.repeat(10)}`));
   console.log(`deploy mock ${name} - ${symbol} to: ${instance.address}`);
   // await instance.deployed();
@@ -304,8 +299,8 @@ export async function deployAll() {
   const claimLock = await deployClaimLock(mockFarm, usdt); 
 
   
-
-  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, noLoss, mysteryBox, captainClaim, blindBox, mockBlindBox, mockFarm, claimLock, mockKakiCaptain, mockRand};
+// , noLoss
+  return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, mysteryBox, captainClaim, blindBox, mockBlindBox, mockFarm, claimLock, mockKakiCaptain, mockRand};
 }
 
 
