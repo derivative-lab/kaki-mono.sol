@@ -5,6 +5,7 @@ import "../base/WithRandom.sol";
 import "../base/WithAdminRole.sol";
 import "../interfaces/IKakiTicket.sol";
 import "../interfaces/IKakiCaptain.sol";
+import "hardhat/console.sol";
 
 contract MockBlindBox is WithAdminRole, WithRandom {
 
@@ -78,9 +79,9 @@ contract MockBlindBox is WithAdminRole, WithRandom {
 
         if (randTicket <= 80) {
             _kakiTicket.mint(msg.sender, _commonChip, rand + 5, _aPrice, 0);
-        } else if (randTicket > 95 && _sTicketCount[(block.timestamp - _startTime) / 86400] < 6) {
+        } else if (randTicket > 95 && _sTicketCount[(block.timestamp - _startTime) / 1 days] < 6) {
             _kakiTicket.mint(msg.sender, _rareChip, _sTicketProb, _bPrice, 2);
-            _sTicketCount[(block.timestamp - _startTime) / 86400]++;
+            _sTicketCount[(block.timestamp - _startTime) / 1 days ]++;
         } else {
             _kakiTicket.mint(msg.sender, _rareChip, rand + 10, _bPrice, 1);
         }
@@ -114,6 +115,8 @@ contract MockBlindBox is WithAdminRole, WithRandom {
         for (uint256 i; i < 3; i++){
             _kakiTicket.transferFrom(msg.sender, address(0xdead), ticket[i]);
         }
+
+        console.log("totalProb***************", totalProb);
 
         if (rand <= totalProb) {
             _kakiTicket.mint(msg.sender, _commonChip, 0, 0, 3);
