@@ -155,7 +155,7 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
         require(amount > 0, "amount cannot be zero");
         address userAddr = msg.sender;
         UserInfo storage user = _userInfo[pid][userAddr];
-        require(user.amount >= amount, "out of balance");
+        require(user.amount >= amount, "out of staking");
         _harvest(pid);
         PoolInfo storage poolInfo = _poolInfo[pid];
         if (address(poolInfo.vault) != address(0)) {
@@ -209,6 +209,8 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
 
         if (rAmountTotal > 0) {
             _rewardLocker.lockFarmReward(msg.sender, rAmountTotal);
+        } else {
+            revert("empty staking");
         }
         emit HarvestMany(msg.sender, pids, rAmounts);
     }
@@ -216,7 +218,9 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     function pendingReward(uint256 pid) public view override returns (uint256) {
         PoolInfo memory pool = _poolInfo[pid];
         UserInfo memory user = _userInfo[pid][msg.sender];
-        return (_rewardPerBlock * (block.number - user.rewardAtBlock) * pool.allocPoint) / _totalAllocPoint;
+        if (user.amount > 0) {
+            return (_rewardPerBlock * (block.number - user.rewardAtBlock) * pool.allocPoint) / _totalAllocPoint;
+        }
     }
 
     function dailyReward(uint256 pid) public view override returns (uint256) {
@@ -230,6 +234,8 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
             uint256 currentBlock = block.number;
             rAmount = (_rewardPerBlock * (currentBlock - user.rewardAtBlock) * pool.allocPoint) / _totalAllocPoint;
             user.rewardAtBlock = currentBlock;
+        } else {
+            revert("no staking");
         }
     }
 
@@ -261,6 +267,6 @@ contract KakiGarden is IKakiGarden, WithAdminRole, ReentrancyGuardUpgradeable, P
     receive() external payable {}
 
     function version() public pure returns (uint256) {
-        return 24;
+        return 27;
     }
 }
