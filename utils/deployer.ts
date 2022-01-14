@@ -294,7 +294,7 @@ export async function deployAll() {
   const captainClaim = await deployCaptainClaim(kakiCaptain, mysteryBox, chainlink);
   const mockFarm = await deployMockFarm();
   const mockRand = await deployMockRandom();
-  const blindBox = await deployBlindBox(kakiTicket, usdt, mockKakiCaptain, mockRand);
+  const blindBox = await deployBlindBox(kakiTicket, usdt, kakiCaptain, mockRand);
   const mockBlindBox = await deployMockBlindBox(kakiTicket, usdt, mockKakiCaptain, mockRand);
   const claimLock = await deployClaimLock(mockFarm, usdt); 
 
