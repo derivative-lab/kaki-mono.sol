@@ -41,6 +41,4 @@ contract MysteryBox is IMysteryBox, Ownable, ERC721Enumerable{
         _tokenURI = baseURI;
     }
 
-    
-
 }

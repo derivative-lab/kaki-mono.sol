@@ -65,6 +65,9 @@ export const mutiContractAddrs = {
     kakiBusdLP: '0x2638708361adb219c9d4e8cee5e9753b2bb53f47',
     kakiBnbLP: '0xbb6236d81557569c2f45a110d7180bac7132ff46',
     tools: '0x34378172cB777D3CD4F13F9e10705139f27A76Ee',
+    //ticket v2
+    blindBox: '',
+    kakiTicket: '0xa46ad14DE4B30E150062B032c55fA692DC60E31d',
   },
   bsc: {
     squidGame: '0x837b8bdC93f6f7F0eb28fA3a1d80A7aB86ce854f',
