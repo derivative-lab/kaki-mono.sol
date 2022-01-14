@@ -117,8 +117,8 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     ) public initializer {
         __WithAdminRole_init();
 
-        _weekTime = 40 minutes; // 1 weeks; // oneweek = 40320 15min = 60 1day1h = 6000 30min = 120 15s/block 1week = 604800 30min = 1800
-        _dayTime = 25 minutes; //1 days; // oneday = 5760 10min = 40 25min = 100 15s/block 1day = 86400 25min = 1500
+        _weekTime = 7 days; //40 minutes;
+        _dayTime = 1 days; //25 minutes;
         _roundTime = 5 minutes; // 2min = 8 5min = 20 15s/Block 5min = 300
         _tradingTime = 3 minutes; // 1.5min = 6 3min = 12 15s/Block 3min = 180
         _captionKAKI = 2020 ether;
@@ -179,7 +179,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _accountFactionStatus[msg.sender][_nextFactionId]._lastCheckChapter = _chapter;
         if (_accountGlobalInfo[msg.sender]._bonusChapter == 0) _accountGlobalInfo[msg.sender]._bonusChapter = _chapter;
         _accountGlobalInfo[msg.sender]._factionArr.push(_nextFactionId);
-        emit CreateFaction(msg.sender, _nextFactionId,nftId, time);
+        emit CreateFaction(msg.sender, _nextFactionId, nftId, time);
         _nextFactionId++;
     }
 
@@ -376,7 +376,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         uint256 bonus = updateBonus();
 
-        emit LeaveFaction(msg.sender, factionId, bonus,time);
+        emit LeaveFaction(msg.sender, factionId, bonus, time);
     }
 
     function delFactionAccount(uint256 factionId) internal {
@@ -479,8 +479,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _chapter++;
         _chapterStatus[_chapter]._startTime = time;
         _chapterStatus[_chapter]._roundStartTime[_lastRound] = time;
-        emit AddLoot(_chapter,_chapterStatus[_chapter]._interest,_chapterStatus[_chapter]._nftFactionInterest,time);
-
+        emit AddLoot(_chapter, _chapterStatus[_chapter]._interest, _chapterStatus[_chapter]._nftFactionInterest, time);
     }
 
     function battleDamage() public {
@@ -510,9 +509,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (
             (_chapterStatus[_chapter]._startTime) + _dayTime <= uint256(time) &&
             _poolState[_chapter][_lastRound]._call == 0 &&
-            _poolState[_chapter][_lastRound]._put == 0 &&
-            _poolState[_chapter][_lastRound - 1]._call == 0 &&
-            _poolState[_chapter][_lastRound - 1]._put == 0
+            _poolState[_chapter][_lastRound]._put == 0
         ) {
             _chapterStatus[_chapter]._isEnd = true;
             if (_chapterStatus[_chapter]._winnerKC == 0) {
@@ -524,7 +521,13 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _lastRound++;
         _chapterStatus[_chapter]._roundStartTime[_lastRound] = time;
 
-        emit BattleDamage(_chapter,_lastRound,_poolState[_chapter][_lastRound-1]._answer,_poolState[_chapter][_lastRound]._answer,time);
+        emit BattleDamage(
+            _chapter,
+            _lastRound,
+            _poolState[_chapter][_lastRound - 1]._answer,
+            _poolState[_chapter][_lastRound]._answer,
+            time
+        );
     }
 
     function getRoundWinnerKc(
@@ -555,32 +558,21 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 winner;
         if (fireLen > 0) {
             uint256 lastRound = _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 1];
-            if (factionChapter == _chapter) {
-                console.log("updateFactionWinnerAmount", lastRound, _lastRound);
-                if (lastRound == _lastRound - 1) {
-                    if (
-                        fireLen > 1 &&
-                        _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 2] == lastRound - 1
-                    ) winner += checkRoundWinnerKc(factionId, factionChapter, lastRound - 1);
-                } else {
-                    winner += checkRoundWinnerKc(factionId, factionChapter, lastRound);
-                    if (
-                        fireLen > 1 &&
-                        _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 2] == lastRound - 1 &&
-                        isRoundFire(factionId, factionChapter, lastRound - 1)
-                    ) winner += checkRoundWinnerKc(factionId, factionChapter, lastRound - 1);
-                }
-            } else {
+            console.log("updateFactionWinnerAmount", factionChapter, lastRound, _lastRound);
+            if (factionChapter != _chapter || lastRound != _lastRound - 1) {
                 winner += checkRoundWinnerKc(factionId, factionChapter, lastRound);
                 console.log("updateFactionWinnerAmount2", winner);
                 if (
                     fireLen > 1 &&
-                    _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 2] == lastRound - 1 &&
-                    isRoundFire(factionId, factionChapter, lastRound - 1)
+                    _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 2] == lastRound - 1
+                ) winner += checkRoundWinnerKc(factionId, factionChapter, lastRound - 1);
+            } else {
+                if (
+                    fireLen > 1 &&
+                    _factionStatus[factionId]._lastFireRound[factionChapter][fireLen - 2] == lastRound - 1
                 ) winner += checkRoundWinnerKc(factionId, factionChapter, lastRound - 1);
             }
         }
-
         _factionStatus[factionId]._factionWinnerKC[factionChapter] += winner;
         console.log(
             "updateFactionWinnerAmount",
@@ -616,6 +608,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (_chapterStatus[_chapter]._isEnd) endChapter = _chapter;
         else if (_chapter > 0) endChapter = _chapter - 1;
 
+        bool lastTimeChapterIsNotFinish;
+        if (chapter < _accountFactionStatus[msg.sender][factionId]._lastCheckChapter) lastTimeChapterIsNotFinish = true;
+
         if (endChapter > chapter) {
             for (uint256 fi; fi < _accountGlobalInfo[msg.sender]._factionArr.length; fi++) {
                 uint256 factionId = _accountGlobalInfo[msg.sender]._factionArr[fi];
@@ -626,6 +621,14 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                     ? faction._lastCheckChapter
                     : faction._lastIndexChapter;
                 //if (endChapter2 > endChapter) endChapter2 = endChapter;
+
+                if (lastTimeChapterIsNotFinish) {
+                    uint256 index00 = _factionStatus[factionId]._index[chapter];
+                    uint256 index01 = _factionStatus[factionId]._index[chapter + 1];
+                    bonus = ((index01 - index00) * getAccountKC(factionId, chapter)) / _BASE;
+                    chapter++;
+                }
+
                 uint256 index0 = _factionStatus[factionId]._index[chapter];
                 uint256 index1 = _factionStatus[factionId]._index[chapter + 1];
                 uint256 index2 = _factionStatus[factionId]._index[endChapter2];
