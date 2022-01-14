@@ -13,10 +13,10 @@ interface IKakiNoLoss {
         uint256 _totalkc;
         uint256[10] _stakeAmount;
     }
-    event CreateFaction(address indexed account, uint256 factionId, uint256 time);
+    event CreateFaction(address indexed account, uint256 factionId,uint256 nftId,uint256 time);
     event JoinFaction(address indexed account, uint256 factionId, uint256 tokenIndex, uint256 amount, uint256 time);
     event AddStake(address indexed account, uint256 factionId, uint256 tokenIndex, uint256 amount, uint256 time);
-    event LeaveFaction(address indexed account, uint256 factionId, uint256 bonus);
+    event LeaveFaction(address indexed account, uint256 factionId, uint256 bonus, uint256 time);
     event Fire(
         address indexed account,
         uint256 chapter,
@@ -27,6 +27,9 @@ interface IKakiNoLoss {
         uint256 time
     );
     event ClaimBonus(address indexed account, uint256 bonus, uint256 time);
+
+    event AddLoot(uint256 chapter,uint256 interest,uint256 nftInterest, uint256 time);
+    event BattleDamage(uint256 chapter,uint256 lastRound,uint256 startAnswer,uint256 endAnswer, uint256 time);
 
     function createFaction(uint256 nftId) external;
 
