@@ -81,7 +81,10 @@ export const mutiContractAddrs = {
     mysteryBox: '0x5B771c6114825b3D8EFCa66956E37aC34d812a66',
     kakiCaptain: '0xFE99a9e79959475d85af2BD11277B9061d457fa2',
     captainClaim: '0x6d476bc0dA5a017853545fee3939624F7fBFa0A7',
-  }
+  },
+  harmony:{
+    kaki:'0x25E108254664ad9E8e3DD07F125Bd9CdD8391eD3',
+  },
 };
 
 export const contractAddress = {
