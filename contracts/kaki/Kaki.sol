@@ -29,6 +29,6 @@ contract Kaki is ERC20PermitUpgradeable, IKaki, AccessControlUpgradeable {
     }
 
     function version() public pure returns (uint256) {
-        return 1;
+        return 2;
     }
 }
