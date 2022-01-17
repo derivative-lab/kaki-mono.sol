@@ -96,6 +96,11 @@ const cfg: HardhatUserConfig = {
       chainId: 97,
       accounts: { ...accounts(), initialIndex: 0, count: 10 },
     },
+    harmony:{
+      url :'https://api.harmony.one',
+      chainId: 1666600000,
+      accounts: { ...accounts(), initialIndex: 0, count: 10 },
+    },
   },
   solidity: {
     version: '0.8.9',
