@@ -12,8 +12,17 @@ interface IKakiNoLoss {
         uint256 _usedkc;
         uint256 _totalkc;
         uint256[10] _stakeAmount;
+        uint256[10] _captionStakeAmount;
     }
-    event CreateFaction(address indexed account, uint256 factionId,uint256 nftId,uint256 time);
+
+    struct CurrentChapterBonusVO {
+        uint256 _spaceShipBonus;
+        uint256 _captionBonus;
+        uint256 _crewBonus;
+        uint256 _myBonus;
+    }
+
+    event CreateFaction(address indexed account, uint256 factionId, uint256 nftId, uint256 time);
     event JoinFaction(address indexed account, uint256 factionId, uint256 tokenIndex, uint256 amount, uint256 time);
     event AddStake(address indexed account, uint256 factionId, uint256 tokenIndex, uint256 amount, uint256 time);
     event LeaveFaction(address indexed account, uint256 factionId, uint256 bonus, uint256 time);
@@ -28,8 +37,8 @@ interface IKakiNoLoss {
     );
     event ClaimBonus(address indexed account, uint256 bonus, uint256 time);
 
-    event AddLoot(uint256 chapter,uint256 interest,uint256 nftInterest, uint256 time);
-    event BattleDamage(uint256 chapter,uint256 lastRound,uint256 startAnswer,uint256 endAnswer, uint256 time);
+    event AddLoot(uint256 chapter, uint256 interest, uint256 nftInterest, uint256 time);
+    event BattleDamage(uint256 chapter, uint256 lastRound, uint256 startAnswer, uint256 endAnswer, uint256 time);
 
     function createFaction(uint256 nftId) external;
 
@@ -59,7 +68,14 @@ interface IKakiNoLoss {
 
     function getFactionList() external view returns (FactionListVO[] memory listVo);
 
-    function getFactionData(uint256 factionId) external view returns(FactionListVO memory vo);
+    function getFactionData(uint256 factionId) external view returns (FactionListVO memory vo);
 
-    function getRoundStartTime(uint256 chapter,uint256 round) external view returns(uint256);
+    function getCurrentChapterBonus(uint256 factionId)
+        external
+        view
+        returns (CurrentChapterBonusVO memory bonus1, CurrentChapterBonusVO memory bonus2);
+
+    function getRoundStartTime(uint256 chapter, uint256 round) external view returns (uint256);
+
+    function getRoundPrice(uint256 chapter, uint256 round) external view returns (uint256, uint256);
 }
