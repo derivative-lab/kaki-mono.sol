@@ -23,6 +23,7 @@
     "execute": "node ./_scripts.js run",
     "deploy": "node ./_scripts.js deploy",
     "export": "node ./_scripts.js export",
+    "size": "hardhat  size-contracts --network bsc",
     "fork:execute": "node ./_scripts.js fork:run",
     "fork:deploy": "node ./_scripts.js fork:deploy",
     "fork:dev": "node ./_scripts.js fork:dev",
