@@ -182,6 +182,9 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _nextFactionId++;
     }
 
+    function setWhiteList(uint256 _enableWhiteList) public {}
+
+
     function joinFaction(
         uint256 factionId,
         uint256 tokenIndex,
@@ -794,7 +797,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
                 teamBonus2 = (_chapterStatus[_chapter]._nftFactionInterest * wkc) / _chapterStatus[_chapter]._nftFactionWKC;
             uint256 captainBonus2 = (teamBonus2 * _captainRateLimit) / _BASE;
             uint256 kakiFound2 = (teamBonus2 * _kakiFoundationRate) / _BASE;
-
             bonus1._spaceShipBonus = teamBonus1 - kakiFound1;
             bonus1._captionBonus = captainBonus1 + (teamBonus1 - kakiFound1 - captainBonus1) * captionKc / factionKC;
             bonus1._crewBonus = bonus1._spaceShipBonus - bonus1._captionBonus;

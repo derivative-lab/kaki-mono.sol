@@ -301,6 +301,7 @@ export async function deployAll() {
   
 // , noLoss
   return { usdt, kakiToken, wbnbToken, kakiUsdtLp, kakiBnbLP, chainlink, game, openBox, ticket, allowClaimTicket: allowList, kakiTicket, garden, kakiCaptain, mysteryBox, captainClaim, blindBox, mockBlindBox, mockFarm, claimLock, mockKakiCaptain, mockRand,noLoss};
+
 }
 
 
