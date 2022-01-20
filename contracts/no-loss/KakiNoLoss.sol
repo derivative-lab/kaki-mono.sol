@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: CC-BY-4.0
 pragma solidity ^0.8.0;
-
 import "./IAggregatorInterface.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -175,15 +174,13 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         _factionStatus[_nextFactionId]._createTime = time;
         _factionStatus[_nextFactionId]._accountArr.push(msg.sender);
 
+        updateBonus();
         initAccountChapterKcInner(_nextFactionId, _chapter, captionKc);
         _accountFactionStatus[msg.sender][_nextFactionId]._lastCheckChapter = _chapter;
-        if (_accountGlobalInfo[msg.sender]._bonusChapter == 0) _accountGlobalInfo[msg.sender]._bonusChapter = _chapter;
         _accountGlobalInfo[msg.sender]._factionArr.push(_nextFactionId);
         emit CreateFaction(msg.sender, _nextFactionId, nftId, time);
         _nextFactionId++;
     }
-
-    function setWhiteList(uint256 _enableWhiteList) public {}
 
     function joinFaction(
         uint256 factionId,
@@ -208,15 +205,12 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             if (_factionStatus[factionId]._enableWhiteList == 1)
                 require(_factionStatus[factionId]._whiteList[msg.sender] > 1, "need in white list");
         }
-
         _tokenAssemble[tokenIndex].transferFrom(msg.sender, address(this), amount);
-
+        updateBonus();
         updateFactioinAndAccount(factionId, tokenIndex, amount);
 
         _factionStatus[factionId]._accountArr.push(msg.sender);
         _accountGlobalInfo[msg.sender]._factionArr.push(factionId);
-
-        if (_accountGlobalInfo[msg.sender]._bonusChapter == 0) _accountGlobalInfo[msg.sender]._bonusChapter = _chapter;
         emit JoinFaction(msg.sender, factionId, tokenIndex, amount, time);
     }
 
@@ -226,10 +220,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             updateFactionWinnerAmount(factionId, lastCheckChapter);
             if (_factionStatus[factionId]._lastIndexChapter < _chapter) updateFactionIndex(factionId, lastCheckChapter);
 
-            _factionStatus[factionId]._chapterKC[_chapter] =
-                _captionKC +
-                calAllKcInWholeCycle(factionId, _factionStatus[factionId]._stakeAmount);
-
+            _factionStatus[factionId]._chapterKC[_chapter] = _captionKC + calAllKcInWholeCycle(factionId, _factionStatus[factionId]._stakeAmount);
             _factionStatus[factionId]._lastCheckChapter = _chapter;
         } else {
             if (_chapterStatus[_chapter]._isEnd && _factionStatus[factionId]._lastIndexChapter < _chapter)
@@ -243,13 +234,10 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 factionWinnerKC = fa._factionWinnerKC[chapter];
         uint256 totalChapterKC = fa._totalChapterKC[chapter - 1];
         if (_chapterStatus[chapter]._winnerKC > 0) {
-            uint256 teamBonus = (_chapterStatus[chapter]._interest * factionWinnerKC) /
-                _chapterStatus[chapter]._winnerKC;
-            if (_factionStatus[factionId]._nftId > 0 && factionWinnerKC > 0) {
-                teamBonus +=
-                    (_chapterStatus[chapter]._nftFactionInterest * factionWinnerKC) /
-                    _chapterStatus[chapter]._nftFactionWKC;
-            }
+            uint256 teamBonus = _chapterStatus[chapter]._interest * factionWinnerKC / _chapterStatus[chapter]._winnerKC;
+            if (_factionStatus[factionId]._nftId > 0 && factionWinnerKC > 0)
+                teamBonus += _chapterStatus[chapter]._nftFactionInterest * factionWinnerKC / _chapterStatus[chapter]._nftFactionWKC;
+
             uint256 kakiFoundationBonus = (teamBonus * _kakiFoundationRate) / _BASE;
             _factionStatus[factionId]._totalBonus += (teamBonus - kakiFoundationBonus);
 
@@ -361,9 +349,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         }
 
         if (_accountFactionStatus[msg.sender][factionId]._lastCheckChapter != _chapter) {
-            _factionStatus[factionId]._chapterKC[_chapter] =
-                _captionKC +
-                calAllKcInWholeCycle(factionId, _factionStatus[factionId]._stakeAmount);
+            _factionStatus[factionId]._chapterKC[_chapter] = _captionKC + calAllKcInWholeCycle(factionId, _factionStatus[factionId]._stakeAmount);
         } else {
             _factionStatus[factionId]._chapterKC[_chapter] -= _accountFactionStatus[msg.sender][factionId]._lastCheckKC;
         }
@@ -375,7 +361,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         if (_factionStatus[factionId]._captain == msg.sender) _factionStatus[factionId]._captain = address(0);
 
         uint256 bonus = updateBonus();
-
         emit LeaveFaction(msg.sender, factionId, bonus, time);
     }
 
@@ -462,9 +447,7 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         uint256 len = _factionStatus[factionId]._lastFireRound[_chapter].length;
         if (len == 0)
-            _factionStatus[factionId]._totalChapterKC[_chapter - 1] = _factionStatus[factionId]._chapterKC[
-                _chapter - 1
-            ];
+            _factionStatus[factionId]._totalChapterKC[_chapter - 1] = _factionStatus[factionId]._chapterKC[_chapter - 1];
         if (len == 0 || _factionStatus[factionId]._lastFireRound[_chapter][len - 1] != _lastRound)
             _factionStatus[factionId]._lastFireRound[_chapter].push(_lastRound);
         _factionStatus[factionId]._chapterKC[_chapter - 1] -= amount;
@@ -477,8 +460,10 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
 
         _lastRound = 1;
         _chapter++;
+
         _chapterStatus[_chapter]._startTime = time;
         _chapterStatus[_chapter]._roundStartTime[_lastRound] = time;
+        _poolState[_chapter][1]._answer = _aggregator.latestAnswer();
         emit AddLoot(_chapter, _chapterStatus[_chapter]._interest, _chapterStatus[_chapter]._nftFactionInterest, time);
     }
 
@@ -518,16 +503,16 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
             }
         }
 
-        _lastRound++;
-        _chapterStatus[_chapter]._roundStartTime[_lastRound] = time;
-
         emit BattleDamage(
             _chapter,
             _lastRound,
-            _poolState[_chapter][_lastRound - 1]._answer,
             _poolState[_chapter][_lastRound]._answer,
+            _poolState[_chapter][_lastRound + 1]._answer,
             time
         );
+
+        _lastRound++;
+        _chapterStatus[_chapter]._roundStartTime[_lastRound] = time;
     }
 
     function getRoundWinnerKc(
@@ -586,13 +571,17 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         address user,
         uint256 factionId,
         uint256 chapter
-    ) internal view  returns (uint256) {
+    ) public view  returns (uint256) {
         uint256 len = _accountFactionStatus[user][factionId]._accountKCIndex.length;
+        console.log('chapter',chapter);
+        console.log('accountkc',len);
+        if(len==0 || chapter==0)
+            return 0;
         if (chapter > _accountFactionStatus[user][factionId]._accountKCIndex[len - 1]) {
             return calAccountKCInWholeCycle(factionId);
         }
-        for (uint256 i = len - 1; i >= 0; i--) {
-            uint256 c = _accountFactionStatus[user][factionId]._accountKCIndex[i];
+        for (uint256 i = len; i > 0; i--) {
+            uint256 c = _accountFactionStatus[user][factionId]._accountKCIndex[i-1];
             if (c <= chapter) return _accountFactionStatus[user][factionId]._accountKC[c];
         }
         return 0;
@@ -796,18 +785,20 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
         uint256 accountKc = getAccountKC(msg.sender, factionId, _chapter - 1);
         uint256 factionKC = _factionStatus[factionId]._totalChapterKC[_chapter - 1];
         uint256 captionKc = msg.sender == caption ? accountKc : getAccountKC(caption, factionId, _chapter - 1);
-        if (_chapterStatus[_chapter]._isEnd) {
+        if (_chapterStatus[_chapter]._isEnd && _chapterStatus[_chapter]._winnerKC > 0) {
             uint256 teamBonus1 = (_chapterStatus[_chapter]._interest * wkc) / _chapterStatus[_chapter]._winnerKC;
             uint256 captainBonus1 = (teamBonus1 * _captainRateLimit) / _BASE;
             uint256 kakiFound1 = (teamBonus1 * _kakiFoundationRate) / _BASE;
-            uint256 teamBonus2 = (_chapterStatus[_chapter]._nftFactionInterest * wkc) /
-                _chapterStatus[_chapter]._nftFactionWKC;
+            uint256 teamBonus2;
+            if(_chapterStatus[_chapter]._nftFactionWKC>0)
+                teamBonus2 = (_chapterStatus[_chapter]._nftFactionInterest * wkc) / _chapterStatus[_chapter]._nftFactionWKC;
             uint256 captainBonus2 = (teamBonus2 * _captainRateLimit) / _BASE;
             uint256 kakiFound2 = (teamBonus2 * _kakiFoundationRate) / _BASE;
 
             bonus1._spaceShipBonus = teamBonus1 - kakiFound1;
             bonus1._captionBonus = captainBonus1 + (teamBonus1 - kakiFound1 - captainBonus1) * captionKc / factionKC;
             bonus1._crewBonus = bonus1._spaceShipBonus - bonus1._captionBonus;
+
             bonus2._spaceShipBonus = teamBonus2 - kakiFound2;
             bonus2._captionBonus = captainBonus2 + (teamBonus2 - kakiFound2 - captainBonus2) * captionKc / factionKC;
             bonus2._crewBonus = bonus2._spaceShipBonus - bonus2._captionBonus;
@@ -888,6 +879,6 @@ contract KakiNoLoss is WithAdminRole, IKakiNoLoss {
     }
 
     function version() public pure returns (uint256) {
-        return 11;
+        return 16;
     }
 }
